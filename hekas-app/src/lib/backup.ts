@@ -1,0 +1,332 @@
+// HEKAS POS — Backup utility
+// Export/import/reset semua `hekas:*` localStorage data ke format JSON
+// yang ter-version (untuk future migration).
+//
+// Format:
+// {
+//   app: 'hekas-pos',
+//   version: 1,
+//   exported_at: ISO string,
+//   data: {
+//     products: [...],
+//     members: [...],
+//     users: [...],
+//     transactions: [...],
+//     held: [...],
+//     settings: {...}
+//   }
+// }
+
+import { storage, seedIfEmpty } from './api/storage.js';
+
+const BACKUP_KEYS = [
+  'products',
+  'members',
+  'users',
+  'transactions',
+  'held',
+  'settings',
+] as const;
+
+const BACKUP_VERSION = 1;
+const BACKUP_APP = 'hekas-pos';
+
+// Track metadata in localStorage (not included in backup data itself)
+const META_LAST_BACKUP_KEY = 'hekas_meta:last_backup';
+const META_LAST_RESTORE_KEY = 'hekas_meta:last_restore';
+
+export interface BackupFile {
+  app: string;
+  version: number;
+  exported_at: string;
+  device?: string;
+  data: Record<string, unknown>;
+}
+
+export interface BackupPreview {
+  app: string;
+  version: number;
+  exported_at: string;
+  counts: Record<string, number>;
+  total_items: number;
+}
+
+export type BackupPreviewResult = BackupPreview | { error: string };
+
+// ─── Export ─────────────────────────────────────────────────────────────────
+export function exportBackup(): BackupFile {
+  const data: Record<string, unknown> = {};
+  for (const key of BACKUP_KEYS) {
+    data[key] = storage.get(key as any, null);
+  }
+  const file: BackupFile = {
+    app: BACKUP_APP,
+    version: BACKUP_VERSION,
+    exported_at: new Date().toISOString(),
+    device: getDeviceName(),
+    data,
+  };
+
+  const json = JSON.stringify(file, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  downloadBlob(blob, `hekas-backup-${nowStamp()}.json`);
+
+  // Track last backup time
+  try {
+    storage.set(META_LAST_BACKUP_KEY, new Date().toISOString());
+  } catch {
+    /* storage full? ignore */
+  }
+
+  return file;
+}
+
+// ─── Preview (sebelum import) ───────────────────────────────────────────────
+export function previewBackup(json: string): BackupPreviewResult {
+  try {
+    const parsed = JSON.parse(json);
+    if (!parsed || typeof parsed !== 'object') {
+      return { error: 'File bukan JSON valid' };
+    }
+    if (parsed.app !== BACKUP_APP) {
+      return {
+        error: `File ini bukan backup HEKAS POS (app: "${parsed.app ?? 'unknown'}")`,
+      };
+    }
+    if (typeof parsed.version !== 'number') {
+      return { error: 'Versi backup tidak valid' };
+    }
+    if (!parsed.data || typeof parsed.data !== 'object') {
+      return { error: 'Struktur data backup corrupt' };
+    }
+
+    const counts: Record<string, number> = {};
+    let total = 0;
+    for (const key of BACKUP_KEYS) {
+      const arr = parsed.data[key];
+      if (Array.isArray(arr)) {
+        counts[key] = arr.length;
+        total += arr.length;
+      } else if (arr && typeof arr === 'object') {
+        counts[key] = Object.keys(arr).length;
+        total += Object.keys(arr).length;
+      } else {
+        counts[key] = 0;
+      }
+    }
+
+    return {
+      app: parsed.app,
+      version: parsed.version,
+      exported_at: parsed.exported_at ?? '',
+      counts,
+      total_items: total,
+    };
+  } catch (e: any) {
+    return { error: `JSON parse error: ${e.message}` };
+  }
+}
+
+// ─── Import (apply backup to current data) ──────────────────────────────────
+export interface ImportOptions {
+  mode: 'replace' | 'merge';   // replace = overwrite all, merge = keep existing + add new
+  skipKeys?: string[];         // keys to skip during import
+}
+
+export interface ImportResult {
+  imported: Record<string, number>;
+  skipped: Record<string, number>;
+  total: number;
+}
+
+export function importBackup(
+  json: string,
+  options: ImportOptions = { mode: 'replace' },
+): ImportResult {
+  const parsed = JSON.parse(json);
+  if (parsed.app !== BACKUP_APP) {
+    throw new Error(`File bukan backup HEKAS POS`);
+  }
+
+  const result: ImportResult = {
+    imported: {},
+    skipped: {},
+    total: 0,
+  };
+
+  for (const key of BACKUP_KEYS) {
+    if (options.skipKeys?.includes(key)) {
+      continue;
+    }
+    const incoming = parsed.data?.[key];
+    if (incoming == null) continue;
+
+    if (options.mode === 'replace') {
+      storage.set(key as any, incoming);
+      const count = Array.isArray(incoming) ? incoming.length : 1;
+      result.imported[key] = count;
+      result.total += count;
+    } else {
+      // merge: gabung existing + incoming (de-dup by id untuk array)
+      const existing = storage.get(key as any, null) as unknown;
+      if (Array.isArray(existing) && Array.isArray(incoming)) {
+        const existingIds = new Set(
+          existing.map((e: any) => e?.id ?? JSON.stringify(e)),
+        );
+        const merged = [
+          ...existing,
+          ...incoming.filter((i: any) => {
+            const id = i?.id ?? JSON.stringify(i);
+            return !existingIds.has(id);
+          }),
+        ];
+        storage.set(key as any, merged);
+        const added = merged.length - (existing as any[]).length;
+        result.imported[key] = added;
+        result.total += added;
+      } else {
+        storage.set(key as any, incoming);
+        const count = Array.isArray(incoming) ? incoming.length : 1;
+        result.imported[key] = count;
+        result.total += count;
+      }
+    }
+  }
+
+  try {
+    storage.set(META_LAST_RESTORE_KEY, new Date().toISOString());
+  } catch {
+    /* ignore */
+  }
+
+  return result;
+}
+
+// ─── Reset (hapus semua data + reseed) ──────────────────────────────────────
+export function resetData(): void {
+  // Hapus semua keys
+  for (const key of BACKUP_KEYS) {
+    storage.remove(key as any);
+  }
+  // Hapus metadata juga
+  storage.remove(META_LAST_BACKUP_KEY);
+  storage.remove(META_LAST_RESTORE_KEY);
+  storage.remove('hekas:seeded');
+
+  // Reseed dengan data default
+  seedIfEmpty();
+}
+
+// ─── Stats & metadata ──────────────────────────────────────────────────────
+export interface DataStats {
+  total_keys: number;
+  total_size_kb: number;
+  counts: Record<string, number>;
+  last_backup: string | null;
+  last_restore: string | null;
+  days_since_backup: number | null;
+}
+
+export function getDataStats(): DataStats {
+  const counts: Record<string, number> = {};
+  let totalSize = 0;
+
+  for (const key of BACKUP_KEYS) {
+    const v = storage.get(key as any, null) as unknown;
+    if (v == null) {
+      counts[key] = 0;
+    } else if (Array.isArray(v)) {
+      counts[key] = (v as any[]).length;
+      totalSize += JSON.stringify(v).length;
+    } else if (typeof v === 'object') {
+      counts[key] = Object.keys(v as object).length;
+      totalSize += JSON.stringify(v).length;
+    } else {
+      counts[key] = 1;
+    }
+  }
+
+  const lastBackup = storage.get<string | null>(META_LAST_BACKUP_KEY as any, null);
+  const lastRestore = storage.get<string | null>(META_LAST_RESTORE_KEY as any, null);
+
+  let daysSince: number | null = null;
+  if (lastBackup) {
+    const days = Math.floor(
+      (Date.now() - new Date(lastBackup).getTime()) / (1000 * 60 * 60 * 24),
+    );
+    daysSince = days;
+  }
+
+  return {
+    total_keys: BACKUP_KEYS.length,
+    total_size_kb: Math.round(totalSize / 1024 * 10) / 10,
+    counts,
+    last_backup: lastBackup,
+    last_restore: lastRestore,
+    days_since_backup: daysSince,
+  };
+}
+
+export function isBackupStale(days = 7): boolean {
+  const stats = getDataStats();
+  if (!stats.last_backup) return true;
+  return (stats.days_since_backup ?? 0) >= days;
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function nowStamp(): string {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return (
+    d.getFullYear() +
+    pad(d.getMonth() + 1) +
+    pad(d.getDate()) +
+    '_' +
+    pad(d.getHours()) +
+    pad(d.getMinutes())
+  );
+}
+
+function getDeviceName(): string {
+  try {
+    const ua = navigator.userAgent;
+    if (/Chrome/.test(ua)) return 'Chrome';
+    if (/Firefox/.test(ua)) return 'Firefox';
+    if (/Safari/.test(ua)) return 'Safari';
+    if (/Edg/.test(ua)) return 'Edge';
+    return 'Browser';
+  } catch {
+    return 'Unknown';
+  }
+}
+
+// ─── File picker helper ────────────────────────────────────────────────────
+export function pickBackupFile(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json,.json';
+    input.onchange = (e: any) => {
+      const file = e.target.files?.[0];
+      if (!file) return reject(new Error('Tidak ada file dipilih'));
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Gagal membaca file'));
+      reader.readAsText(file);
+    };
+    input.click();
+  });
+}
+
+export { BACKUP_VERSION, BACKUP_APP, BACKUP_KEYS };

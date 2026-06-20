@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@theme {
+	/* HEKAS brand colors */
+	--color-hekas-navy: #1E3A5F;
+	--color-hekas-navy-deep: #152A45;
+	--color-hekas-blue: #2563EB;
+	--color-hekas-blue-deep: #1D4ED8;
+	--color-hekas-blue-light: #93C5FD;
+	--color-hekas-blue-pale: #DBEAFE;
+	--color-hekas-blue-tint: #EFF6FF;
+	--color-hekas-surface: #F0F4F8;
+	--color-hekas-border: #E2EBF4;
+	--color-hekas-text: #0F172A;
+	--color-hekas-text-muted: #64748B;
+	--color-hekas-text-subtle: #94A3B8;
+	--color-hekas-success: #10B981;
+	--color-hekas-danger: #DC2626;
+	--color-hekas-warning: #F59E0B;
+	--color-hekas-role-kasir: #2563EB;
+	--color-hekas-role-manager: #059669;
+	--color-hekas-role-gudang: #7C3AED;
+
+	/* Fonts */
+	--font-family-sans: 'Inter', system-ui, sans-serif;
+}
+
+/* Base styles */
+html, body {
+	font-family: var(--font-family-sans);
+	background: var(--color-hekas-surface);
+	color: var(--color-hekas-text);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
+/* Focus visible ring — global */
+:focus-visible {
+	outline: 2px solid var(--color-hekas-blue);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* Selection */
+::selection {
+	background: var(--color-hekas-blue-pale);
+	color: var(--color-hekas-text);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: rgba(15, 23, 42, 0.15);
+	border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(15, 23, 42, 0.25);
+}
+
+/* ── Print rules — hide everything except receipt ───────────────────── */
+@media print {
+	@page {
+		size: 80mm auto;
+		margin: 0;
+	}
+	html, body {
+		background: #fff !important;
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+	body > *:not(#hekas-receipt-print-container) {
+		display: none !important;
+	}
+	#hekas-receipt-print-container {
+		display: block !important;
+		position: static !important;
+		box-shadow: none !important;
+	}
+	#hekas-receipt-print {
+		box-shadow: none !important;
+		max-width: none !important;
+	}
+}
+
+/* ── Dark mode (toggled by .hekas-dark class di <html>) ────────────────── */
+html.hekas-dark {
+	color-scheme: dark;
+
+	--color-hekas-surface: #0F172A;
+	--color-hekas-border: #1E293B;
+	--color-hekas-text: #F1F5F9;
+	--color-hekas-text-muted: #94A3B8;
+	--color-hekas-text-subtle: #64748B;
+	--color-hekas-blue-pale: #1E3A8A;
+	--color-hekas-blue-tint: #1E293B;
+	--color-hekas-navy: #1E40AF;
+	--color-hekas-navy-deep: #1E3A8A;
+}
+
+html.hekas-dark body {
+	background: #0F172A;
+	color: var(--color-hekas-text);
+}
+
+html.hekas-dark ::-webkit-scrollbar-thumb {
+	background: rgba(148, 163, 184, 0.2);
+}
+
+html.hekas-dark ::-webkit-scrollbar-thumb:hover {
+	background: rgba(148, 163, 184, 0.35);
+}
+
+html.hekas-dark ::selection {
+	background: rgba(37, 99, 235, 0.3);
+	color: #F1F5F9;
+}
+
+/* Smooth transition saat toggle theme */
+html {
+	transition: background-color 200ms ease, color 200ms ease;
+}
