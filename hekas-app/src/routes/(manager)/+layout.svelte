@@ -1,11 +1,10 @@
 <script lang="ts">
 	/**
-	 * Manager route group layout (placeholder)
+	 * Manager route group layout.
 	 *
-	 * Akan berisi:
-	 * - Sidebar Manager (Beranda, Penjualan, Keuangan, dll)
-	 * - TopBar manager (dengan export, notifications, profile)
-	 * - RBAC guard (cek role = 'manager')
+	 * Status (R0.4 2026-06-21): Pass-through.
+	 * Shared Sidebar + TopBar sudah dibuat; wire-up di fase R1.
+	 * Lihat catatan di (kasir)/+layout.svelte untuk pola integrasi.
 	 */
 	let { children } = $props();
 </script>

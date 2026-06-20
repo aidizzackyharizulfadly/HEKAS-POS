@@ -11,7 +11,7 @@ export interface RoleConfig {
 	color: string;             // Hex warna utama
 	colorDeep: string;         // Hex hover
 	bgSoft: string;            // Background badge
-	gotoPath: string;          // Path tujuan setelah login
+	gotoPath: string;          // Path tujuan setelah login (home URL)
 }
 
 export const ROLES: Record<RoleId, RoleConfig> = {
@@ -22,7 +22,7 @@ export const ROLES: Record<RoleId, RoleConfig> = {
 		color: '#2563EB',
 		colorDeep: '#1D4ED8',
 		bgSoft: '#DBEAFE',
-		gotoPath: '/kasir'
+		gotoPath: '/kasir/pos'        // R0.5: updated dari '/kasir' ke '/kasir/pos'
 	},
 	manager: {
 		id: 'manager',
@@ -31,7 +31,7 @@ export const ROLES: Record<RoleId, RoleConfig> = {
 		color: '#059669',
 		colorDeep: '#047857',
 		bgSoft: '#D1FAE5',
-		gotoPath: '/manager'
+		gotoPath: '/manager/beranda'  // R0.5: updated dari '/manager' ke '/manager/beranda'
 	},
 	gudang: {
 		id: 'gudang',
@@ -40,11 +40,53 @@ export const ROLES: Record<RoleId, RoleConfig> = {
 		color: '#7C3AED',
 		colorDeep: '#6D28D9',
 		bgSoft: '#EDE9FE',
-		gotoPath: '/gudang'
+		gotoPath: '/gudang/beranda'   // R0.5: updated dari '/gudang' ke '/gudang/beranda'
 	}
 };
 
 export const ROLE_LIST: RoleConfig[] = [ROLES.kasir, ROLES.manager, ROLES.gudang];
+
+// ─── Menu definitions (untuk Sidebar shared component) ──────────────────────
+// R0.2: Tambah menu arrays per role, sesuai FRONTEND_ARCHITECTURE.md §6.1
+// Dipakai oleh Sidebar.svelte yang akan di-wire di fase R1 (page refactor).
+// Untuk sekarang, role pages masih pakai inline sidebar — menu arrays ini
+// adalah single source of truth untuk navigation yang akan datang.
+
+export interface MenuItem {
+	label: string;
+	path: string;
+	icon: string;        // emoji (kasir/gudang/manager saat ini pakai emoji)
+}
+
+export const kasirMenu: MenuItem[] = [
+	{ label: 'POS',           path: '/kasir/pos',       icon: '🛒' },
+	{ label: 'Order',         path: '/kasir/order',     icon: '🧾' },
+	{ label: 'Produk',        path: '/kasir/produk',    icon: '📦' },
+	{ label: 'Pelanggan',     path: '/kasir/pelanggan', icon: '👥' },
+	{ label: 'Shift',         path: '/kasir/shift',     icon: '🕐' },
+	{ label: 'Laporan',       path: '/kasir/laporan',   icon: '📊' },
+	{ label: 'Setting',       path: '/kasir/setting',   icon: '⚙️' }
+];
+
+export const gudangMenu: MenuItem[] = [
+	{ label: 'Beranda',         path: '/gudang/beranda',         icon: '🏠' },
+	{ label: 'Inventaris',      path: '/gudang/inventaris',      icon: '📦' },
+	{ label: 'Barang Masuk',    path: '/gudang/barang-masuk',    icon: '🚚' },
+	{ label: 'Barang Keluar',   path: '/gudang/barang-keluar',   icon: '📤' },
+	{ label: 'Surat Jalan',     path: '/gudang/surat-jalan',     icon: '📄' }
+];
+
+export const managerMenu: MenuItem[] = [
+	{ label: 'Beranda',         path: '/manager/beranda',    icon: '🏠' },
+	{ label: 'Penjualan',       path: '/manager/penjualan',  icon: '📈' },
+	{ label: 'Inventaris',      path: '/manager/inventaris', icon: '📦' },
+	{ label: 'Keuangan',        path: '/manager/keuangan',   icon: '💰' },
+	{ label: 'Karyawan',        path: '/manager/karyawan',   icon: '👥' },
+	{ label: 'Laporan',         path: '/manager/laporan',    icon: '📊' },
+	{ label: 'Surat Jalan',     path: '/manager/surat-jalan', icon: '📄' },
+	{ label: 'AI Assistant',    path: '/manager/ai',         icon: '✨' },
+	{ label: 'Pengaturan',      path: '/manager/pengaturan', icon: '⚙️' }
+];
 
 // ─── Demo accounts (mock auth) ──────────────────────────────────────────────
 // Ganti dengan API call ke backend saat production
