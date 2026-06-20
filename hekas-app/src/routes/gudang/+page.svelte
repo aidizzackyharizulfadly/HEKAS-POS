@@ -160,6 +160,12 @@
 		if (!editForm.barcode?.trim()) { editError = 'Barcode wajib diisi'; return; }
 		if ((editForm.price ?? 0) <= 0) { editError = 'Harga harus > 0'; return; }
 		if ((editForm.stock ?? 0) < 0) { editError = 'Stok tidak boleh negatif'; return; }
+		// Edge: SKU uniqueness (exclude self)
+		const skuOwner = products.find((p) => p.sku === editForm.sku && p.id !== editingId);
+		if (skuOwner) { editError = `SKU "${editForm.sku}" sudah dipakai oleh "${skuOwner.name}"`; return; }
+		// Edge: Barcode uniqueness (exclude self)
+		const barcodeOwner = products.find((p) => p.barcode === editForm.barcode && p.id !== editingId);
+		if (barcodeOwner) { editError = `Barcode sudah dipakai oleh "${barcodeOwner.name}"`; return; }
 
 		saving = true;
 		try {
@@ -234,6 +240,12 @@
 		if (!createForm.barcode?.trim()) { createError = 'Barcode wajib diisi'; return; }
 		if ((createForm.price ?? 0) <= 0) { createError = 'Harga harus > 0'; return; }
 		if ((createForm.stock ?? 0) < 0) { createError = 'Stok tidak boleh negatif'; return; }
+		// Edge: SKU uniqueness
+		const skuOwner = products.find((p) => p.sku === createForm.sku);
+		if (skuOwner) { createError = `SKU "${createForm.sku}" sudah dipakai oleh "${skuOwner.name}"`; return; }
+		// Edge: Barcode uniqueness
+		const barcodeOwner = products.find((p) => p.barcode === createForm.barcode);
+		if (barcodeOwner) { createError = `Barcode sudah dipakai oleh "${barcodeOwner.name}"`; return; }
 
 		saving = true;
 		try {
