@@ -28,8 +28,10 @@ const BACKUP_KEYS = [
   'settings',
 ] as const;
 
-const BACKUP_VERSION = 1;
-const BACKUP_APP = 'hekas-pos';
+type BackupKey = typeof BACKUP_KEYS[number];
+
+export const BACKUP_VERSION = 1;
+export const BACKUP_APP = 'hekas-pos';
 
 // Track metadata in localStorage (not included in backup data itself)
 const META_LAST_BACKUP_KEY = 'hekas_meta:last_backup';
@@ -57,7 +59,7 @@ export type BackupPreviewResult = BackupPreview | { error: string };
 export function exportBackup(): BackupFile {
   const data: Record<string, unknown> = {};
   for (const key of BACKUP_KEYS) {
-    data[key] = storage.get(key as any, null);
+    data[key] = storage.get<unknown>(key, null);
   }
   const file: BackupFile = {
     app: BACKUP_APP,
@@ -122,8 +124,9 @@ export function previewBackup(json: string): BackupPreviewResult {
       counts,
       total_items: total,
     };
-  } catch (e: any) {
-    return { error: `JSON parse error: ${e.message}` };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { error: `JSON parse error: ${msg}` };
   }
 }
 
@@ -162,30 +165,37 @@ export function importBackup(
     if (incoming == null) continue;
 
     if (options.mode === 'replace') {
-      storage.set(key as any, incoming);
+      storage.set<unknown>(key, incoming);
       const count = Array.isArray(incoming) ? incoming.length : 1;
       result.imported[key] = count;
       result.total += count;
     } else {
       // merge: gabung existing + incoming (de-dup by id untuk array)
-      const existing = storage.get(key as any, null) as unknown;
+      const existing = storage.get<unknown>(key, null);
       if (Array.isArray(existing) && Array.isArray(incoming)) {
         const existingIds = new Set(
-          existing.map((e: any) => e?.id ?? JSON.stringify(e)),
+          existing.map((e: unknown) => {
+            if (e && typeof e === 'object' && 'id' in e) {
+              return String((e as { id: unknown }).id);
+            }
+            return JSON.stringify(e);
+          }),
         );
         const merged = [
           ...existing,
-          ...incoming.filter((i: any) => {
-            const id = i?.id ?? JSON.stringify(i);
+          ...incoming.filter((i: unknown) => {
+            const id = i && typeof i === 'object' && 'id' in i
+              ? String((i as { id: unknown }).id)
+              : JSON.stringify(i);
             return !existingIds.has(id);
           }),
         ];
-        storage.set(key as any, merged);
-        const added = merged.length - (existing as any[]).length;
+        storage.set<unknown>(key, merged);
+        const added = merged.length - existing.length;
         result.imported[key] = added;
         result.total += added;
       } else {
-        storage.set(key as any, incoming);
+        storage.set<unknown>(key, incoming);
         const count = Array.isArray(incoming) ? incoming.length : 1;
         result.imported[key] = count;
         result.total += count;
@@ -206,7 +216,7 @@ export function importBackup(
 export function resetData(): void {
   // Hapus semua keys
   for (const key of BACKUP_KEYS) {
-    storage.remove(key as any);
+    storage.remove(key);
   }
   // Hapus metadata juga
   storage.remove(META_LAST_BACKUP_KEY);
@@ -232,11 +242,11 @@ export function getDataStats(): DataStats {
   let totalSize = 0;
 
   for (const key of BACKUP_KEYS) {
-    const v = storage.get(key as any, null) as unknown;
+    const v = storage.get<unknown>(key, null);
     if (v == null) {
       counts[key] = 0;
     } else if (Array.isArray(v)) {
-      counts[key] = (v as any[]).length;
+      counts[key] = v.length;
       totalSize += JSON.stringify(v).length;
     } else if (typeof v === 'object') {
       counts[key] = Object.keys(v as object).length;
@@ -246,8 +256,8 @@ export function getDataStats(): DataStats {
     }
   }
 
-  const lastBackup = storage.get<string | null>(META_LAST_BACKUP_KEY as any, null);
-  const lastRestore = storage.get<string | null>(META_LAST_RESTORE_KEY as any, null);
+  const lastBackup = storage.get<string | null>(META_LAST_BACKUP_KEY, null);
+  const lastRestore = storage.get<string | null>(META_LAST_RESTORE_KEY, null);
 
   let daysSince: number | null = null;
   if (lastBackup) {
@@ -267,14 +277,60 @@ export function getDataStats(): DataStats {
   };
 }
 
-export function isBackupStale(days = 7): boolean {
-  const stats = getDataStats();
-  if (!stats.last_backup) return true;
-  return (stats.days_since_backup ?? 0) >= days;
+// ─── File picker (browser file input → JSON string) ────────────────────────
+export function pickBackupFile(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (typeof document === 'undefined') {
+      reject(new Error('File picker hanya tersedia di browser'));
+      return;
+    }
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json,.json';
+    input.onchange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+      if (!file) {
+        reject(new Error('Tidak ada file dipilih'));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error ?? new Error('File read error'));
+      reader.readAsText(file);
+    };
+    input.click();
+  });
 }
 
-// ─── Helpers ───────────────────────────────────────────────────────────────
+// ─── Stale detection ────────────────────────────────────────────────────────
+export function isBackupStale(thresholdDays = 7): boolean {
+  const stats = getDataStats();
+  if (!stats.last_backup) return true;
+  if (stats.days_since_backup == null) return true;
+  return stats.days_since_backup >= thresholdDays;
+}
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+function getDeviceName(): string {
+  if (typeof navigator === 'undefined') return 'unknown';
+  const ua = navigator.userAgent;
+  if (/android/i.test(ua)) return 'Android';
+  if (/iphone|ipad|ipod/i.test(ua)) return 'iOS';
+  if (/windows/i.test(ua)) return 'Windows';
+  if (/mac/i.test(ua)) return 'macOS';
+  if (/linux/i.test(ua)) return 'Linux';
+  return 'Unknown';
+}
+
+function nowStamp(): string {
+  const d = new Date();
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+
 function downloadBlob(blob: Blob, filename: string): void {
+  if (typeof document === 'undefined') return;
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -285,48 +341,4 @@ function downloadBlob(blob: Blob, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function nowStamp(): string {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return (
-    d.getFullYear() +
-    pad(d.getMonth() + 1) +
-    pad(d.getDate()) +
-    '_' +
-    pad(d.getHours()) +
-    pad(d.getMinutes())
-  );
-}
-
-function getDeviceName(): string {
-  try {
-    const ua = navigator.userAgent;
-    if (/Chrome/.test(ua)) return 'Chrome';
-    if (/Firefox/.test(ua)) return 'Firefox';
-    if (/Safari/.test(ua)) return 'Safari';
-    if (/Edg/.test(ua)) return 'Edge';
-    return 'Browser';
-  } catch {
-    return 'Unknown';
-  }
-}
-
-// ─── File picker helper ────────────────────────────────────────────────────
-export function pickBackupFile(): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json,.json';
-    input.onchange = (e: any) => {
-      const file = e.target.files?.[0];
-      if (!file) return reject(new Error('Tidak ada file dipilih'));
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => reject(new Error('Gagal membaca file'));
-      reader.readAsText(file);
-    };
-    input.click();
-  });
-}
-
-export { BACKUP_VERSION, BACKUP_APP, BACKUP_KEYS };
+export type { BackupKey };
