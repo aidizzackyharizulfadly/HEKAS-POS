@@ -212,7 +212,7 @@
 <!-- Backdrop -->
 <div
   class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-  onclick={(e) => { if (e.target === e.currentTarget) onCancel?.(); }}
+  onclick={(e) => { if (e.target === e.currentTarget) onCancel?.(); }} onkeydown={(e) => { if (e.key === 'Escape') { /* TODO close */ } }}
   role="dialog"
   aria-modal="true"
   aria-label="Form Pembayaran"

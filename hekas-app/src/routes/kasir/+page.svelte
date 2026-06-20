@@ -1205,12 +1205,10 @@
 									{#if memberResults.length > 0}
 										{#each memberResults as m}
 											<button
-												onclick={() => { member = m; memberSearch = ''; }}
-												class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors"
-												style="background: #fff"
-												onmouseover={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-												onmouseout={(e) => (e.currentTarget.style.background = '#fff')}
-											>
+																						onclick={() => { member = m; memberSearch = ''; }}
+																						class="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors member-result-btn"
+																						style="background: #fff"
+																					>
 												<div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style="background: var(--color-hekas-blue-pale); color: var(--color-hekas-blue-deep)">
 													{m.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
 												</div>
@@ -1503,7 +1501,7 @@
 		<div
 			class="fixed inset-0 flex items-center justify-center z-50 p-4"
 			style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)"
-			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }}
+			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 			transition:fade={{ duration: 150 }}
 			role="dialog"
 			aria-modal="true"
@@ -1702,7 +1700,7 @@
 		<div
 			class="fixed inset-0 flex items-center justify-center z-50 p-4"
 			style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)"
-			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }}
+			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 			transition:fade={{ duration: 150 }}
 			role="dialog"
 			aria-modal="true"
@@ -1769,7 +1767,7 @@
 		<div
 			class="fixed inset-0 flex items-center justify-center z-50 p-4"
 			style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)"
-			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }}
+			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 			transition:fade={{ duration: 150 }}
 			role="dialog"
 			aria-modal="true"
@@ -1845,7 +1843,7 @@
 		<div
 			class="fixed inset-0 flex items-center justify-center z-50 p-4"
 			style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)"
-			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }}
+			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 			transition:fade={{ duration: 150 }}
 			role="dialog"
 			aria-modal="true"
@@ -1928,7 +1926,7 @@
 		<div
 			class="fixed inset-0 flex items-center justify-center z-50 p-4"
 			style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)"
-			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }}
+			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 			transition:fade={{ duration: 150 }}
 			role="dialog"
 			aria-modal="true"
@@ -1991,7 +1989,7 @@
 		<div
 		class="fixed inset-0 flex items-center justify-center z-50 p-4"
 		style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)"
-		onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }}
+		onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 		transition:fade={{ duration: 150 }}
 		role="dialog"
 		aria-modal="true"

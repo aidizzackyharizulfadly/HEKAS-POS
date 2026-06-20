@@ -87,7 +87,7 @@
 	<div
 		class="fixed inset-0 flex items-center justify-center z-50 p-4"
 		style="background: rgba(15,23,41,0.6); backdrop-filter: blur(4px)"
-		onclick={(e) => { if (e.target === e.currentTarget) close(); }}
+		onclick={(e) => { if (e.target === e.currentTarget) close(); }} onkeydown={(e) => { if (e.key === 'Escape') { /* TODO close */ } }}
 		transition:fade={{ duration: 150 }}
 		role="dialog"
 		aria-modal="true"

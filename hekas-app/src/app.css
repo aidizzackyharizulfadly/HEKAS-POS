@@ -129,3 +129,14 @@ html.hekas-dark ::selection {
 html {
 	transition: background-color 200ms ease, color 200ms ease;
 }
+/* Member search dropdown result hover (a11y: keyboard-friendly) */
+.member-result-btn:hover,
+.member-result-btn:focus {
+	background: #F8FAFC !important;
+	outline: none;
+}
+
+html.hekas-dark .member-result-btn:hover,
+html.hekas-dark .member-result-btn:focus {
+	background: rgba(148, 163, 184, 0.15) !important;
+}

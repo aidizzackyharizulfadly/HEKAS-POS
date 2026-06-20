@@ -154,6 +154,10 @@
     if (e.target === e.currentTarget && !processing) onclose();
   }
 
+  function handleBackdropKey(e: KeyboardEvent) {
+    if (e.key === 'Escape' && !processing) onclose();
+  }
+
   const quotaPercent = $derived(Math.round(quota.percentUsed * 100));
   const quotaColor = $derived(
     quota.warning === 'full' || quota.warning === 'critical'
@@ -167,7 +171,7 @@
 <div
   class="backdrop"
   onclick={handleBackdrop}
-  onkeydown={() => {}}
+  onkeydown={handleBackdropKey}
   role="button"
   tabindex="-1"
   aria-label="Tutup uploader"
