@@ -353,10 +353,6 @@
     cursor: not-allowed;
   }
   .field input.err,
-  .field select.err,
-  .field textarea.err {
-    border-color: #DC2626;
-  }
   .err-msg {
     font-size: 11px;
     color: #DC2626;

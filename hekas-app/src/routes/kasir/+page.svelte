@@ -2123,15 +2123,10 @@
 							{/if}
 
 						<style>
-				/* ── Product card: subtle hover lift + active press ───────────────────── */
-				.product-card:not(:disabled):hover {
-	transform: translateY(-1px);
-	box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--color-hekas-blue-pale) !important;
-	border-color: var(--color-hekas-blue-light) !important;
-}
-.card-press:not(:disabled):active {
-	transform: scale(0.97);
-}
+									/* ── Card press: active state ─────────────────────────────────────────── */
+									.card-press:not(:disabled):active {
+							transform: scale(0.97);
+						}
 
 /* ── Search input: focus state ─────────────────────────────────────────── */
 .search-input:focus {
@@ -2156,36 +2151,8 @@
 	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
 }
 
-/* ── Method button: hover ─────────────────────────────────────────────── */
-.method-btn:hover:not([aria-pressed="true"]) {
-	background: var(--color-hekas-blue-tint) !important;
-	color: var(--color-hekas-blue-deep) !important;
-	border-color: var(--color-hekas-blue-pale) !important;
-}
 
-/* ── Sidebar nav: hover reveal ────────────────────────────────────────── */
-.sidebar-nav-item:hover {
-	background: rgba(255, 255, 255, 0.06) !important;
-	color: #fff !important;
-}
-.sidebar-nav-item:hover .sidebar-tooltip {
-	opacity: 1;
-	transform: translate(0, -50%) translateX(0);
-}
-.sidebar-tooltip {
-	opacity: 0;
-	transform: translate(0, -50%) translateX(-4px);
-	transition: opacity 150ms ease, transform 150ms ease;
-}
-.sidebar-nav-item:focus-visible {
-	background: rgba(37, 99, 235, 0.18) !important;
-	color: #fff !important;
-}
 
-/* ── Hardware status dot: pulse on hover ──────────────────────────────── */
-.hardware-dot:hover {
-	background: rgba(255, 255, 255, 0.08);
-}
 
 /* ── Global focus-visible ring for keyboard accessibility ──────────────── */
 :global(button:focus-visible),
@@ -2230,18 +2197,6 @@ transition-duration: 0.01ms !important;
 	left: 0;
 }
 
-/* Sidebar tooltip — visible on hover/focus */
-.sidebar-tooltip {
-	opacity: 0;
-	transform: translateX(-8px) translateY(-50%);
-	transition: opacity 150ms ease, transform 150ms ease;
-}
-button:hover .sidebar-tooltip,
-button:focus-visible .sidebar-tooltip,
-.group:hover .sidebar-tooltip {
-	opacity: 1;
-	transform: translateX(0) translateY(-50%);
-}
 
 /* Spin animation for loading indicator */
 @keyframes spin {
