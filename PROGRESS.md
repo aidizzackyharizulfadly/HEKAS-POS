@@ -5,9 +5,18 @@
 ## 🚀 Quick Start
 
 ```bash
-cd hekas-app
-npm install   # atau bun install
-npm run dev   # → http://localhost:5173
+# 1. Masuk ke folder project (clone dari GitHub atau kalau udah ada)
+git clone https://github.com/aidizzackyharizulfadly/HEKAS-POS.git
+cd HEKAS-POS/hekas-app
+# (kalau udah ada di lokal: cd ~/Documents/HEKAS-POS-main/hekas-app)
+
+# 2. Install dependencies
+npm install
+# atau: bun install
+
+# 3. Jalankan dev server
+npm run dev
+# → buka http://localhost:5173 di browser
 ```
 
 ## 🔐 Demo Login
