@@ -21,7 +21,81 @@ export interface Member {
   phone: string;
   points: number;
   tier: 'Silver' | 'Gold' | 'Platinum';
+  // ── Fase E additions (all optional for backward compat) ────────────────
+  email?: string;            // email opsional
+  address?: string;          // alamat
+  birthday?: string;         // YYYY-MM-DD
+  created_at?: string;       // ISO timestamp saat registrasi
+  last_transaction_at?: string | null; // ISO timestamp tx terakhir
+  lifetime_spend?: number;   // total belanja sepanjang masa (untuk auto-tier)
+  // Poin history (Fase E.3)
+  point_history?: PointEntry[];   // log earn/redeem
+  tier_history?: TierEntry[];     // log upgrade/downgrade tier
+  note?: string;             // catatan internal (manager only)
 }
+
+export interface PointEntry {
+  id: string;                // P001, P002 ...
+  type: 'earn' | 'redeem' | 'expire' | 'adjust';
+  amount: number;            // positif = earn, negatif = redeem
+  balance_after: number;     // poin setelah transaksi
+  ref_id?: string;           // tx_id atau note
+  note?: string;
+  created_at: string;
+}
+
+export interface TierEntry {
+  from: Member['tier'] | null;
+  to: Member['tier'];
+  reason: 'auto' | 'manual' | 'new';
+  note?: string;
+  created_at: string;
+}
+
+// Tier configuration (Fase E.2)
+export interface TierConfig {
+  name: Member['tier'];
+  label: string;
+  color: string;            // hex untuk badge
+  bg: string;               // hex untuk background badge
+  discount_pct: number;     // 0/5/10
+  point_multiplier: number; // 1/2/3 (earn rate)
+  min_lifetime_spend: number; // untuk auto-upgrade
+  priority: number;         // 1=Silver, 2=Gold, 3=Platinum
+}
+
+export const TIER_CONFIG: Record<Member['tier'], TierConfig> = {
+  Silver: {
+    name: 'Silver',
+    label: 'Silver',
+    color: '#64748B',
+    bg: '#E2E8F0',
+    discount_pct: 0,
+    point_multiplier: 1,
+    min_lifetime_spend: 0,
+    priority: 1,
+  },
+  Gold: {
+    name: 'Gold',
+    label: 'Gold',
+    color: '#B45309',
+    bg: '#FEF3C7',
+    discount_pct: 5,
+    point_multiplier: 2,
+    min_lifetime_spend: 5_000_000,   // Rp 5 juta
+    priority: 2,
+  },
+  Platinum: {
+    name: 'Platinum',
+    label: 'Platinum',
+    color: '#1E40AF',
+    bg: '#DBEAFE',
+    discount_pct: 10,
+    point_multiplier: 3,
+    min_lifetime_spend: 15_000_000,  // Rp 15 juta
+    priority: 3,
+  },
+};
 
 export interface User {
   id: number;

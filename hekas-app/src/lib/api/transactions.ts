@@ -4,11 +4,12 @@
 // tinggal ganti implementasi.
 
 import type {
-  CartItem, CheckoutInput, CheckoutResult,
+  CartItem, CheckoutInput, CheckoutResult, Member,
   Transaction, TransactionItem, HeldTransaction,
 } from './types.js';
+import { TIER_CONFIG } from './types.js';
 import { storage, seedIfEmpty, genInvoiceNo, genHoldId } from './storage.js';
-import { adjustPoints } from './members.js';
+import { recordTransaction } from './members.js';
 
 const delay = (ms = 20) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -90,13 +91,26 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
 
   storage.set('transactions', [...transactions, tx]);
 
-  // Award member points (1 poin / Rp 10.000)
-  let updatedMember = null;
+  // Award member points (1 poin / Rp 10.000, dikali tier multiplier)
+  let updatedMember: Member | null = null;
   let pointsEarned = 0;
   if (input.member_id) {
-    pointsEarned = Math.floor(total / 10000);
-    if (pointsEarned > 0) {
-      updatedMember = await adjustPoints(input.member_id, pointsEarned, `Tx ${invoiceNo}`);
+    // Ambil tier member untuk multiplier
+    const allMembers = storage.get<Member[]>('members', []);
+    const member = allMembers.find((m) => m.id === input.member_id);
+    const multiplier = member ? TIER_CONFIG[member.tier].point_multiplier : 1;
+
+    // Base earn: 1 poin per Rp 10.000
+    const basePoints = Math.floor(total / 10000);
+    pointsEarned = basePoints * multiplier;
+
+    // Record transaction → update lifetime_spend + log point + auto-recalc tier
+    if (pointsEarned > 0 || total > 0) {
+      updatedMember = await recordTransaction(input.member_id, {
+        amount: total,
+        earned_points: pointsEarned,
+        invoice_no: invoiceNo,
+      });
     }
   }
 

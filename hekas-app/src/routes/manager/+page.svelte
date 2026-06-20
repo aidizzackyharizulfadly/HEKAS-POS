@@ -9,11 +9,14 @@
 	} from '$lib/api';
 	import PrintPreview from '$lib/components/PrintPreview.svelte';
 	import BackupRestore from '$lib/components/BackupRestore.svelte';
+	import MemberForm from '$lib/components/MemberForm.svelte';
+	import MemberDetail from '$lib/components/MemberDetail.svelte';
+	import TierBadge from '$lib/components/TierBadge.svelte';
 	import { exportTransactionsCSV, fmtIDR, printReport } from '$lib/export';
 	import { isBackupStale } from '$lib/backup';
 
 	// ─── State ──────────────────────────────────────────────────────────────────
-	type TabId = 'ringkasan' | 'outlet' | 'shift' | 'persetujuan' | 'telegram';
+	type TabId = 'ringkasan' | 'outlet' | 'shift' | 'persetujuan' | 'telegram' | 'member';
 	let activeTab = $state<TabId>('ringkasan');
 	let now = $state(new Date());
 
@@ -245,8 +248,99 @@
 		{ id: 'outlet', label: 'Outlet' },
 		{ id: 'shift', label: 'Shift' },
 		{ id: 'persetujuan', label: 'Persetujuan', badge: () => voidTx.length || null },
+		{ id: 'member', label: 'Member' },
 		{ id: 'telegram', label: 'Telegram' },
 	];
+
+	// ─── Member tab state (Fase E) ──────────────────────────────────────────────
+	let memberSearch = $state('');
+	let memberTierFilter = $state<'all' | Member['tier']>('all');
+	let memberSortBy = $state<'name' | 'points' | 'lifetime' | 'recent'>('name');
+	let editingMember = $state<Member | null>(null);
+	let viewingMember = $state<Member | null>(null);
+	let showMemberForm = $state(false);
+	let memberToast = $state<{ kind: 'success' | 'error' | 'info'; msg: string } | null>(null);
+	let memberToastTimer: number | null = null;
+
+	function showMemberToast(kind: 'success' | 'error' | 'info', msg: string) {
+		memberToast = { kind, msg };
+		if (memberToastTimer) clearTimeout(memberToastTimer);
+		memberToastTimer = window.setTimeout(() => (memberToast = null), 3000);
+	}
+
+	const filteredMembers = $derived(
+		members
+			.filter((m) => memberTierFilter === 'all' || m.tier === memberTierFilter)
+			.filter((m) => {
+				if (!memberSearch.trim()) return true;
+				const term = memberSearch.toLowerCase();
+				return (
+					m.name.toLowerCase().includes(term) ||
+					m.phone.includes(term) ||
+					m.id.toLowerCase().includes(term) ||
+					(m.email?.toLowerCase().includes(term) ?? false)
+				);
+			})
+			.sort((a, b) => {
+				switch (memberSortBy) {
+					case 'points':
+						return b.points - a.points;
+					case 'lifetime':
+						return (b.lifetime_spend ?? 0) - (a.lifetime_spend ?? 0);
+					case 'recent':
+						return (b.last_transaction_at ?? '').localeCompare(a.last_transaction_at ?? '');
+					default:
+						return a.name.localeCompare(b.name);
+				}
+			})
+	);
+
+	const memberStats = $derived({
+		total: members.length,
+		silver: members.filter((m) => m.tier === 'Silver').length,
+		gold: members.filter((m) => m.tier === 'Gold').length,
+		platinum: members.filter((m) => m.tier === 'Platinum').length,
+		totalPoints: members.reduce((s, m) => s + m.points, 0),
+		totalLifetime: members.reduce((s, m) => s + (m.lifetime_spend ?? 0), 0),
+	});
+
+	async function handleDeleteMember(m: Member) {
+		const txCount = transactions.filter((t) => t.member_id === m.id).length;
+		const confirmMsg =
+			txCount > 0
+				? `Hapus member ${m.name}? ${txCount} transaksi terkait akan kehilangan referensi member.`
+				: `Hapus member ${m.name}?`;
+		if (!confirm(confirmMsg)) return;
+		try {
+			await api.members.deleteMember(m.id);
+			members = members.filter((x) => x.id !== m.id);
+			showMemberToast('success', `Member ${m.name} berhasil dihapus`);
+		} catch (e) {
+			showMemberToast('error', e instanceof Error ? e.message : 'Gagal menghapus');
+		}
+	}
+
+	async function handleSaveMember(saved: Member) {
+		// Update list
+		const idx = members.findIndex((m) => m.id === saved.id);
+		if (idx >= 0) {
+			members[idx] = saved;
+		} else {
+			members = [...members, saved];
+		}
+	}
+
+	function openCreateMember() {
+		editingMember = null;
+		showMemberForm = true;
+	}
+	function openEditMember(m: Member) {
+		editingMember = m;
+		showMemberForm = true;
+	}
+	function openViewMember(m: Member) {
+		viewingMember = m;
+	}
 </script>
 
 <div
@@ -839,6 +933,144 @@
 						</div>
 					</div>
 				</div>
+			{:else if activeTab === 'member'}
+				<div in:fade={{ duration: 150 }}>
+					<!-- KPI cards -->
+					<div class="grid grid-cols-4 gap-4 mb-5">
+						<div class="rounded-2xl p-4" style="background: #fff; border: 1px solid #E2E8F0">
+							<div style="font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase">Total Member</div>
+							<div style="font-size: 24px; font-weight: 700; color: #0F172A; margin-top: 4px">{memberStats.total}</div>
+						</div>
+						<div class="rounded-2xl p-4" style="background: #F8FAFC; border: 1px solid #E2E8F0">
+							<div style="font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase">🥈 Silver</div>
+							<div style="font-size: 24px; font-weight: 700; color: #64748B; margin-top: 4px">{memberStats.silver}</div>
+						</div>
+						<div class="rounded-2xl p-4" style="background: #FEF3C7; border: 1px solid #FCD34D">
+							<div style="font-size: 11px; color: #92400E; font-weight: 600; text-transform: uppercase">🥇 Gold</div>
+							<div style="font-size: 24px; font-weight: 700; color: #B45309; margin-top: 4px">{memberStats.gold}</div>
+						</div>
+						<div class="rounded-2xl p-4" style="background: #DBEAFE; border: 1px solid #93C5FD">
+							<div style="font-size: 11px; color: #1E40AF; font-weight: 600; text-transform: uppercase">💎 Platinum</div>
+							<div style="font-size: 24px; font-weight: 700; color: #1E40AF; margin-top: 4px">{memberStats.platinum}</div>
+						</div>
+					</div>
+
+					<!-- Toolbar -->
+					<div class="rounded-2xl p-4 mb-4 flex items-center gap-3" style="background: #fff; border: 1px solid #E2E8F0">
+						<input
+							type="text"
+							bind:value={memberSearch}
+							placeholder="🔍 Cari nama, HP, ID, email..."
+							class="flex-1 px-3 py-2 rounded-lg"
+							style="font-size: 13px; border: 1px solid #E2E8F0"
+						/>
+						<select
+							bind:value={memberTierFilter}
+							class="px-3 py-2 rounded-lg"
+							style="font-size: 13px; border: 1px solid #E2E8F0; min-width: 120px"
+						>
+							<option value="all">Semua Tier</option>
+							<option value="Silver">🥈 Silver</option>
+							<option value="Gold">🥇 Gold</option>
+							<option value="Platinum">💎 Platinum</option>
+						</select>
+						<select
+							bind:value={memberSortBy}
+							class="px-3 py-2 rounded-lg"
+							style="font-size: 13px; border: 1px solid #E2E8F0; min-width: 140px"
+						>
+							<option value="name">Urut: Nama (A-Z)</option>
+							<option value="points">Urut: Poin Terbanyak</option>
+							<option value="lifetime">Urut: Lifetime Terbanyak</option>
+							<option value="recent">Urut: Transaksi Terbaru</option>
+						</select>
+						<button
+							onclick={openCreateMember}
+							class="px-4 py-2 rounded-lg text-white font-semibold"
+							style="background: #2563EB; font-size: 13px"
+						>
+							➕ Tambah Member
+						</button>
+					</div>
+
+					<!-- Member table -->
+					<div class="rounded-2xl" style="background: #fff; border: 1px solid #E2E8F0; overflow: hidden">
+						<div class="overflow-x-auto">
+							<table class="w-full" style="font-size: 13px">
+								<thead>
+									<tr style="background: #F8FAFC; border-bottom: 1px solid #E2E8F0">
+										<th class="text-left py-3 px-4" style="font-weight: 600; color: #475569">ID</th>
+										<th class="text-left py-3 px-4" style="font-weight: 600; color: #475569">Nama</th>
+										<th class="text-left py-3 px-4" style="font-weight: 600; color: #475569">No. HP</th>
+										<th class="text-left py-3 px-4" style="font-weight: 600; color: #475569">Tier</th>
+										<th class="text-right py-3 px-4" style="font-weight: 600; color: #475569">Poin</th>
+										<th class="text-right py-3 px-4" style="font-weight: 600; color: #475569">Lifetime</th>
+										<th class="text-left py-3 px-4" style="font-weight: 600; color: #475569">Tx Terakhir</th>
+										<th class="text-center py-3 px-4" style="font-weight: 600; color: #475569">Aksi</th>
+									</tr>
+								</thead>
+								<tbody>
+									{#each filteredMembers as m (m.id)}
+										<tr style="border-bottom: 1px solid #F1F5F9" class="hover:bg-gray-50">
+											<td class="py-3 px-4">
+												<code style="background: #F1F5F9; padding: 2px 6px; border-radius: 3px; font-size: 11px">{m.id}</code>
+											</td>
+											<td class="py-3 px-4" style="font-weight: 600; color: #0F172A">{m.name}</td>
+											<td class="py-3 px-4" style="color: #64748B">{m.phone}</td>
+											<td class="py-3 px-4">
+												<TierBadge tier={m.tier} size="sm" />
+											</td>
+											<td class="py-3 px-4 text-right" style="font-weight: 600; color: #2563EB">{m.points}</td>
+											<td class="py-3 px-4 text-right" style="color: #64748B">{fmtIDR(m.lifetime_spend ?? 0)}</td>
+											<td class="py-3 px-4" style="color: #64748B; font-size: 12px">
+												{m.last_transaction_at
+													? new Date(m.last_transaction_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: '2-digit' })
+													: '—'}
+											</td>
+											<td class="py-3 px-4">
+												<div class="flex items-center justify-center gap-1">
+													<button
+														onclick={() => openViewMember(m)}
+														class="px-2 py-1 rounded text-xs"
+														style="background: #DBEAFE; color: #1E40AF; font-weight: 600"
+														title="Lihat detail"
+													>
+														👁️
+													</button>
+													<button
+														onclick={() => openEditMember(m)}
+														class="px-2 py-1 rounded text-xs"
+														style="background: #FEF3C7; color: #92400E; font-weight: 600"
+														title="Edit"
+													>
+														✏️
+													</button>
+													<button
+														onclick={() => handleDeleteMember(m)}
+														class="px-2 py-1 rounded text-xs"
+														style="background: #FEE2E2; color: #991B1B; font-weight: 600"
+														title="Hapus"
+													>
+														🗑️
+													</button>
+												</div>
+											</td>
+										</tr>
+									{/each}
+									{#if filteredMembers.length === 0}
+										<tr>
+											<td colspan="8" class="py-8 text-center" style="color: #94A3B8">
+												{memberSearch || memberTierFilter !== 'all'
+													? 'Tidak ada member yang cocok dengan filter'
+													: 'Belum ada member. Klik "➕ Tambah Member" untuk membuat.'}
+											</td>
+										</tr>
+									{/if}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
 			{/if}
 		{/if}
 	</main>
@@ -863,6 +1095,50 @@
 		}}
 		showToast={showToast}
 	/>
+
+	<!-- ── Member Form modal (Fase E) ─────────────────────────────────────────── -->
+	{#if showMemberForm}
+		<MemberForm
+			member={editingMember}
+			onsave={handleSaveMember}
+			onclose={() => {
+				showMemberForm = false;
+				editingMember = null;
+			}}
+			showToast={showMemberToast}
+		/>
+	{/if}
+
+	<!-- ── Member Detail modal (Fase E) ───────────────────────────────────────── -->
+	{#if viewingMember}
+		<MemberDetail
+			member={viewingMember}
+			onclose={() => (viewingMember = null)}
+			onedit={(m) => {
+				viewingMember = null;
+				editingMember = m;
+				showMemberForm = true;
+			}}
+			showToast={showMemberToast}
+		/>
+	{/if}
+
+	<!-- ── Member toast (Fase E) ──────────────────────────────────────────────── -->
+	{#if memberToast}
+		<div
+			class="fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-2xl"
+			style="
+				background: {memberToast.kind === 'success' ? '#10B981' : memberToast.kind === 'error' ? '#DC2626' : '#2563EB'};
+				color: white;
+				font-size: 13px;
+				font-weight: 600;
+				z-index: 2000;
+				max-width: 400px;
+			"
+		>
+			{memberToast.kind === 'success' ? '✓' : memberToast.kind === 'error' ? '✕' : 'ⓘ'} {memberToast.msg}
+		</div>
+	{/if}
 </div>
 
 <style>

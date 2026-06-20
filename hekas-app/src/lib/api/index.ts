@@ -15,6 +15,7 @@ import * as auth from './auth.js';
 export { products, members, transactions, analytics, auth };
 export * from './types.js';
 export type { ClosingReport, ClosingReportFilter } from './transactions.js';
+export type { MemberStats, AdjustPointsInput, UpdateMemberInput } from './members.js';
 export { seedIfEmpty, storage } from './storage.js';
 
 // Grouped namespace untuk import yang lebih ergonomis:
