@@ -101,6 +101,49 @@ export async function updateProduct(id: number, patch: Partial<CreateProductInpu
   return updated;
 }
 
+// ─── Fase F: image operations ────────────────────────────────────────────────
+export interface ProductImageMeta {
+  image_data: string;
+  image_mime: string;
+  image_size: number;
+  image_width: number;
+  image_height: number;
+}
+
+export async function setProductImage(id: number, meta: ProductImageMeta): Promise<Product> {
+  seedIfEmpty();
+  await delay();
+  const all = storage.get<Product[]>('products', []);
+  const idx = all.findIndex((p) => p.id === id);
+  if (idx === -1) throw new Error(`Produk #${id} tidak ditemukan`);
+
+  all[idx] = {
+    ...all[idx],
+    image_data: meta.image_data,
+    image_mime: meta.image_mime,
+    image_size: meta.image_size,
+    image_width: meta.image_width,
+    image_height: meta.image_height,
+    image_updated_at: new Date().toISOString(),
+  };
+  storage.set('products', all);
+  return all[idx];
+}
+
+export async function removeProductImage(id: number): Promise<Product> {
+  seedIfEmpty();
+  await delay();
+  const all = storage.get<Product[]>('products', []);
+  const idx = all.findIndex((p) => p.id === id);
+  if (idx === -1) throw new Error(`Produk #${id} tidak ditemukan`);
+
+  // Hapus field image_data* tapi keep emoji fallback
+  const { image_data, image_mime, image_size, image_width, image_height, image_updated_at, ...rest } = all[idx];
+  all[idx] = rest as Product;
+  storage.set('products', all);
+  return all[idx];
+}
+
 // ─── update stock (dipakai transaksi & restock gudang) ─────────────────────
 export async function updateStock(id: number, delta: number): Promise<Product> {
   seedIfEmpty();

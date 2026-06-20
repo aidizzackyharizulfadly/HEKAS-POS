@@ -99,6 +99,11 @@
 		stock: number;
 		unit: string;
 		image: string;
+		image_data?: string;
+		image_mime?: string;
+		image_size?: number;
+		image_width?: number;
+		image_height?: number;
 	}
 
 	interface CartItem extends Product {
@@ -143,6 +148,7 @@
 	let showPrintPreview = $state(false);
 	let showClosingShift = $state(false);
 	let showSettings = $state(false);
+	let lightboxImage = $state<string | null>(null);
 	let showShortcuts = $state(false);
 	let toast = $state<{ kind: 'success' | 'error' | 'info'; text: string } | null>(null);
 
@@ -944,10 +950,27 @@
 										style="background-image: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.4) 0%, transparent 60%);"
 									></div>
 
-									<!-- Product emoji/image -->
-									<span class="relative" style="font-size: 56px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', system-ui">
-										{product.image}
-									</span>
+									<!-- Product image (real or emoji fallback) -->
+									{#if product.image_data}
+										<button
+											class="absolute inset-0 w-full h-full p-0"
+											style="background: transparent; border: none; cursor: zoom-in"
+											onclick={() => (lightboxImage = product.image_data ?? null)}
+											title="Klik untuk zoom"
+										>
+											<img
+												src={product.image_data}
+												alt={product.name}
+												class="w-full h-full"
+												style="object-fit: cover; display: block"
+												loading="lazy"
+											/>
+										</button>
+									{:else}
+										<span class="relative" style="font-size: 56px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', system-ui">
+											{product.image}
+										</span>
+									{/if}
 
 									<!-- Stok badge bottom-left (overlay on image) -->
 									<div
@@ -1992,7 +2015,25 @@
 								open={showShortcuts}
 								onClose={() => { showShortcuts = false; }}
 							/>
-						</div>
+							</div>
+
+							<!-- Fase F: Lightbox modal (zoom product image) -->
+							{#if lightboxImage}
+							<div
+								class="fixed inset-0 z-[9999] flex items-center justify-center"
+								style="background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); cursor: zoom-out"
+								onclick={() => (lightboxImage = null)}
+								onkeydown={(e) => { if (e.key === 'Escape') lightboxImage = null; }}
+								role="button"
+								tabindex="-1"
+							>
+								<img
+									src={lightboxImage}
+									alt="Product zoom"
+									style="max-width: 90vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); cursor: default"
+								/>
+							</div>
+							{/if}
 
 						<style>
 				/* ── Product card: subtle hover lift + active press ───────────────────── */

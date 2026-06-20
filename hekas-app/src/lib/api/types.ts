@@ -11,8 +11,15 @@ export interface Product {
   barcode: string;
   stock: number;
   unit: string;        // btl | pcs | kg | ltr | bks
-  image: string;       // emoji
+  image: string;       // emoji (fallback)
   is_active: boolean;
+  // ── Fase F additions (optional) ──────────────────────────────────────────
+  image_data?: string;     // base64 dataURL (image/png or image/jpeg)
+  image_mime?: string;     // image/png, image/jpeg
+  image_size?: number;     // bytes
+  image_width?: number;    // px
+  image_height?: number;   // px
+  image_updated_at?: string;  // ISO timestamp
 }
 
 export interface Member {

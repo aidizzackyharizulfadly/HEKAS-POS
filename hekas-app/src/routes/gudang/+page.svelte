@@ -4,7 +4,9 @@
 	import { fade, scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { api } from '$lib/api';
-	import type { Product } from '$lib/api';
+	import type { Product, ProductImageMeta } from '$lib/api';
+	import ImageUploader from '$lib/components/ImageUploader.svelte';
+	import { getStorageQuota, formatBytes } from '$lib/image';
 
 	// ─── State ──────────────────────────────────────────────────────────────────
 	type TabId = 'inventaris' | 'mutasi';
@@ -37,6 +39,12 @@
 	let mutasiReason = $state('restock');
 
 	let toast = $state<{ kind: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+	// ─── Fase F: Image upload state ─────────────────────────────────────────────
+	let imageUploadingFor = $state<number | null>(null);
+	let lightboxImage = $state<string | null>(null);
+	const storageQuota = $derived(getStorageQuota());
+	const quotaPercent = $derived(Math.round(storageQuota.percentUsed * 100));
 
 	// ─── Helpers ────────────────────────────────────────────────────────────────
 	const fmt = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
@@ -72,6 +80,40 @@
 		} finally {
 			loading = false;
 		}
+	}
+
+	// ─── Fase F: Image upload handlers ──────────────────────────────────────────
+	async function handleSaveImage(productId: number, meta: ProductImageMeta) {
+		try {
+			const updated = await api.products.setProductImage(productId, meta);
+			// Update local list
+			const idx = products.findIndex((p) => p.id === productId);
+			if (idx >= 0) products[idx] = updated;
+			imageUploadingFor = null;
+			showToast('success', `Image produk #${productId} berhasil disimpan (${formatBytes(meta.image_size)})`);
+		} catch (e: any) {
+			showToast('error', e.message ?? 'Gagal menyimpan image');
+		}
+	}
+
+	async function handleRemoveImage(productId: number) {
+		try {
+			const updated = await api.products.removeProductImage(productId);
+			const idx = products.findIndex((p) => p.id === productId);
+			if (idx >= 0) products[idx] = updated;
+			imageUploadingFor = null;
+			showToast('success', 'Image dihapus, kembali ke emoji');
+		} catch (e: any) {
+			showToast('error', e.message ?? 'Gagal menghapus image');
+		}
+	}
+
+	function openImageUploader(productId: number) {
+		imageUploadingFor = productId;
+	}
+
+	function showLightbox(imageData: string) {
+		lightboxImage = imageData;
 	}
 
 	onMount(loadAll);
@@ -243,7 +285,8 @@
 				Gudang Utama •
 				<strong style="color: #059669">{stats.total}</strong> produk aktif ·
 				<strong style="color: {stats.outOfStock > 0 ? '#DC2626' : '#64748B'}">{stats.outOfStock}</strong> habis ·
-				<strong style="color: {stats.lowStock > 0 ? '#F59E0B' : '#64748B'}">{stats.lowStock}</strong> hampir habis
+				<strong style="color: {stats.lowStock > 0 ? '#F59E0B' : '#64748B'}">{stats.lowStock}</strong> hampir habis ·
+				<strong style="color: {storageQuota.productsImageCount > 0 ? '#2563EB' : '#94A3B8'}">🖼️ {storageQuota.productsImageCount}</strong> dengan foto
 			</p>
 		</div>
 		<div class="flex items-center gap-2">
@@ -358,7 +401,18 @@
 									<tr style="border-top: 1px solid #F1F5F9; opacity: {p.is_active ? 1 : 0.45}">
 										<td class="py-2 px-3">
 											<div class="flex items-center gap-2">
-												<span style="font-size: 18px">{p.image}</span>
+												{#if p.image_data}
+													<button
+														onclick={() => showLightbox(p.image_data!)}
+														class="shrink-0 rounded-md overflow-hidden"
+														style="width: 36px; height: 36px; background: #F1F5F9; border: 1px solid #E2E8F0; padding: 0; cursor: zoom-in"
+														title="Klik untuk zoom"
+													>
+														<img src={p.image_data} alt={p.name} style="width: 100%; height: 100%; object-fit: cover; display: block" />
+													</button>
+												{:else}
+													<span style="font-size: 18px">{p.image}</span>
+												{/if}
 												<div>
 													<div style="font-weight: 600; color: #0F172A">{p.name}</div>
 													<div style="font-size: 10px; color: #94A3B8; font-family: 'SF Mono', Monaco, monospace">{p.barcode}</div>
@@ -379,7 +433,15 @@
 											<span style="font-size: 10px; padding: 2px 8px; border-radius: 999px; background: {STATUS_CFG[st].bg}; color: {STATUS_CFG[st].fg}; font-weight: 700">{STATUS_CFG[st].label}</span>
 										</td>
 										<td class="py-2 px-3 text-right">
-											<button onclick={() => openEdit(p)} class="px-2 py-1 rounded" style="font-size: 11px; background: #EFF6FF; color: #2563EB; font-weight: 600">Edit</button>
+											<button
+												onclick={() => openImageUploader(p.id)}
+												class="px-2 py-1 rounded"
+												style="font-size: 11px; background: {p.image_data ? '#D1FAE5' : '#FEF3C7'}; color: {p.image_data ? '#065F46' : '#92400E'}; font-weight: 600"
+												title={p.image_data ? 'Ganti image' : 'Upload image'}
+											>
+												{p.image_data ? '🖼️ Ganti' : '🖼️ Upload'}
+											</button>
+											<button onclick={() => openEdit(p)} class="px-2 py-1 rounded ml-1" style="font-size: 11px; background: #EFF6FF; color: #2563EB; font-weight: 600">Edit</button>
 											{#if p.is_active}
 												<button onclick={() => deactivateProduct(p)} class="px-2 py-1 rounded ml-1" style="font-size: 11px; background: #FEE2E2; color: #DC2626; font-weight: 600">Nonaktif</button>
 											{/if}
@@ -628,12 +690,45 @@
 			{#if toast.kind === 'success'}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
 			{:else if toast.kind === 'error'}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
 			{:else}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{/if}
-			<span style="flex: 1">{toast.text}</span>
-		</div>
-	{/if}
-</div>
+				<span style="flex: 1">{toast.text}</span>
+			</div>
+			{/if}
 
-<style>
+			<!-- ── Fase F: Image Uploader modal ─────────────────────────────────────────── -->
+			{#if imageUploadingFor !== null}
+			{@const uploadProduct = products.find((p) => p.id === imageUploadingFor)}
+			{#if uploadProduct}
+				<ImageUploader
+					productId={imageUploadingFor}
+					currentImage={uploadProduct.image_data ?? null}
+					onsave={(meta) => handleSaveImage(imageUploadingFor!, meta)}
+					onremove={() => handleRemoveImage(imageUploadingFor!)}
+					onclose={() => (imageUploadingFor = null)}
+					showToast={(kind, msg) => showToast(kind, msg)}
+				/>
+			{/if}
+			{/if}
+
+			<!-- ── Fase F: Lightbox modal ───────────────────────────────────────────────── -->
+			{#if lightboxImage}
+				<div
+					class="fixed inset-0 z-[2000] flex items-center justify-center"
+					style="background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); cursor: zoom-out"
+					onclick={() => (lightboxImage = null)}
+					onkeydown={(e) => { if (e.key === 'Escape') lightboxImage = null; }}
+					role="button"
+					tabindex="-1"
+				>
+					<img
+						src={lightboxImage}
+						alt="Product"
+						style="max-width: 90vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); cursor: default"
+					/>
+				</div>
+			{/if}
+			</div>
+
+			<style>
 	@keyframes spin {
 		from { transform: rotate(0deg); }
 		to { transform: rotate(360deg); }
