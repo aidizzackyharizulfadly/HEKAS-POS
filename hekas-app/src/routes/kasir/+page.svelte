@@ -4,10 +4,12 @@
 	import { cubicOut } from 'svelte/easing';
 	import { api } from '$lib/api';
 	import type { Product, Member, CartItem, HeldTransaction, User, CheckoutResult, Transaction } from '$lib/api';
+	import type { PaymentMethod as PaymentMethodFull } from '$lib/payment';
 	import PrintPreview from '$lib/components/PrintPreview.svelte';
 	import ClosingShift from '$lib/components/ClosingShift.svelte';
 	import SettingsPanel from '$lib/components/SettingsPanel.svelte';
 	import ShortcutsHelp from '$lib/components/ShortcutsHelp.svelte';
+	import PaymentForm from '$lib/components/PaymentForm.svelte';
 	import { loadSettings, printReceipt } from '$lib/print';
 	import { onMount } from 'svelte';
 	import { registerShortcut, unregisterShortcut, startListening, stopListening } from '$lib/shortcuts';
@@ -27,6 +29,8 @@
 	let globalDisc = $state(0);
 	let discInput = $state('');
 	let numpadTarget = $state<number | null>(null);
+	// Fase 5: Multi-payment split
+	let paymentFormOpen = $state(false);
 	let numpadValue = $state('');
 	let now = $state(new Date());
 
@@ -400,6 +404,63 @@
 			}
 		} catch (e: any) {
 			showToast('error', e.message ?? 'Checkout gagal');
+		} finally {
+			processing = false;
+		}
+	}
+
+	// Fase 5: handler utk PaymentForm (multi-payment split)
+	async function handlePaymentSplit(methods: PaymentMethodFull[]) {
+		if (cart.length === 0 || processing) return;
+		processing = true;
+		try {
+			const totalPaid = methods.reduce((s, m) => s + m.amount, 0);
+			const result = await api.transactions.checkout({
+				user_id: currentUser?.id ?? 1,
+				outlet_id: currentUser?.outlet_id ?? undefined,
+				member_id: member?.id ?? null,
+				items: cart.map((c) => ({
+					product_id: c.id,
+					qty: c.qty,
+					disc_pct: c.disc,
+				})),
+				discount_pct: globalDisc,
+				paid: totalPaid,
+				payments: methods,
+			});
+			lastReceipt = result;
+			lastReceiptTx = await api.transactions.getTransaction(result.id);
+			await Promise.all([refreshProducts(), refreshMembers(), refreshHeld()]);
+			clearCart();
+			paymentFormOpen = false;
+			modal = 'receipt';
+
+			// Toast spesifik untuk split
+			if (result.is_split) {
+				showToast('success', `Split ${methods.length} metode: ${result.invoice_no}`);
+			} else {
+				showToast('success', `Transaksi ${result.invoice_no} berhasil`);
+			}
+
+			// Auto-print (di background, jangan block modal receipt)
+			const settings = loadSettings();
+			if (settings.auto_print && lastReceiptTx) {
+				setTimeout(async () => {
+					try {
+						const r = await printReceipt(lastReceiptTx!);
+						if (!r.ok && r.method !== 'cancelled') {
+							showToast('error', `Auto-print gagal: ${r.message ?? 'unknown'}`);
+						}
+					} catch (printErr) {
+						// Silent fail — modal receipt sudah tampil
+						console.warn('Auto-print error:', printErr);
+					}
+				}, 300);
+			}
+		} catch (e: any) {
+			showToast('error', e.message ?? 'Checkout gagal');
+			// Tidak throw — modal receipt sudah di-set SEBELUM error ini terjadi
+			// (error kemungkinan dari printReceipt di background)
 		} finally {
 			processing = false;
 		}
@@ -1586,6 +1647,24 @@
 					{/if}
 
 					<button
+						type="button"
+						onclick={() => { modal = 'none'; paymentFormOpen = true; }}
+						class="w-full py-3 rounded-2xl flex items-center justify-center gap-2 transition-all mb-2"
+						style="
+							background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+							color: #fff;
+							font-size: 13;
+							font-weight: 700;
+							box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+						"
+					>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+							<line x1="12" y1="5" x2="12" y2="19" />
+							<line x1="5" y1="12" x2="19" y2="12" />
+						</svg>
+						Split Bayar (Multi-Payment)
+					</button>
+					<button
 						onclick={processCheckout}
 						disabled={processing}
 						class="w-full py-4 rounded-2xl flex items-center justify-center gap-2 transition-all"
@@ -1993,6 +2072,16 @@
 						bind:open={showPrintPreview}
 						transaction={lastReceiptTx}
 						onclose={() => { showPrintPreview = false; }}
+					/>
+				{/if}
+
+				<!-- Fase 5: Multi-payment split form -->
+				{#if paymentFormOpen}
+					<PaymentForm
+						grandTotal={total}
+						onConfirm={handlePaymentSplit}
+						onCancel={() => { paymentFormOpen = false; lastTriggerEl?.focus(); }}
+						disabled={processing}
 					/>
 				{/if}
 

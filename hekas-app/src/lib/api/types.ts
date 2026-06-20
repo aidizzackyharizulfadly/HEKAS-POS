@@ -126,8 +126,19 @@ export interface CheckoutInput {
   member_id?: string | null;
   items: { product_id: number; qty: number; disc_pct?: number }[];
   discount_pct?: number;
+  /** Total dibayar (legacy: jumlah uang tunai customer) */
   paid: number;
-  payment_method: 'tunai' | 'qris' | 'debit';
+  /**
+   * Single payment (legacy): 'tunai' | 'qris' | 'debit' | 'kredit' | 'transfer' | 'ewallet'.
+   * Tetap diterima. Jika `payments` juga diisi, yang dipakai adalah `payments`.
+   */
+  payment_method?: 'tunai' | 'qris' | 'debit' | 'kredit' | 'transfer' | 'ewallet';
+  /**
+   * Multi-payment split (Fase 5). Array of PaymentMethod.
+   * Length 1 = sama dgn single payment.
+   * Length > 1 = split (mis. cash 50rb + QRIS 30rb untuk total 80rb).
+   */
+  payments?: import('../payment.js').PaymentMethod[];
   note?: string;
 }
 
@@ -141,6 +152,13 @@ export interface CheckoutResult {
   paid: number;
   change_amt: number;
   payment_method: string;
+  /**
+   * Fase 5: detail split payment.
+   * Untuk tx single-payment, array berisi 1 entry.
+   */
+  payments?: import('../payment.js').PaymentMethod[];
+  /** true jika payments.length > 1 */
+  is_split?: boolean;
   member_id: string | null;
   points_earned: number;
   updated_member: Member | null;
@@ -158,7 +176,19 @@ export interface Transaction {
   total: number;
   paid: number;
   change_amt: number;
+  /**
+   * Legacy: single payment method string.
+   * Untuk tx multi-payment, ini = metode pertama (utama).
+   * Untuk audit akurat, baca `payments` (array).
+   */
   payment_method: string;
+  /**
+   * Fase 5: detail split payment. Optional untuk backward-compat dgn tx lama.
+   * Jika undefined (tx legacy), gunakan `payment_method` tunggal.
+   */
+  payments?: import('../payment.js').PaymentMethod[];
+  /** true jika payments.length > 1 */
+  is_split?: boolean;
   status: 'completed' | 'void' | 'held';
   note: string | null;
   created_at: string;

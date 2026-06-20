@@ -10,6 +10,10 @@ import type {
 import { TIER_CONFIG } from './types.js';
 import { storage, seedIfEmpty, genInvoiceNo, genHoldId } from './storage.js';
 import { recordTransaction } from './members.js';
+import type { PaymentMethod, PaymentSplitSummary } from '../payment.js';
+import {
+  validatePaymentSplit, summarizePayments, PAYMENT_METHOD_NEEDS_TENDERED,
+} from '../payment.js';
 
 const delay = (ms = 20) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -43,11 +47,43 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
   const discountPct = input.discount_pct ?? 0;
   const discountAmt = Math.round((subtotal * discountPct) / 100);
   const total = subtotal - discountAmt;
-  const changeAmt = Math.max(0, input.paid - total);
 
-  if (input.payment_method === 'tunai' && input.paid < total) {
-    throw new Error(`Bayar kurang: Rp ${input.paid.toLocaleString('id-ID')} < Rp ${total.toLocaleString('id-ID')}`);
+  // ─── Normalisasi payment: legacy single → array, multi → array ─────────
+  let payments: PaymentMethod[];
+  if (input.payments && input.payments.length > 0) {
+    // Multi-payment path (Fase 5)
+    payments = input.payments;
+  } else {
+    // Legacy single-payment path
+    const method = input.payment_method;
+    if (!method) {
+      throw new Error('Metode pembayaran harus diisi');
+    }
+    // Hitung change untuk tunai: paid >= total, change = paid - total
+    const tendered = PAYMENT_METHOD_NEEDS_TENDERED.includes(method as any)
+      ? input.paid
+      : undefined;
+    const change = method === 'tunai'
+      ? Math.max(0, input.paid - total)
+      : 0;
+    payments = [{
+      id: 'pm_' + Math.random().toString(36).slice(2, 10),
+      kind: method,
+      amount: total,
+      tendered,
+      change,
+      paid_at: new Date().toISOString(),
+    }];
   }
+
+  // Validasi split
+  validatePaymentSplit(payments, total);
+
+  // Hitung summary
+  const summary: PaymentSplitSummary = summarizePayments(payments);
+  const paidTotal = summary.total_paid;
+  const changeAmt = summary.total_change;
+  const primaryMethod = payments[0].kind;
 
   // ─── Persist: decrement stocks + write tx ───────────────────────────────
   const updatedProducts = products.map((p) => {
@@ -70,9 +106,11 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
     discount_pct: discountPct,
     discount_amt: discountAmt,
     total,
-    paid: input.paid,
+    paid: paidTotal,
     change_amt: changeAmt,
-    payment_method: input.payment_method,
+    payment_method: primaryMethod,
+    payments,
+    is_split: summary.is_split,
     status: 'completed',
     note: input.note ?? null,
     created_at: new Date().toISOString(),
@@ -121,9 +159,11 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
     discount_pct: discountPct,
     discount_amt: discountAmt,
     total,
-    paid: input.paid,
+    paid: paidTotal,
     change_amt: changeAmt,
-    payment_method: input.payment_method,
+    payment_method: primaryMethod,
+    payments,
+    is_split: summary.is_split,
     member_id: input.member_id ?? null,
     points_earned: pointsEarned,
     updated_member: updatedMember,
@@ -138,6 +178,31 @@ export interface ListTxFilter {
   payment?: string;
   status?: 'completed' | 'void' | 'held';
   limit?: number;
+}
+
+/**
+ * Inflate legacy tx (tanpa field `payments`) jadi tx dgn payments array.
+ * Backward-compat: tx lama yg cuma punya `payment_method` (string) di-translate
+ * jadi payments = [{ kind: payment_method, amount: paid, ... }]
+ */
+function inflateLegacyPayments(tx: Transaction): Transaction {
+  if (tx.payments && tx.payments.length > 0) {
+    return tx; // sudah multi-payment format
+  }
+  // legacy single → inflate ke array 1-entry
+  const kind = tx.payment_method as PaymentMethod['kind'];
+  return {
+    ...tx,
+    payments: [{
+      id: 'pm_legacy_' + tx.id,
+      kind,
+      amount: tx.paid,
+      tendered: kind === 'tunai' ? tx.paid : undefined,
+      change: tx.change_amt,
+      paid_at: tx.created_at,
+    }],
+    is_split: false,
+  };
 }
 
 export async function listTransactions(filter: ListTxFilter = {}): Promise<Transaction[]> {
@@ -156,6 +221,7 @@ export async function listTransactions(filter: ListTxFilter = {}): Promise<Trans
       if (filter.status && t.status !== filter.status) return false;
       return true;
     })
+    .map(inflateLegacyPayments)
     .map((t) => ({
       ...t,
       user_name: users.find((u) => u.id === t.user_id)?.full_name ?? '—',
@@ -173,10 +239,10 @@ export async function getTransaction(id: number | string): Promise<Transaction |
   const found = all.find((t) => t.id === Number(id) || t.invoice_no === id);
   if (!found) return null;
   const users = storage.get<any[]>('users', []);
-  return {
+  return inflateLegacyPayments({
     ...found,
     user_name: users.find((u) => u.id === found.user_id)?.full_name ?? '—',
-  };
+  });
 }
 
 // ─── void ───────────────────────────────────────────────────────────────────

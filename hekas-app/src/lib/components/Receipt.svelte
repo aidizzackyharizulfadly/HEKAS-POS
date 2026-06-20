@@ -2,6 +2,7 @@
 	import type { Transaction } from '$lib/api';
 	import type { StoreSettings } from '$lib/print';
 	import { DEFAULT_STORE_SETTINGS } from '$lib/print';
+	import { PAYMENT_METHOD_LABEL } from '$lib/payment';
 
 	interface Props {
 		transaction: Transaction;
@@ -18,9 +19,14 @@
 		hour: '2-digit', minute: '2-digit',
 	});
 
-	const methodLabel: Record<string, string> = {
+	const legacyMethodLabel: Record<string, string> = {
 		tunai: 'TUNAI', qris: 'QRIS', debit: 'KARTU DEBIT',
 	};
+
+	// Fase 5: payments selalu ter-inflate (legacy single di-translate jadi array 1-entry)
+	// oleh transactions.listTransactions/getTransaction, jadi kita aman baca tx.payments
+	const payments = $derived(tx.payments ?? []);
+	const isSplit = $derived(tx.is_split ?? payments.length > 1);
 </script>
 
 <!-- Receipt rendered as thermal-style receipt. CSS print rules in app.css handle window.print(). -->
@@ -120,10 +126,43 @@
 		<div style="display: flex; justify-content: space-between; font-size: 1.3em; font-weight: 900; margin: 4px 0">
 			<span>TOTAL</span><span>{fmt(tx.total)}</span>
 		</div>
-		<div style="display: flex; justify-content: space-between">
-			<span>Bayar ({methodLabel[tx.payment_method] ?? tx.payment_method})</span>
-			<span>{fmt(tx.paid)}</span>
-		</div>
+		<!-- Fase 5: payment breakdown (single ATAU multi-split) -->
+		{#if isSplit}
+			<div style="font-size: 0.92em; font-weight: 700; margin-top: 4px">Pembayaran (Split):</div>
+			{#each payments as p}
+				<div style="display: flex; justify-content: space-between; font-size: 0.92em; padding-left: 6px">
+					<span>• {PAYMENT_METHOD_LABEL[p.kind] ?? legacyMethodLabel[p.kind] ?? p.kind}{p.label ? ` (${p.label})` : ''}</span>
+					<span>{fmt(p.amount)}</span>
+				</div>
+				{#if p.reference}
+					<div style="font-size: 0.78em; color: #64748B; padding-left: 12px">Ref: {p.reference}</div>
+				{/if}
+			{/each}
+			<div style="display: flex; justify-content: space-between; margin-top: 2px">
+				<span>Total Bayar</span><span>{fmt(tx.paid)}</span>
+			</div>
+		{:else if payments.length === 1}
+			{@const p = payments[0]}
+			<div style="display: flex; justify-content: space-between">
+				<span>Bayar ({PAYMENT_METHOD_LABEL[p.kind] ?? legacyMethodLabel[p.kind] ?? p.kind})</span>
+				<span>{fmt(p.amount)}</span>
+			</div>
+			{#if p.reference}
+				<div style="font-size: 0.85em; color: #64748B">Ref: {p.reference}</div>
+			{/if}
+			{#if p.tendered !== undefined && p.tendered > p.amount}
+				<div style="display: flex; justify-content: space-between; font-size: 0.92em">
+					<span style="padding-left: 8px">Disetor</span>
+					<span>{fmt(p.tendered)}</span>
+				</div>
+			{/if}
+		{:else}
+			<!-- Fallback (legacy tx, payments belum ter-inflate) -->
+			<div style="display: flex; justify-content: space-between">
+				<span>Bayar ({legacyMethodLabel[tx.payment_method] ?? tx.payment_method})</span>
+				<span>{fmt(tx.paid)}</span>
+			</div>
+		{/if}
 		{#if tx.change_amt > 0}
 			<div style="display: flex; justify-content: space-between">
 				<span>Kembali</span><span>{fmt(tx.change_amt)}</span>
