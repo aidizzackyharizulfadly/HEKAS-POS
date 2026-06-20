@@ -1,0 +1,40 @@
+# Node / Bun
+node_modules/
+*.log
+npm-debug.log*
+bun-debug.log*
+
+# Build outputs
+dist/
+build/
+.vite/
+.svelte-kit/
+.next/
+
+# Env files (jangan commit credentials)
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python (jika ada)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Heavy/temp files (bisa di-archive terpisah)
+*.zip.bak
+*.tmp
+
+# Bun
+.bun/

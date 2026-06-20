@@ -1,0 +1,312 @@
+<!DOCTYPE html><html class="light" lang="id" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Hekas POS - Pengaturan Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#dce9ff",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "secondary": "#5c5f61",
+                        "inverse-surface": "#213145",
+                        "on-primary-fixed-variant": "#173bab",
+                        "secondary-fixed": "#e0e3e5",
+                        "outline-variant": "#c4c5d5",
+                        "secondary-fixed-dim": "#c4c7c9",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#e0e3e5",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#003272",
+                        "surface-tint": "#3755c3",
+                        "surface-dim": "#cbdbf5",
+                        "primary-fixed": "#dde1ff",
+                        "surface": "#f8f9ff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-primary-container": "#a8b8ff",
+                        "tertiary-container": "#00489e",
+                        "surface-variant": "#d3e4fe",
+                        "tertiary-fixed": "#d8e2ff",
+                        "surface-container": "#e5eeff",
+                        "on-tertiary-container": "#9cbbff",
+                        "background": "#f8f9ff",
+                        "on-tertiary-fixed-variant": "#004395",
+                        "on-secondary-fixed-variant": "#444749",
+                        "on-surface-variant": "#444653",
+                        "primary": "#00288e",
+                        "tertiary-fixed-dim": "#adc6ff",
+                        "primary-fixed-dim": "#b8c4ff",
+                        "on-secondary-fixed": "#191c1e",
+                        "on-primary-fixed": "#001453",
+                        "error": "#ba1a1a",
+                        "outline": "#757684",
+                        "on-background": "#0b1c30",
+                        "surface-container-low": "#eff4ff",
+                        "primary-container": "#1e40af",
+                        "on-tertiary-fixed": "#001a42",
+                        "on-surface": "#0b1c30",
+                        "on-secondary-container": "#626567",
+                        "inverse-primary": "#b8c4ff",
+                        "inverse-on-surface": "#eaf1ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "container-sidebar": "80px",
+                        "margin-page": "24px",
+                        "gutter": "16px",
+                        "container-cart": "380px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "numeral-xl": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "700"}],
+                        "numeral-xl": ["36px", {"lineHeight": "44px", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .main-viewport { height: 100vh; overflow: hidden; }
+    </style>
+</head>
+<body class="text-on-background main-viewport flex overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-[80px] h-full flex flex-col border-r border-outline-variant bg-surface-container-lowest z-50 py-6 items-center gap-8 shrink-0">
+<div class="text-headline-md font-black text-primary mb-4">H</div>
+<nav class="flex flex-col items-center gap-6 w-full">
+<button class="text-on-surface-variant hover:text-primary p-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors duration-150 w-[60px] rounded-xl"><span class="material-symbols-outlined">home</span><span class="text-[10px]">Beranda</span></button>
+<button class="text-on-surface-variant hover:text-primary p-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors duration-150 w-[60px] rounded-xl"><span class="material-symbols-outlined">receipt</span><span class="text-[10px]">Penjualan</span></button>
+<button class="text-on-surface-variant hover:text-primary p-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors duration-150 w-[60px] rounded-xl"><span class="material-symbols-outlined">inventory_2</span><span class="text-[10px]">Inventaris</span></button>
+<button class="text-on-surface-variant hover:text-primary p-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors duration-150 w-[60px] rounded-xl"><span class="material-symbols-outlined">payments</span><span class="text-[10px]">Keuangan</span></button>
+<button class="text-on-surface-variant hover:text-primary p-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors duration-150 w-[60px] rounded-xl"><span class="material-symbols-outlined">group</span><span class="text-[10px]">Karyawan</span></button>
+<button class="text-on-surface-variant hover:text-primary p-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors duration-150 w-[60px] rounded-xl"><span class="material-symbols-outlined">assessment</span><span class="text-[10px]">Laporan</span></button>
+<button class="text-on-surface-variant hover:text-primary p-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors duration-150 w-[60px] rounded-xl"><span class="material-symbols-outlined">local_shipping</span><span class="text-[10px]">Surat Jalan</span></button>
+<button class="hover:text-primary p-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors duration-150 w-[60px] rounded-xl bg-primary-container text-on-primary-container"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span><span class="text-[10px]">Pengaturan</span></button>
+</nav>
+<div class="mt-auto flex flex-col items-center gap-6 w-full space-y-4">
+<button class="text-on-surface-variant hover:text-primary p-3 flex flex-col items-center gap-1 hover:bg-surface-container-high transition-colors duration-150 w-[60px] rounded-xl"><span class="material-symbols-outlined">auto_awesome</span><span class="text-[10px]">AI Assistant</span></button>
+<button class="text-error hover:text-error p-3 flex flex-col items-center gap-1 hover:bg-error-container transition-colors duration-150 w-[60px] rounded-xl"><span class="material-symbols-outlined">logout</span><span class="text-[10px]">Keluar</span></button>
+</div>
+</aside>
+<!-- Main Area -->
+<main class="flex-1 flex flex-col overflow-hidden bg-surface">
+<section class="flex-1 flex flex-col overflow-hidden p-margin-page py-0">
+<!-- Page Title & Top Summary Cards -->
+<div class="flex flex-col mt-4 mb-6 shrink-0 gap-5 items-start">
+<div class="flex flex-col gap-1"><h2 class="text-[24px] font-bold leading-tight text-primary">Pengaturan Manager</h2></div>
+<div class="flex gap-4 w-full">
+<div class="flex flex-col flex-1 p-4 bg-white border border-outline-variant rounded-2xl"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider mb-1">Backup Data Terakhir</span><span class="text-body-md font-semibold text-primary">Hari Ini, 04:00 WIB</span></div>
+<div class="flex flex-col flex-1 p-4 bg-white border border-outline-variant rounded-2xl"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider mb-1">Akses Pengguna</span><span class="text-body-md font-semibold text-primary">12 Pengguna Aktif</span></div>
+<div class="flex flex-col flex-1 p-4 bg-white border border-outline-variant rounded-2xl"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider mb-1">Status Outlet</span><span class="text-body-md font-semibold text-primary">Cabang Utama - BUKA</span></div>
+</div>
+</div>
+<div class="mb-6 shrink-0">
+<h3 class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-3 px-1">RINGKASAN SISTEM</h3>
+<div class="flex items-center gap-8 py-4 px-6 bg-white border border-outline-variant/30 rounded-xl shadow-sm">
+<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shrink-0"><span class="material-symbols-outlined text-[18px]">cloud_done</span></div><div class="flex flex-col"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider">Cloud Sync</span><span class="text-label-md font-bold text-primary">Stabil</span></div></div>
+<div class="w-[1px] h-8 bg-outline-variant/30"></div>
+<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shrink-0"><span class="material-symbols-outlined text-[18px]">verified_user</span></div><div class="flex flex-col"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider">Security Level</span><span class="text-label-md font-bold text-primary">Tinggi</span></div></div>
+<div class="w-[1px] h-8 bg-outline-variant/30"></div>
+<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shrink-0"><span class="material-symbols-outlined text-[18px]">database</span></div><div class="flex flex-col"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider">Storage</span><span class="text-label-md font-bold text-primary">1.2 GB / 5 GB</span></div></div>
+</div>
+</div>
+<!-- Settings Table -->
+<div class="flex-1 overflow-y-auto scrollbar-hide">
+<div class="bg-white rounded-2xl border border-outline-variant overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container border-b-2 border-outline-variant">
+<tr class="text-label-md text-on-surface-variant uppercase tracking-wider font-bold">
+<th class="font-bold px-4 py-3">Kategori</th>
+<th class="font-bold px-4 py-3">Nama Pengaturan</th>
+<th class="font-bold px-4 py-3">Status/Konfigurasi</th>
+<th class="font-bold px-4 py-3">Terakhir Diperbarui</th>
+<th class="font-bold text-center px-4 py-3">Aksi</th>
+</tr>
+</thead>
+<tbody class="text-body-sm divide-y divide-outline-variant/30">
+<!-- Toko Section -->
+<tr class="hover:bg-surface-container-low transition-colors"><td class="font-bold text-primary px-4 py-3">Toko</td><td class="font-semibold px-4 py-3">Profil Outlet</td><td class="px-4 py-3"><span class="text-on-surface-variant">Hekas Cabang Utama</span></td><td class="text-on-surface-variant px-4 py-3">1 bln lalu</td><td class="text-center px-4 py-3"><button class="p-2 text-primary hover:bg-primary-container/20 rounded-lg transition-all"><span class="material-symbols-outlined text-[20px]">edit</span></button></td></tr>
+<tr class="hover:bg-surface-container-low transition-colors"><td class="font-bold text-primary px-4 py-3">Toko</td><td class="font-semibold px-4 py-3">Jam Operasional</td><td class="px-4 py-3"><span class="text-on-surface-variant">08:00 - 22:00</span></td><td class="text-on-surface-variant px-4 py-3">Hari Ini</td><td class="text-center px-4 py-3"><button class="p-2 text-primary hover:bg-primary-container/20 rounded-lg transition-all"><span class="material-symbols-outlined text-[20px]">edit</span></button></td></tr>
+<!-- Keamanan Section -->
+<tr class="hover:bg-surface-container-low transition-colors"><td class="font-bold text-primary px-4 py-3">Keamanan</td><td class="font-semibold px-4 py-3">Hak Akses Pengguna</td><td class="px-4 py-3"><span class="px-2 py-1 bg-surface-container-highest text-primary rounded-lg text-[11px] font-bold uppercase">Terkunci</span></td><td class="text-on-surface-variant px-4 py-3">Kemarin</td><td class="text-center px-4 py-3"><button class="p-2 text-primary hover:bg-primary-container/20 rounded-lg transition-all"><span class="material-symbols-outlined text-[20px]">lock_person</span></button></td></tr>
+<tr class="hover:bg-surface-container-low transition-colors"><td class="font-bold text-primary px-4 py-3">Keamanan</td><td class="font-semibold px-4 py-3">Role Management</td><td class="px-4 py-3"><span class="text-on-surface-variant">4 Role Tersedia</span></td><td class="text-on-surface-variant px-4 py-3">3 hr lalu</td><td class="text-center px-4 py-3"><button class="p-2 text-primary hover:bg-primary-container/20 rounded-lg transition-all"><span class="material-symbols-outlined text-[20px]">manage_accounts</span></button></td></tr>
+<!-- Sistem Section -->
+<tr class="hover:bg-surface-container-low transition-colors"><td class="font-bold text-primary px-4 py-3">Sistem</td><td class="font-semibold px-4 py-3">Pajak &amp; Biaya</td><td class="px-4 py-3"><span class="text-on-surface-variant">PPN 11%</span></td><td class="text-on-surface-variant px-4 py-3">1 bln lalu</td><td class="text-center px-4 py-3"><button class="p-2 text-primary hover:bg-primary-container/20 rounded-lg transition-all"><span class="material-symbols-outlined text-[20px]">percent</span></button></td></tr>
+<tr class="hover:bg-surface-container-low transition-colors"><td class="font-bold text-primary px-4 py-3">Sistem</td><td class="font-semibold px-4 py-3">Integrasi API</td><td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-[11px] font-bold uppercase">Terhubung</span></td><td class="text-on-surface-variant px-4 py-3">Hari Ini</td><td class="text-center px-4 py-3"><button class="p-2 text-primary hover:bg-primary-container/20 rounded-lg transition-all"><span class="material-symbols-outlined text-[20px]">api</span></button></td></tr>
+<tr class="hover:bg-surface-container-low transition-colors"><td class="font-bold text-primary px-4 py-3">Sistem</td><td class="font-semibold px-4 py-3">Automatic Backup</td><td class="px-4 py-3"><span class="px-2 py-1 bg-surface-container-highest text-primary rounded-lg text-[11px] font-bold uppercase">Aktif</span></td><td class="text-on-surface-variant px-4 py-3">Hari Ini</td><td class="text-center px-4 py-3"><button class="p-2 text-primary hover:bg-primary-container/20 rounded-lg transition-all"><span class="material-symbols-outlined text-[20px]">settings_backup_restore</span></button></td></tr>
+<!-- Bisnis Section -->
+<tr class="hover:bg-surface-container-low transition-colors"><td class="font-bold text-primary px-4 py-3">Bisnis</td><td class="font-semibold px-4 py-3">Konfigurasi Laba &amp; Margin</td><td class="px-4 py-3"><span class="text-on-surface-variant">Standard (Avg 15%)</span></td><td class="text-on-surface-variant px-4 py-3">1 bln lalu</td><td class="text-center px-4 py-3"><button class="p-2 text-primary hover:bg-primary-container/20 rounded-lg transition-all"><span class="material-symbols-outlined text-[20px]">trending_up</span></button></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Shortcut Pengaturan -->
+<div class="mb-6 shrink-0 mt-4">
+<h3 class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-3 px-1">SHORTCUT PENGATURAN</h3>
+<div class="grid grid-cols-4 gap-4">
+<div class="flex items-center p-3 bg-white border border-outline-variant/30 rounded-xl shadow-sm gap-3 min-w-0 cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-[16px] shrink-0"><span class="material-symbols-outlined text-[16px]">storefront</span></div>
+<div class="flex flex-col min-w-0"><span class="text-label-md font-bold text-on-surface">Detail Outlet</span><span class="text-[10px] text-on-surface-variant">Profil &amp; Kontak</span></div>
+</div>
+<div class="flex items-center p-3 bg-white border border-outline-variant/30 rounded-xl shadow-sm gap-3 min-w-0 cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-[16px] shrink-0"><span class="material-symbols-outlined text-[16px]">groups</span></div>
+<div class="flex flex-col min-w-0"><span class="text-label-md font-bold text-on-surface">Kelola Role</span><span class="text-[10px] text-on-surface-variant">Manajemen Izin</span></div>
+</div>
+<div class="flex items-center p-3 bg-white border border-outline-variant/30 rounded-xl shadow-sm gap-3 min-w-0 cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-[16px] shrink-0"><span class="material-symbols-outlined text-[16px]">backup</span></div>
+<div class="flex flex-col min-w-0"><span class="text-label-md font-bold text-on-surface">Backup Data</span><span class="text-[10px] text-on-surface-variant">Ekspor Database</span></div>
+</div>
+<div class="flex items-center p-3 bg-white border border-outline-variant/30 rounded-xl shadow-sm gap-3 min-w-0 cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-[16px] shrink-0"><span class="material-symbols-outlined text-[16px]">system_update</span></div>
+<div class="flex flex-col min-w-0"><span class="text-label-md font-bold text-on-surface">Update Sistem</span><span class="text-[10px] text-on-surface-variant">Cek Versi Baru</span></div>
+</div>
+</div>
+</div>
+<!-- Bottom Status Bar -->
+<div class="flex items-center gap-8 py-3 px-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl mb-4 shrink-0">
+<div class="flex flex-col"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider">Total Transaksi Hari Ini</span><span class="text-label-md font-bold text-primary">142</span></div>
+<div class="w-[1px] h-8 bg-outline-variant/30"></div>
+<div class="flex flex-col"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider">Metode Terbanyak</span><span class="text-label-md font-bold text-primary">QRIS (65%)</span></div>
+<div class="w-[1px] h-8 bg-outline-variant/30"></div>
+<div class="flex flex-col"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider">Sisa Storage</span><span class="text-label-md font-bold text-primary">3.8 GB</span></div>
+</div>
+</section>
+</main>
+<!-- Right Sidebar: Account Details -->
+<aside class="w-[440px] h-full flex flex-col bg-white shadow-[-8px_0_24px_rgba(0,0,0,0.03)] z-50 shrink-0">
+<div class="p-6 border-b border-outline-variant flex items-center justify-between shrink-0">
+<div><h2 class="text-headline-sm font-headline-sm">Detail Pengaturan</h2></div>
+</div>
+<div class="flex-1 overflow-y-auto px-6 py-4 space-y-4 scrollbar-hide">
+<div class="space-y-6">
+<!-- Manager Profile Card -->
+<div class="bg-surface-container-low rounded-xl border border-outline-variant/30 p-4 space-y-4">
+<div class="flex items-center gap-4 border-b border-outline-variant/10 pb-4">
+<div class="w-14 h-14 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xl font-bold border-2 border-white shadow-sm shrink-0">BU</div>
+<div class="flex flex-col"><span class="text-[16px] font-bold text-on-surface leading-tight">Budi</span><span class="text-[12px] text-on-surface-variant uppercase">STORE MANAGER</span></div>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-2 gap-y-4">
+<div class="flex flex-col"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">ID MANAGER</span><span class="text-label-md font-bold text-on-surface mt-1">MGR-001</span></div>
+<div class="flex flex-col"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">OUTLET</span><span class="text-label-md font-bold text-on-surface mt-1">Duamart Utama</span></div>
+<div class="flex flex-col"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">STATUS</span><span class="text-label-md font-bold text-green-600 mt-1">Aktif</span></div>
+<div class="flex flex-col"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">TERMINAL UTAMA</span><span class="text-label-md font-bold text-on-surface mt-1">MGR-PC-01</span></div>
+<div class="flex flex-col col-span-2"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">LOGIN TERAKHIR</span><span class="text-label-md font-bold text-on-surface mt-1">Hari Ini, 08:02 WIB</span></div>
+<div class="flex flex-col col-span-2"><span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">VERSI SISTEM</span><span class="text-label-md font-bold text-on-surface-variant mt-1">v2.5.0-STABLE</span></div>
+</div>
+</div>
+<!-- Connectivity Status -->
+<div>
+<h3 class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-3">Server &amp; Database</h3>
+<div class="space-y-2">
+<div class="relative pb-3 border-b border-outline-variant/10">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="relative"><span class="material-symbols-outlined text-on-surface-variant text-[20px]">database</span><div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div></div>
+<div class="flex flex-col"><p class="text-label-md font-bold text-on-surface">Main Database</p><p class="text-[10px] text-on-surface-variant">Connected</p></div>
+</div>
+<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase">Online</span>
+</div>
+</div>
+<div class="relative pb-3 border-b border-outline-variant/10">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="relative"><span class="material-symbols-outlined text-on-surface-variant text-[20px]">cloud_upload</span><div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div></div>
+<div class="flex flex-col"><p class="text-label-md font-bold text-on-surface">Cloud Backup</p><p class="text-[10px] text-on-surface-variant">Synced</p></div>
+</div>
+<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase">Ready</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Admin Activity Log -->
+<div>
+<h3 class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-3 mt-4">Aktivitas Akun (Admin)</h3>
+<div class="relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant/30">
+<div class="relative flex items-start gap-4 group">
+<div class="relative z-10 flex items-center justify-center w-6 h-6 rounded-full border border-white bg-primary text-white shadow shrink-0"><span class="material-symbols-outlined text-[14px]">security</span></div>
+<div class="flex flex-col pb-3"><span class="text-label-md font-bold text-on-surface">Ubah Hak Akses</span><span class="text-[11px] text-on-surface-variant">Hari Ini, 09:15</span></div>
+</div>
+<div class="relative flex items-start gap-4 group">
+<div class="relative z-10 flex items-center justify-center w-6 h-6 rounded-full border border-white bg-surface-container-highest text-primary shadow shrink-0"><span class="material-symbols-outlined text-[14px]">backup</span></div>
+<div class="flex flex-col pb-3"><span class="text-label-md font-bold text-on-surface">Backup Sukses</span><span class="text-[11px] text-on-surface-variant">Hari Ini, 04:00</span></div>
+</div>
+<div class="relative flex items-start gap-4 group">
+<div class="relative z-10 flex items-center justify-center w-6 h-6 rounded-full border border-white bg-surface-container-highest text-primary shadow shrink-0"><span class="material-symbols-outlined text-[14px]">settings</span></div>
+<div class="flex flex-col pb-3"><span class="text-label-md font-bold text-on-surface">Update Jam Operasional</span><span class="text-[11px] text-on-surface-variant">Kemarin, 22:30</span></div>
+</div>
+<div class="relative flex items-start gap-4 group">
+<div class="relative z-10 flex items-center justify-center w-6 h-6 rounded-full border border-white bg-surface-container-highest text-primary shadow shrink-0"><span class="material-symbols-outlined text-[14px]">login</span></div>
+<div class="flex flex-col pb-3"><span class="text-label-md font-bold text-on-surface">Login Manager</span><span class="text-[11px] text-on-surface-variant">Hari Ini, 08:02</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-6 border-t border-outline-variant bg-surface shrink-0 flex gap-4">
+<button class="flex-1 py-3 bg-primary-container text-on-primary rounded-lg font-bold hover:bg-primary/90 active:scale-95 transition-all text-center">Edit Profil</button>
+<button class="flex-1 py-3 bg-transparent border-2 border-primary-container text-primary-container rounded-lg font-bold hover:bg-primary-container/20 active:scale-95 transition-all text-center">Keamanan</button>
+</div>
+</aside>
+<script>
+    // Visual feedback for grid shortcuts
+    document.querySelectorAll('.grid > div').forEach(card => {
+        card.addEventListener('click', function() {
+            this.classList.add('ring-4', 'ring-primary/10', 'scale-[0.98]');
+            setTimeout(() => {
+                this.classList.remove('ring-4', 'ring-primary/10', 'scale-[0.98]');
+            }, 150);
+        });
+    });
+</script>
+
+
+</body></html>

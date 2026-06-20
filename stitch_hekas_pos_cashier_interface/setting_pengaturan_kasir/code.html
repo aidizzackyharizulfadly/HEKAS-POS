@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4F5F7;
+        }
+        .settings-card {
+            border: 1px solid #DFE1E6;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        .active-indicator {
+            transition: transform 0.15s ease;
+        }
+        .active-indicator:active {
+            transform: scale(0.98);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#006c47",
+                        "surface-container-high": "#e7e7f2",
+                        "error": "#ba1a1a",
+                        "primary": "#003d9b",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb950",
+                        "surface-container-highest": "#e1e2ec",
+                        "inverse-primary": "#b2c5ff",
+                        "primary-container": "#0052cc",
+                        "background": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#002113",
+                        "tertiary-container": "#7d5200",
+                        "on-surface-variant": "#434654",
+                        "inverse-on-surface": "#f0f0fb",
+                        "secondary-fixed-dim": "#65dca4",
+                        "on-secondary-container": "#00734c",
+                        "surface-dim": "#d9d9e4",
+                        "on-primary-fixed": "#001848",
+                        "surface-container": "#ededf8",
+                        "on-tertiary-fixed": "#291800",
+                        "on-primary-container": "#c4d2ff",
+                        "on-secondary-fixed-variant": "#005235",
+                        "outline-variant": "#c3c6d6",
+                        "secondary-container": "#82f9be",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e1e2ec",
+                        "error-container": "#ffdad6",
+                        "on-background": "#191b23",
+                        "surface-tint": "#0c56d0",
+                        "on-surface": "#191b23",
+                        "on-tertiary-container": "#ffca81",
+                        "primary-fixed": "#dae2ff",
+                        "tertiary": "#5e3c00",
+                        "on-primary-fixed-variant": "#0040a2",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#faf8ff",
+                        "inverse-surface": "#2e3038",
+                        "surface-container-low": "#f3f3fd",
+                        "surface": "#faf8ff",
+                        "secondary-fixed": "#82f9be",
+                        "tertiary-fixed": "#ffddb3",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "outline": "#737685"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "stack-lg": "24px",
+                        "margin-tablet": "24px",
+                        "gutter": "16px",
+                        "stack-sm": "8px",
+                        "touch-target-min": "48px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "numeric-data": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-price": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "numeric-data": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "display-price": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "500"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Sidebar Navigation Shell -->
+<nav class="h-screen w-64 flex flex-col fixed left-0 top-0 border-r border-outline-variant bg-surface">
+<div class="px-6 py-8">
+<span class="text-headline-md font-headline-md font-extrabold text-primary">HEKAS POS</span>
+<p class="text-label-md font-label-md text-on-surface-variant opacity-70">Admin Mode</p>
+</div>
+<div class="flex flex-col h-full py-4 space-y-2 overflow-y-auto">
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">point_of_sale</span>
+<span class="text-label-md font-label-md">POS</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-label-md font-label-md">Order</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-label-md font-label-md">Produk</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-md font-label-md">Pelanggan</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="text-label-md font-label-md">Shift</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="text-label-md font-label-md">Laporan</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">more_horiz</span>
+<span class="text-label-md font-label-md">Lainnya</span>
+</a>
+<!-- ACTIVE TAB: Setting -->
+<a class="flex items-center gap-stack-md bg-secondary-container text-on-secondary-container rounded-xl px-4 py-3 mx-2 active-indicator" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Setting</span>
+</a>
+</div>
+<div class="mt-auto p-4 border-t border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="text-label-md font-label-md font-bold">Budi</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Kasir</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Top AppBar Shell -->
+<header class="fixed top-0 left-64 right-0 flex justify-between items-center px-margin-tablet h-16 border-b border-outline-variant bg-surface z-40">
+<div class="flex items-center gap-6">
+<h1 class="text-headline-md font-headline-md text-primary font-bold">Setting</h1>
+<div class="flex gap-4">
+<span class="text-on-surface-variant text-label-md font-label-md">Outlet Utama</span>
+<span class="text-primary text-label-md font-label-md border-b-2 border-primary">Kasir: Budi</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">wifi</span>
+<span class="material-symbols-outlined text-on-surface-variant">schedule</span>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<button class="bg-primary hover:opacity-80 text-white px-4 py-2 rounded transition-opacity flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">sync</span>
+<span class="text-label-md font-label-md">Sinkronisasi</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 min-h-screen bg-[#F4F5F7]">
+<div class="p-margin-tablet max-w-5xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Settings Navigation List (3 columns) -->
+<div class="md:col-span-4 space-y-stack-sm">
+<div class="p-4">
+<h2 class="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-4">Pengaturan Perangkat</h2>
+<nav class="space-y-1">
+<button class="w-full flex items-center justify-between p-4 settings-card rounded-xl shadow-sm bg-primary-container text-white border-transparent" id="btn-printer" onclick="switchTab('printer')">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined">print</span>
+<span class="font-body-md text-body-md font-medium">Printer &amp; Receipt</span>
+</div>
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 settings-card rounded-xl hover:bg-surface-container transition-colors border-[#DFE1E6]" id="btn-bahasa" onclick="switchTab('bahasa')">
+<div class="flex items-center gap-stack-md text-on-surface-variant">
+<span class="material-symbols-outlined">language</span>
+<span class="font-body-md text-body-md font-medium">Bahasa &amp; Wilayah</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 settings-card rounded-xl hover:bg-surface-container transition-colors border-[#DFE1E6]" id="btn-tampilan" onclick="switchTab('tampilan')">
+<div class="flex items-center gap-stack-md text-on-surface-variant">
+<span class="material-symbols-outlined">contrast</span>
+<span class="font-body-md text-body-md font-medium">Tampilan</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+</nav>
+</div>
+<div class="p-4 pt-0">
+<h2 class="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-4">Sistem</h2>
+<nav class="space-y-1">
+<button class="w-full flex items-center justify-between p-4 settings-card rounded-xl hover:bg-surface-container transition-colors border-[#DFE1E6]" id="btn-akun" onclick="switchTab('akun')">
+<div class="flex items-center gap-stack-md text-on-surface-variant">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-body-md text-body-md font-medium">Akun</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 settings-card rounded-xl hover:bg-error-container/10 text-error border-[#DFE1E6]">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md font-medium">Logout</span>
+</div>
+</button>
+</nav>
+</div>
+</div>
+<!-- Settings Content Panel (8 columns) -->
+<div class="md:col-span-8">
+<!-- SECTION: Printer & Receipt -->
+<div class="settings-card rounded-xl p-stack-lg min-h-[500px]" id="section-printer">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="text-headline-md font-headline-md text-on-surface">Printer &amp; Receipt</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">Konfigurasi pencetakan struk dan koneksi printer.</p>
+</div>
+<button class="bg-primary text-white px-6 py-2 rounded font-label-md text-label-md">Cari Printer</button>
+</div>
+<!-- Bluetooth Devices -->
+<div class="mb-stack-lg">
+<h4 class="text-label-md font-label-md text-on-surface-variant mb-4">Koneksi Bluetooth</h4>
+<div class="space-y-stack-sm">
+<div class="flex items-center justify-between p-4 bg-background border border-outline-variant rounded-xl">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-primary">print</span>
+<div>
+<p class="text-body-md font-body-md font-bold">EPSON TM-T88VI</p>
+<p class="text-label-sm font-label-sm text-secondary">Tersambung</p>
+</div>
+</div>
+<button class="text-primary font-label-md text-label-md border border-primary px-4 py-2 rounded">Tes Print</button>
+</div>
+<div class="flex items-center justify-between p-4 bg-background border border-outline-variant rounded-xl opacity-60">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined">print</span>
+<div>
+<p class="text-body-md font-body-md font-bold">RPP02N Mobile Printer</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Tersimpan</p>
+</div>
+</div>
+<button class="text-on-surface-variant font-label-md text-label-md border border-outline px-4 py-2 rounded">Sambungkan</button>
+</div>
+</div>
+</div>
+<!-- Receipt Customization -->
+<div class="space-y-stack-md">
+<h4 class="text-label-md font-label-md text-on-surface-variant">Kustomisasi Struk</h4>
+<div class="grid grid-cols-1 gap-stack-md">
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-2">Header Struk (Nama Toko/Pesan)</label>
+<input class="w-full p-3 bg-background border border-outline-variant rounded focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" type="text" value="HEKAS RETAIL - CABANG UTAMA"/>
+</div>
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-2">Footer Struk (Terima Kasih)</label>
+<textarea class="w-full p-3 bg-background border border-outline-variant rounded focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" rows="3">Terima kasih telah berbelanja! Barang yang sudah dibeli tidak dapat ditukar.</textarea>
+</div>
+</div>
+<div class="flex items-center gap-stack-md pt-4">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+<span class="ml-3 text-label-md font-label-md text-on-surface">Cetak Struk Otomatis</span>
+</label>
+</div>
+</div>
+</div>
+<!-- SECTION: Bahasa (Hidden by default) -->
+<div class="hidden settings-card rounded-xl p-stack-lg min-h-[500px]" id="section-bahasa">
+<h3 class="text-headline-md font-headline-md text-on-surface mb-8">Bahasa &amp; Wilayah</h3>
+<div class="space-y-6">
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-2">Pilih Bahasa</label>
+<select class="w-full p-3 bg-background border border-outline-variant rounded focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
+<option selected="">Bahasa Indonesia</option>
+<option>English (US)</option>
+<option>English (UK)</option>
+</select>
+</div>
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-2">Format Mata Uang</label>
+<div class="flex gap-stack-md">
+<button class="flex-1 p-4 border-2 border-primary bg-primary/5 rounded-xl text-primary font-bold">Rp (Rupiah)</button>
+<button class="flex-1 p-4 border border-outline-variant rounded-xl text-on-surface-variant">$ (USD)</button>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION: Tampilan (Hidden by default) -->
+<div class="hidden settings-card rounded-xl p-stack-lg min-h-[500px]" id="section-tampilan">
+<h3 class="text-headline-md font-headline-md text-on-surface mb-8">Tampilan Antarmuka</h3>
+<div class="grid grid-cols-2 gap-stack-md">
+<button class="flex flex-col items-center gap-stack-md p-6 border-2 border-primary bg-primary/5 rounded-xl">
+<div class="w-full h-24 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col p-2 gap-1">
+<div class="h-2 w-1/2 bg-outline-variant"></div>
+<div class="h-4 w-full bg-primary-container/20"></div>
+<div class="mt-auto h-4 w-full bg-primary-container"></div>
+</div>
+<span class="font-bold text-primary">Light Mode</span>
+</button>
+<button class="flex flex-col items-center gap-stack-md p-6 border border-outline-variant rounded-xl hover:bg-surface-container transition-colors">
+<div class="w-full h-24 bg-inverse-surface border border-outline rounded-lg overflow-hidden flex flex-col p-2 gap-1">
+<div class="h-2 w-1/2 bg-outline"></div>
+<div class="h-4 w-full bg-on-surface-variant/20"></div>
+<div class="mt-auto h-4 w-full bg-on-surface-variant"></div>
+</div>
+<span class="font-bold text-on-surface-variant">Dark Mode (Coming Soon)</span>
+</button>
+</div>
+<div class="mt-12">
+<h4 class="text-label-md font-label-md text-on-surface-variant mb-4">Kepadatan UI</h4>
+<div class="flex gap-4">
+<button class="px-6 py-3 border border-outline-variant rounded-full text-on-surface-variant">Nyaman</button>
+<button class="px-6 py-3 border-2 border-primary bg-primary/5 rounded-full text-primary font-bold">Kompak</button>
+</div>
+</div>
+</div>
+<!-- SECTION: Akun (Hidden by default) -->
+<div class="hidden settings-card rounded-xl p-stack-lg min-h-[500px]" id="section-akun">
+<h3 class="text-headline-md font-headline-md text-on-surface mb-8">Informasi Akun</h3>
+<div class="flex items-center gap-6 p-6 border border-outline-variant rounded-xl mb-8 bg-background">
+<div class="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center text-white text-display-price">
+<span class="material-symbols-outlined text-[40px]">person</span>
+</div>
+<div>
+<h4 class="text-headline-md font-headline-md">Budi Setiawan</h4>
+<p class="text-body-md text-on-surface-variant">ID Kasir: #KS00812</p>
+<span class="inline-block mt-2 px-3 py-1 bg-secondary/10 text-secondary text-label-sm font-label-sm rounded-full">Level: Kasir Senior</span>
+</div>
+</div>
+<div class="space-y-4">
+<button class="w-full text-left p-4 border border-outline-variant rounded-xl hover:bg-surface-container transition-colors flex justify-between items-center">
+<span class="font-medium">Ubah PIN Keamanan</span>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<button class="w-full text-left p-4 border border-outline-variant rounded-xl hover:bg-surface-container transition-colors flex justify-between items-center">
+<span class="font-medium">Riwayat Sesi Terakhir</span>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        function switchTab(tabName) {
+            const sections = ['printer', 'bahasa', 'tampilan', 'akun'];
+            const buttons = ['btn-printer', 'btn-bahasa', 'btn-tampilan', 'btn-akun'];
+
+            sections.forEach(sec => {
+                const el = document.getElementById(`section-${sec}`);
+                if (sec === tabName) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+
+            buttons.forEach(btn => {
+                const el = document.getElementById(btn);
+                const btnName = btn.split('-')[1];
+                if (btnName === tabName) {
+                    el.classList.remove('bg-white', 'text-on-surface-variant', 'border-[#DFE1E6]');
+                    el.classList.add('bg-primary-container', 'text-white', 'border-transparent');
+                    
+                    // Specific logic for icon and arrow colors
+                    const icon = el.querySelector('.material-symbols-outlined:first-child');
+                    const text = el.querySelector('.font-body-md');
+                    const arrow = el.querySelector('.material-symbols-outlined:last-child');
+                    
+                    if(icon) icon.classList.replace('text-on-surface-variant', 'text-white');
+                    if(text) text.classList.replace('text-on-surface-variant', 'text-white');
+                    if(arrow) arrow.classList.replace('text-outline', 'text-white');
+                } else {
+                    el.classList.remove('bg-primary-container', 'text-white', 'border-transparent');
+                    el.classList.add('bg-white', 'text-on-surface-variant', 'border-[#DFE1E6]');
+                    
+                    const icon = el.querySelector('.material-symbols-outlined:first-child');
+                    const text = el.querySelector('.font-body-md');
+                    const arrow = el.querySelector('.material-symbols-outlined:last-child');
+                    
+                    if(icon) icon.classList.add('text-on-surface-variant');
+                    if(text) text.classList.add('text-on-surface-variant');
+                    if(arrow) arrow.classList.add('text-outline');
+                }
+            });
+        }
+    </script>
+</body></html>

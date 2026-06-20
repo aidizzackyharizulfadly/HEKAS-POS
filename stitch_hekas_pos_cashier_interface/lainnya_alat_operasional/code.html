@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4F5F7;
+        }
+        .bento-card {
+            transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .bento-card:active {
+            transform: scale(0.98);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#006c47",
+                        "surface-container-high": "#e7e7f2",
+                        "error": "#ba1a1a",
+                        "primary": "#003d9b",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb950",
+                        "surface-container-highest": "#e1e2ec",
+                        "inverse-primary": "#b2c5ff",
+                        "primary-container": "#0052cc",
+                        "background": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#002113",
+                        "tertiary-container": "#7d5200",
+                        "on-surface-variant": "#434654",
+                        "inverse-on-surface": "#f0f0fb",
+                        "secondary-fixed-dim": "#65dca4",
+                        "on-secondary-container": "#00734c",
+                        "surface-dim": "#d9d9e4",
+                        "on-primary-fixed": "#001848",
+                        "surface-container": "#ededf8",
+                        "on-tertiary-fixed": "#291800",
+                        "on-primary-container": "#c4d2ff",
+                        "on-secondary-fixed-variant": "#005235",
+                        "outline-variant": "#c3c6d6",
+                        "secondary-container": "#82f9be",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e1e2ec",
+                        "error-container": "#ffdad6",
+                        "on-background": "#191b23",
+                        "surface-tint": "#0c56d0",
+                        "on-surface": "#191b23",
+                        "on-tertiary-container": "#ffca81",
+                        "primary-fixed": "#dae2ff",
+                        "tertiary": "#5e3c00",
+                        "on-primary-fixed-variant": "#0040a2",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#faf8ff",
+                        "inverse-surface": "#2e3038",
+                        "surface-container-low": "#f3f3fd",
+                        "surface": "#faf8ff",
+                        "secondary-fixed": "#82f9be",
+                        "tertiary-fixed": "#ffddb3",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "outline": "#737685"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "stack-lg": "24px",
+                        "margin-tablet": "24px",
+                        "gutter": "16px",
+                        "stack-sm": "8px",
+                        "touch-target-min": "48px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "numeric-data": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-price": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "numeric-data": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "display-price": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "500"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface-container-low text-on-surface">
+<!-- SIDE NAVIGATION BAR -->
+<aside class="h-screen w-64 flex flex-col fixed left-0 top-0 border-r border-outline-variant bg-surface">
+<div class="px-6 py-8">
+<h1 class="text-headline-md font-headline-md font-extrabold text-primary">HEKAS POS</h1>
+<p class="text-label-sm text-on-surface-variant mt-1">Admin Mode</p>
+</div>
+<nav class="flex flex-col flex-1 py-4 space-y-2 overflow-y-auto">
+<!-- Navigation Items Mapping from JSON -->
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">point_of_sale</span>
+<span class="font-label-md text-label-md">POS</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md">Order</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-md text-label-md">Produk</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">Pelanggan</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-label-md text-label-md">Shift</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-md text-label-md">Laporan</span>
+</a>
+<!-- Active State for 'Lainnya' -->
+<a class="flex items-center gap-stack-md bg-secondary-container text-on-secondary-container rounded-xl px-4 py-3 mx-2 scale-98 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">more_horiz</span>
+<span class="font-label-md text-label-md">Lainnya</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant hover:bg-surface-container-high transition-colors px-4 py-3 mx-2" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Setting</span>
+</a>
+</nav>
+<div class="p-4 border-t border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">B</div>
+<div>
+<p class="text-label-md font-label-md text-on-surface">Budi</p>
+<p class="text-label-sm text-on-surface-variant">Kasir</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TOP NAVIGATION BAR -->
+<header class="fixed top-0 left-64 right-0 flex justify-between items-center px-margin-tablet h-16 border-b border-outline-variant bg-surface z-40">
+<div class="flex items-center gap-4">
+<h2 class="text-headline-md font-headline-md font-bold text-primary">Utilitas &amp; Operasional</h2>
+<div class="h-6 w-px bg-outline-variant"></div>
+<p class="text-label-md font-label-md text-on-surface-variant">Outlet Utama</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<input class="bg-surface-container border border-outline-variant rounded-xl px-4 py-2 text-label-md w-64 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Cari utilitas..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-2 text-on-surface-variant">search</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">wifi</span>
+<span class="material-symbols-outlined text-on-surface-variant">schedule</span>
+</div>
+</div>
+</header>
+<!-- MAIN CANVAS -->
+<main class="ml-64 pt-24 px-margin-tablet pb-12 min-h-screen">
+<!-- Welcome Hero Section (Asymmetric Layout) -->
+<section class="mb-stack-lg grid grid-cols-12 gap-gutter">
+<div class="col-span-8 bg-primary rounded-xl p-8 flex flex-col justify-between text-on-primary relative overflow-hidden h-64">
+<div class="relative z-10">
+<h3 class="text-display-price font-display-price">Halo, Budi.</h3>
+<p class="text-body-lg font-body-lg max-w-md mt-4 opacity-90">Selesaikan tugas operasional harian Anda dengan cepat melalui menu utilitas di bawah ini.</p>
+</div>
+<div class="relative z-10 flex gap-4 mt-6">
+<button class="bg-secondary px-6 py-3 rounded-full font-label-md text-label-md hover:opacity-90 transition-opacity">Buka Shift Baru</button>
+<button class="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-full font-label-md text-label-md hover:bg-white/20 transition-all">Lihat Jadwal</button>
+</div>
+<!-- Decorative element -->
+<div class="absolute -right-12 -bottom-12 w-64 h-64 bg-primary-container rounded-full opacity-30 blur-3xl"></div>
+</div>
+<div class="col-span-4 bg-white border border-outline-variant rounded-xl p-6 flex flex-col items-center justify-center text-center">
+<div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-on-secondary-container text-4xl">payments</span>
+</div>
+<p class="text-label-sm text-on-surface-variant">Total Kas Saat Ini</p>
+<h4 class="text-headline-lg font-headline-lg text-secondary">Rp 12.450.000</h4>
+<p class="text-label-sm text-secondary mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +5.2% dari kemarin
+                </p>
+</div>
+</section>
+<!-- UTILITIES GRID (The Bento Pattern) -->
+<h3 class="text-headline-md font-headline-md text-on-surface mb-stack-md">Menu Operasional</h3>
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Pengeluaran Kas (Large Tile) -->
+<button class="col-span-4 bento-card h-64 bg-white border border-outline-variant rounded-xl p-8 flex flex-col items-start text-left hover:border-primary transition-all shadow-sm">
+<div class="w-12 h-12 bg-error-container rounded-xl flex items-center justify-center mb-auto">
+<span class="material-symbols-outlined text-on-error-container">trending_down</span>
+</div>
+<div>
+<h4 class="text-headline-md font-headline-md text-on-surface">Pengeluaran Kas</h4>
+<p class="text-label-sm text-on-surface-variant mt-2">Catat biaya operasional atau bayar tagihan supplier segera.</p>
+</div>
+</button>
+<!-- Setoran Kas -->
+<button class="col-span-4 bento-card h-64 bg-white border border-outline-variant rounded-xl p-8 flex flex-col items-start text-left hover:border-primary transition-all shadow-sm">
+<div class="w-12 h-12 bg-secondary-container rounded-xl flex items-center justify-center mb-auto">
+<span class="material-symbols-outlined text-on-secondary-container">add_card</span>
+</div>
+<div>
+<h4 class="text-headline-md font-headline-md text-on-surface">Setoran Kas</h4>
+<p class="text-label-sm text-on-surface-variant mt-2">Tambahkan modal awal atau setoran tunai ke dalam laci kas.</p>
+</div>
+</button>
+<!-- Tarik Tunai -->
+<button class="col-span-4 bento-card h-64 bg-white border border-outline-variant rounded-xl p-8 flex flex-col items-start text-left hover:border-primary transition-all shadow-sm">
+<div class="w-12 h-12 bg-primary-container rounded-xl flex items-center justify-center mb-auto">
+<span class="material-symbols-outlined text-on-primary-container">atm</span>
+</div>
+<div>
+<h4 class="text-headline-md font-headline-md text-on-surface">Tarik Tunai</h4>
+<p class="text-label-sm text-on-surface-variant mt-2">Layanan tarik tunai merchant untuk pelanggan setia Anda.</p>
+</div>
+</button>
+<!-- Pengumuman Toko (Wide Tile) -->
+<div class="col-span-8 bg-white border border-outline-variant rounded-xl p-8 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h4 class="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">campaign</span>
+                        Pengumuman Toko
+                    </h4>
+<button class="text-primary text-label-md font-label-md">Lihat Semua</button>
+</div>
+<div class="space-y-4">
+<div class="flex items-start gap-4 p-4 rounded-xl bg-surface-container-low border border-outline-variant">
+<div class="w-2 h-2 rounded-full bg-error mt-2"></div>
+<div>
+<p class="text-label-md font-label-md text-on-surface">Stok Beras Premium Menipis</p>
+<p class="text-label-sm text-on-surface-variant">Harap lakukan restock sebelum jam 16:00 WIB.</p>
+</div>
+<span class="ml-auto text-label-sm text-on-surface-variant">10m lalu</span>
+</div>
+<div class="flex items-start gap-4 p-4 rounded-xl bg-surface-container-low border border-outline-variant">
+<div class="w-2 h-2 rounded-full bg-primary mt-2"></div>
+<div>
+<p class="text-label-md font-label-md text-on-surface">Maintenance Jaringan EDC</p>
+<p class="text-label-sm text-on-surface-variant">Bank BCA sedang maintenance, gunakan alternatif QRIS.</p>
+</div>
+<span class="ml-auto text-label-sm text-on-surface-variant">2j lalu</span>
+</div>
+</div>
+</div>
+<!-- Catatan Kasir (Task List Style) -->
+<div class="col-span-4 bg-white border border-outline-variant rounded-xl p-8 shadow-sm flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h4 class="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">edit_note</span>
+                        Catatan
+                    </h4>
+<button class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+<div class="flex-1 space-y-4">
+<label class="flex items-center gap-3 p-2 group cursor-pointer">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-label-md text-on-surface group-hover:text-primary transition-colors">Hitung ulang stok gudang B</span>
+</label>
+<label class="flex items-center gap-3 p-2 group cursor-pointer">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-label-md text-on-surface-variant line-through">Serah terima kunci loker</span>
+</label>
+<label class="flex items-center gap-3 p-2 group cursor-pointer">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-label-md text-on-surface group-hover:text-primary transition-colors">Cek struk pending</span>
+</label>
+</div>
+</div>
+</div>
+<!-- System Status Footer -->
+<footer class="mt-stack-lg border-t border-outline-variant pt-8 flex justify-between items-center text-label-sm text-on-surface-variant">
+<div class="flex gap-8">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Database: Online</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Printer: Ready</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Sync: 30 detik lalu</span>
+</div>
+</div>
+<p>HEKAS POS v2.4.1 Build 2023</p>
+</footer>
+</main>
+<!-- FLOATING ACTION BUTTON (Only relevant to screen's purpose) -->
+<!-- Not rendering FAB here as per guidance since this is a Utilities list page -->
+<script>
+        // Simple micro-interaction for tile active states
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.addEventListener('mousedown', () => {
+                card.style.transform = 'scale(0.96)';
+            });
+            card.addEventListener('mouseup', () => {
+                card.style.transform = 'scale(1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

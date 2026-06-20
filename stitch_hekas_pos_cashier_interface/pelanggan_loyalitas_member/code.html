@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HEKAS POS - Pelanggan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#006c47",
+                        "surface-container-high": "#e7e7f2",
+                        "error": "#ba1a1a",
+                        "primary": "#003d9b",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb950",
+                        "surface-container-highest": "#e1e2ec",
+                        "inverse-primary": "#b2c5ff",
+                        "primary-container": "#0052cc",
+                        "background": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#002113",
+                        "tertiary-container": "#7d5200",
+                        "on-surface-variant": "#434654",
+                        "inverse-on-surface": "#f0f0fb",
+                        "secondary-fixed-dim": "#65dca4",
+                        "on-secondary-container": "#00734c",
+                        "surface-dim": "#d9d9e4",
+                        "on-primary-fixed": "#001848",
+                        "surface-container": "#ededf8",
+                        "on-tertiary-fixed": "#291800",
+                        "on-primary-container": "#c4d2ff",
+                        "on-secondary-fixed-variant": "#005235",
+                        "outline-variant": "#c3c6d6",
+                        "secondary-container": "#82f9be",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e1e2ec",
+                        "error-container": "#ffdad6",
+                        "on-background": "#191b23",
+                        "surface-tint": "#0c56d0",
+                        "on-surface": "#191b23",
+                        "on-tertiary-container": "#ffca81",
+                        "primary-fixed": "#dae2ff",
+                        "tertiary": "#5e3c00",
+                        "on-primary-fixed-variant": "#0040a2",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#faf8ff",
+                        "inverse-surface": "#2e3038",
+                        "surface-container-low": "#f3f3fd",
+                        "surface": "#faf8ff",
+                        "secondary-fixed": "#82f9be",
+                        "tertiary-fixed": "#ffddb3",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "outline": "#737685"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "stack-lg": "24px",
+                        "margin-tablet": "24px",
+                        "gutter": "16px",
+                        "stack-sm": "8px",
+                        "touch-target-min": "48px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "numeric-data": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-price": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "numeric-data": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "display-price": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "500"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #F4F5F7; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .customer-card-active {
+            border-left: 4px solid #0052cc !important;
+            background-color: #e7e7f2 !important;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c3c6d6; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Side Navigation Bar -->
+<aside class="h-screen w-64 flex flex-col fixed left-0 top-0 border-r border-outline-variant bg-surface z-50">
+<div class="px-6 py-8">
+<h1 class="text-headline-md font-headline-md font-extrabold text-primary">HEKAS POS</h1>
+<p class="text-label-sm text-on-surface-variant">Admin Mode</p>
+</div>
+<nav class="flex flex-col h-full py-4 space-y-2 overflow-y-auto">
+<a class="flex items-center gap-stack-md text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
+<span class="text-label-md font-label-md">POS</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="text-label-md font-label-md">Order</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-label-md font-label-md">Produk</span>
+</a>
+<!-- Active Navigation Item: Pelanggan -->
+<a class="flex items-center gap-stack-md bg-secondary-container text-on-secondary-container rounded-xl px-4 py-3 mx-2 scale-98 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="group" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-label-md font-label-md">Pelanggan</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+<span class="text-label-md font-label-md">Shift</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="text-label-md font-label-md">Laporan</span>
+</a>
+<a class="flex items-center gap-stack-md text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="more_horiz">more_horiz</span>
+<span class="text-label-md font-label-md">Lainnya</span>
+</a>
+<div class="mt-auto">
+<a class="flex items-center gap-stack-md text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-label-md font-label-md">Setting</span>
+</a>
+</div>
+</nav>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-64 right-0 flex justify-between items-center px-margin-tablet h-16 border-b border-outline-variant bg-surface z-40">
+<div class="flex items-center gap-stack-lg">
+<span class="text-label-md font-label-md text-on-surface-variant">Outlet Utama</span>
+<span class="text-label-md font-label-md text-on-surface-variant">Kasir: Budi</span>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative group">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-outline">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+</span>
+<input class="bg-surface-container-low border border-outline-variant rounded-full pl-10 pr-4 py-2 text-body-md focus:outline-none focus:ring-2 focus:ring-primary w-64 transition-all" placeholder="Cari Pelanggan..." type="text"/>
+</div>
+<button class="p-2 hover:bg-surface-container rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="wifi">wifi</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDu5guz1irU4Zp5ooOPpMAuBfn9_yEBXmQ5xvksAo1jLjV2bcxBXpJCe65x16Zx-KXLUigkNBP4OlZYsydVtmml3ojFAoT_n5v8YBOUZuP-CE3h5kKfjs-RpuuqkPYccs31qFomJNrKV-Ec3FoCdQNXhr-GHdcteqQdKzRZuXaLDVVICUPyQXWtFREO2WTAua48DlpPrHOEUNEpon69mL3hvYdFcP_zi9-Y2ild_mdH7a-zr-OX34VJqpohcwm8oRhnEZse6nqu4pdr"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-64 pt-16 h-screen overflow-hidden flex flex-col md:flex-row">
+<!-- Left Pane: Customer List (60%) -->
+<section class="flex-1 md:w-3/5 p-gutter overflow-y-auto border-r border-outline-variant bg-background">
+<div class="flex justify-between items-center mb-stack-lg">
+<h2 class="text-headline-lg font-headline-lg text-on-surface">Data Pelanggan</h2>
+<button class="bg-primary text-on-primary px-stack-lg py-3 rounded-xl flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+<span class="text-label-md font-label-md">Daftar Member</span>
+</button>
+</div>
+<!-- Bento Grid - Filters / Stats -->
+<div class="grid grid-cols-3 gap-gutter mb-stack-lg">
+<div class="bg-surface p-4 rounded-xl border border-outline-variant">
+<p class="text-label-sm text-outline mb-1">Total Member</p>
+<p class="text-headline-md font-headline-md">1,284</p>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-outline-variant">
+<p class="text-label-sm text-outline mb-1">Aktif Hari Ini</p>
+<p class="text-headline-md font-headline-md text-secondary">42</p>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-outline-variant">
+<p class="text-label-sm text-outline mb-1">Poin Terdistribusi</p>
+<p class="text-headline-md font-headline-md text-primary">85.4k</p>
+</div>
+</div>
+<!-- Customer List Table/Cards -->
+<div class="space-y-3">
+<!-- Customer Row 1 -->
+<div class="customer-card-active bg-white p-4 rounded-xl border border-outline-variant flex items-center justify-between cursor-pointer hover:shadow-md transition-all">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary-fixed rounded-full flex items-center justify-center text-primary font-bold">
+                            AR
+                        </div>
+<div>
+<h3 class="text-body-lg font-body-lg text-on-surface">Andi Rama</h3>
+<p class="text-label-sm text-outline">0812-3456-7890</p>
+</div>
+</div>
+<div class="text-right">
+<span class="inline-block px-2 py-1 rounded bg-tertiary-fixed text-on-tertiary-fixed text-[10px] font-bold uppercase mb-1">Gold Member</span>
+<p class="text-numeric-data text-primary">1,450 Poin</p>
+</div>
+</div>
+<!-- Customer Row 2 -->
+<div class="bg-white p-4 rounded-xl border border-outline-variant flex items-center justify-between cursor-pointer hover:border-primary-container hover:shadow-sm transition-all">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-highest rounded-full flex items-center justify-center text-on-surface-variant font-bold">
+                            SL
+                        </div>
+<div>
+<h3 class="text-body-lg font-body-lg text-on-surface">Siti Lestari</h3>
+<p class="text-label-sm text-outline">0819-2233-4455</p>
+</div>
+</div>
+<div class="text-right">
+<span class="inline-block px-2 py-1 rounded bg-surface-container-high text-on-surface-variant text-[10px] font-bold uppercase mb-1">Silver Member</span>
+<p class="text-numeric-data text-on-surface">320 Poin</p>
+</div>
+</div>
+<!-- Customer Row 3 -->
+<div class="bg-white p-4 rounded-xl border border-outline-variant flex items-center justify-between cursor-pointer hover:border-primary-container hover:shadow-sm transition-all">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-highest rounded-full flex items-center justify-center text-on-surface-variant font-bold">
+                            BK
+                        </div>
+<div>
+<h3 class="text-body-lg font-body-lg text-on-surface">Budi Kusuma</h3>
+<p class="text-label-sm text-outline">0852-9988-7766</p>
+</div>
+</div>
+<div class="text-right">
+<span class="inline-block px-2 py-1 rounded bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold uppercase mb-1">Platinum Member</span>
+<p class="text-numeric-data text-primary">5,200 Poin</p>
+</div>
+</div>
+<!-- Customer Row 4 -->
+<div class="bg-white p-4 rounded-xl border border-outline-variant flex items-center justify-between cursor-pointer hover:border-primary-container hover:shadow-sm transition-all">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-highest rounded-full flex items-center justify-center text-on-surface-variant font-bold">
+                            DW
+                        </div>
+<div>
+<h3 class="text-body-lg font-body-lg text-on-surface">Dewi Wijaya</h3>
+<p class="text-label-sm text-outline">0821-4433-2211</p>
+</div>
+</div>
+<div class="text-right">
+<span class="inline-block px-2 py-1 rounded bg-surface-container-high text-on-surface-variant text-[10px] font-bold uppercase mb-1">Silver Member</span>
+<p class="text-numeric-data text-on-surface">150 Poin</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Pane: Detail View (40%) -->
+<section class="flex-1 md:w-2/5 p-gutter bg-surface overflow-y-auto">
+<div class="h-full flex flex-col">
+<!-- Customer Profile Header -->
+<div class="text-center pb-stack-lg border-b border-outline-variant">
+<div class="w-24 h-24 bg-primary-container text-white text-[32px] font-bold rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg overflow-hidden relative group">
+<img alt="Andi Rama" class="w-full h-full object-cover" data-alt="A professional studio portrait of a friendly Indonesian male customer in his 30s, wearing casual professional attire. The background is a clean, modern retail environment with soft bokeh lighting in shades of primary blue and neutral gray. The lighting is bright and high-key, conveying a trustworthy and corporate SaaS aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtFWhRA-soD70QwrBTSeClknAQw0rQgV1Wdwu9qCUB1iBHO3RM0ivinOHBvIUQLkc3iqfvut_5MHJZ0e3PhWBevD94I9izX0WHeCfWqIGZ1HUvqoSyMOTPLqvN9sKvRRAUdYgk-uIRutiFYDP-E28HGx0Hpr7iyjzv-_gGVfTMjhBGIB7I-e3kqWjY3-tMTW-3bT2DZIcYiUbCkv7fUFtydftw2EEUxiWL5A5bdG8oxbhKFK8pqTY4FeqHUBjzPWMzZhiKUI8folYu"/>
+</div>
+<h2 class="text-headline-md font-headline-md">Andi Rama</h2>
+<p class="text-body-md text-outline">ID: HEKAS-88192</p>
+<div class="flex justify-center gap-2 mt-4">
+<button class="px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+<span class="text-label-md font-label-md">Edit</span>
+</button>
+<button class="px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="card_membership">card_membership</span>
+<span class="text-label-md font-label-md">Kartu</span>
+</button>
+</div>
+</div>
+<!-- Detail Tabs / History -->
+<div class="flex-1 py-stack-lg">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Riwayat Transaksi</h3>
+<a class="text-primary text-label-sm font-label-md hover:underline" href="#">Lihat Semua</a>
+</div>
+<div class="space-y-4">
+<!-- Transaction Item 1 -->
+<div class="p-3 bg-background rounded-xl border border-outline-variant flex justify-between items-center">
+<div>
+<p class="text-label-md font-label-md">INV/20231024/001</p>
+<p class="text-label-sm text-outline">24 Okt 2023 • 14:20</p>
+</div>
+<div class="text-right">
+<p class="text-body-md font-bold text-on-surface">Rp 245.000</p>
+<p class="text-[10px] text-secondary font-bold">+24 Poin</p>
+</div>
+</div>
+<!-- Transaction Item 2 -->
+<div class="p-3 bg-background rounded-xl border border-outline-variant flex justify-between items-center">
+<div>
+<p class="text-label-md font-label-md">INV/20231015/042</p>
+<p class="text-label-sm text-outline">15 Okt 2023 • 09:15</p>
+</div>
+<div class="text-right">
+<p class="text-body-md font-bold text-on-surface">Rp 120.000</p>
+<p class="text-[10px] text-secondary font-bold">+12 Poin</p>
+</div>
+</div>
+<!-- Transaction Item 3 -->
+<div class="p-3 bg-background rounded-xl border border-outline-variant flex justify-between items-center">
+<div>
+<p class="text-label-md font-label-md">INV/20230930/118</p>
+<p class="text-label-sm text-outline">30 Sep 2023 • 18:45</p>
+</div>
+<div class="text-right">
+<p class="text-body-md font-bold text-on-surface">Rp 890.000</p>
+<p class="text-[10px] text-secondary font-bold">+89 Poin</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="pt-gutter mt-auto">
+<button class="w-full bg-primary text-on-primary py-4 rounded-2xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl active:scale-95 transition-all group">
+<span class="material-symbols-outlined group-hover:rotate-12 transition-transform" data-icon="shopping_cart_checkout">shopping_cart_checkout</span>
+<span class="text-body-lg font-bold">Mulai Transaksi (Member ini)</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (Mobile context only, usually suppressed but added for utility if required on tablet) -->
+<!-- Suppressed based on UI Designer rules for Details screens, but listed as primary action on lists -->
+<div class="fixed bottom-6 right-6 md:hidden">
+<button class="w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</div>
+<script>
+        // Micro-interactions for list selection
+        document.querySelectorAll('.space-y-3 > div').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.space-y-3 > div').forEach(c => {
+                    c.classList.remove('customer-card-active');
+                    c.classList.add('bg-white');
+                });
+                this.classList.add('customer-card-active');
+                this.classList.remove('bg-white');
+            });
+        });
+
+        // Numeric keyboard simulation (Mental placeholder)
+        console.log("HEKAS POS Customer Interface Initialized");
+    </script>
+</body></html>
