@@ -218,9 +218,44 @@ HEKAS-POS-main/
 
 ## 📊 Stats
 
-- **Total lines of code** (hekas-app/src): ~9000+ lines
-- **API layer**: ~937 lines (8 files)
-- **Components**: 6 reusable + 4 pages
+- **Total lines of code** (hekas-app/src): ~11,879 lines
+- **API layer**: ~1,170 lines (8 files)
+- **Components**: 11 reusable + 4 pages
 - **Routes**: 4 (login, kasir, manager, gudang)
 - **TypeScript**: 0 errors verified
-- **Svelte-check**: 0 errors, 64 a11y warnings
+- **Svelte-check**: 0 errors, 20 a11y warnings
+
+---
+
+## 🧹 Fase P — Polish & Bug Fixes (2026-06-20)
+
+**Goal:** Cleanup a11y warnings, dead code, type safety, edge cases, UX polish.
+
+### Results
+
+| Metric | Before | After | Δ |
+|--------|-------:|------:|---:|
+| TypeScript errors | 0 | 0 | 0 |
+| Svelte-check errors | 0 | 0 | 0 |
+| **A11y warnings** | **83** | **20** | **-63** |
+| `as any` count | 17 | 6 | **-11** |
+| console.log/debug | 7 | 5 | -2 |
+| Total LOC | 11,891 | 11,879 | -12 (dead CSS removed) |
+
+### Sub-fases Completed
+
+- **P.0** Baseline tracking (`e187785`)
+- **P.1** A11y label association — 33 labels fixed (`8a3d9a8`)
+- **P.2** A11y keyboard handlers — 6 modal backdrops + mouseover→CSS (`0e880ec`)
+- **P.3** Dead CSS removal — 13 unused selectors (`1fb78b3`)
+- **P.4** Svelte 5 reactivity — 10 `untrack()` fixes (`f9c7105`)
+- **P.5** Type safety — 11 `as any` removed in backup.ts (`0ef5587`)
+- **P.6** Edge case hardening — SKU/Barcode uniqueness (`02ff99a`)
+- **P.8** SSR placement — nested button → div role=button (`0907578`)
+
+### Remaining Warnings (20)
+
+- 10× `a11y_interactive_supports_focus` — divs with role need explicit tabindex
+- 10× `a11y_consider_explicit_label` — interactive elements without aria-label
+
+These are trade-offs in existing layout patterns and acceptable for current scope.
