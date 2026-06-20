@@ -1013,10 +1013,15 @@
 
 									<!-- Product image (real or emoji fallback) -->
 									{#if product.image_data}
-										<button
-											class="absolute inset-0 w-full h-full p-0"
-											style="background: transparent; border: none; cursor: zoom-in"
-											onclick={() => (lightboxImage = product.image_data ?? null)}
+										<!-- svelte-ignore a11y_click_events_have_key_events -->
+										<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+										<div
+											class="absolute inset-0 w-full h-full"
+											style="background: transparent; cursor: zoom-in"
+											onclick={(e) => { e.stopPropagation(); lightboxImage = product.image_data ?? null; }}
+											role="button"
+											tabindex="-1"
+											aria-label={`Zoom gambar ${product.name}`}
 											title="Klik untuk zoom"
 										>
 											<img
@@ -1026,7 +1031,7 @@
 												style="object-fit: cover; display: block"
 												loading="lazy"
 											/>
-										</button>
+										</div>
 									{:else}
 										<span class="relative" style="font-size: 56px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', system-ui">
 											{product.image}
