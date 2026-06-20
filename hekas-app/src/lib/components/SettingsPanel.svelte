@@ -131,10 +131,11 @@
             <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: #0F172A;">
               🔊 Suara Feedback
             </h3>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; background: {soundOn ? '#F0FDF4' : '#F1F5F9'}; border-radius: 20px;">
+            <div style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; background: {soundOn ? '#F0FDF4' : '#F1F5F9'}; border-radius: 20px;">
               <div
                 role="switch"
                 aria-checked={soundOn}
+                aria-label="Toggle suara feedback"
                 tabindex="0"
                 onclick={() => handleSoundToggle(!soundOn)}
                 onkeydown={(e) => (e.key === ' ' || e.key === 'Enter') && handleSoundToggle(!soundOn)}
@@ -147,7 +148,7 @@
               <span style="font-size: 11px; font-weight: 600; color: {soundOn ? '#059669' : '#64748B'};">
                 {soundOn ? 'Aktif' : 'Mati'}
               </span>
-            </label>
+            </div>
           </div>
           <p style="margin: 0 0 10px; font-size: 12px; color: #64748B; line-height: 1.5;">
             Bunyi bip saat checkout berhasil, scan barcode, error, dll.

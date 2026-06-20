@@ -287,8 +287,8 @@
           />
 
           <!-- Amount -->
-          <div>
-            <label class="block text-xs text-gray-600 mb-0.5">Nominal</label>
+          <label class="block">
+            <span class="block text-xs text-gray-600 mb-0.5">Nominal</span>
             <div class="flex items-center gap-2">
               <span class="text-sm text-gray-500 font-medium">Rp</span>
               <input
@@ -300,13 +300,13 @@
                 class="flex-1 px-2 py-1.5 border border-gray-300 rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
-          </div>
+          </label>
 
           <!-- Tunai: tendered + change -->
           {#if needsTendered(p.kind)}
             <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-xs text-gray-600 mb-0.5">Disetor</label>
+              <label class="block">
+                <span class="block text-xs text-gray-600 mb-0.5">Disetor</span>
                 <div class="flex items-center gap-1">
                   <span class="text-xs text-gray-500">Rp</span>
                   <input
@@ -319,9 +319,9 @@
                     class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
-              </div>
+              </label>
               <div>
-                <label class="block text-xs text-gray-600 mb-0.5">Kembalian</label>
+                <span class="block text-xs text-gray-600 mb-0.5">Kembalian</span>
                 <div class="px-2 py-1.5 bg-emerald-100 border border-emerald-300 rounded-lg text-sm font-bold text-emerald-800 text-right">
                   {formatRupiah(p.change ?? 0)}
                 </div>
@@ -344,10 +344,10 @@
 
           <!-- Reference (kartu/transfer) -->
           {#if needsReference(p.kind)}
-            <div>
-              <label class="block text-xs text-gray-600 mb-0.5">
+            <label class="block">
+              <span class="block text-xs text-gray-600 mb-0.5">
                 No. Referensi / Approval <span class="text-red-500">*</span>
-              </label>
+              </span>
               <input
                 type="text"
                 value={p.reference ?? ''}
@@ -356,7 +356,7 @@
                 disabled={disabled}
                 class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
               />
-            </div>
+            </label>
           {/if}
 
           {#if p.kind === 'qris' || p.kind === 'ewallet'}

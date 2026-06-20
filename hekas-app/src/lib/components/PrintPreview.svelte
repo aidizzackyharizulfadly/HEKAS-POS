@@ -257,29 +257,29 @@
 							⚙️ Pengaturan Toko
 						</div>
 						<div class="p-3 space-y-2" style="background: #fff">
-							<div>
-								<label style="font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase">Nama Toko</label>
+							<label class="block">
+								<span style="font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase">Nama Toko</span>
 								<input bind:value={settings.store_name} class="w-full mt-1 px-2 py-1.5 rounded-md" style="font-size: 12px; border: 1px solid #E2E8F0" />
-							</div>
-							<div>
-								<label style="font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase">Alamat</label>
+							</label>
+							<label class="block">
+								<span style="font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase">Alamat</span>
 								<input bind:value={settings.address} class="w-full mt-1 px-2 py-1.5 rounded-md" style="font-size: 12px; border: 1px solid #E2E8F0" />
-							</div>
-							<div>
-								<label style="font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase">Telp</label>
+							</label>
+							<label class="block">
+								<span style="font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase">Telp</span>
 								<input bind:value={settings.phone} class="w-full mt-1 px-2 py-1.5 rounded-md" style="font-size: 12px; border: 1px solid #E2E8F0" />
-							</div>
-							<div>
-								<label style="font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase">Footer</label>
+							</label>
+							<label class="block">
+								<span style="font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase">Footer</span>
 								<input bind:value={settings.footer_message} class="w-full mt-1 px-2 py-1.5 rounded-md" style="font-size: 12px; border: 1px solid #E2E8F0" />
-							</div>
-							<div>
-								<label style="font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase">Lebar Kertas</label>
+							</label>
+							<label class="block">
+								<span style="font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase">Lebar Kertas</span>
 								<select bind:value={settings.paper_width} class="w-full mt-1 px-2 py-1.5 rounded-md" style="font-size: 12px; border: 1px solid #E2E8F0">
 									<option value="58mm">58mm (32 char)</option>
 									<option value="80mm">80mm (42 char)</option>
 								</select>
-							</div>
+							</label>
 							<button
 								onclick={handleSaveSettings}
 								class="w-full py-2 rounded-md"

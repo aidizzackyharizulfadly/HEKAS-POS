@@ -468,30 +468,30 @@
 					<div style="font-size: 11px; color: #64748B; margin-bottom: 16px">Tambah / kurangi stok satu produk</div>
 
 					<div class="space-y-3">
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Produk</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Produk</span>
 							<select bind:value={mutasiProductId} class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; background: #fff">
 								<option value="">— Pilih produk —</option>
 								{#each products.filter((p) => p.is_active) as p}
 									<option value={p.id}>{p.image} {p.name} (stok: {p.stock})</option>
 								{/each}
 							</select>
-						</div>
+						</label>
 
 						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Delta Stok</label>
-							<div class="flex items-center gap-2 mt-1">
-								<button onclick={() => mutasiDelta = -10} class="px-3 py-2 rounded-lg" style="font-size: 12px; font-weight: 600; background: #FEE2E2; color: #DC2626">−10</button>
-								<button onclick={() => mutasiDelta = -1} class="px-3 py-2 rounded-lg" style="font-size: 12px; font-weight: 600; background: #FEE2E2; color: #DC2626">−1</button>
-								<input type="number" bind:value={mutasiDelta} class="flex-1 px-3 py-2 rounded-lg text-center" style="font-size: 16px; font-weight: 800; border: 1px solid #E2E8F0" />
-								<button onclick={() => mutasiDelta = 1} class="px-3 py-2 rounded-lg" style="font-size: 12px; font-weight: 600; background: #D1FAE5; color: #059669">+1</button>
-								<button onclick={() => mutasiDelta = 10} class="px-3 py-2 rounded-lg" style="font-size: 12px; font-weight: 600; background: #D1FAE5; color: #059669">+10</button>
-							</div>
-							<div style="font-size: 10px; color: #94A3B8; margin-top: 6px">Positif = tambah (restock), negatif = kurangi (rusak/expired)</div>
-						</div>
+												<label for="mutasi-delta" style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Delta Stok</label>
+												<div class="flex items-center gap-2 mt-1">
+													<button onclick={() => mutasiDelta = -10} class="px-3 py-2 rounded-lg" style="font-size: 12px; font-weight: 600; background: #FEE2E2; color: #DC2626">−10</button>
+													<button onclick={() => mutasiDelta = -1} class="px-3 py-2 rounded-lg" style="font-size: 12px; font-weight: 600; background: #FEE2E2; color: #DC2626">−1</button>
+													<input id="mutasi-delta" type="number" bind:value={mutasiDelta} class="flex-1 px-3 py-2 rounded-lg text-center" style="font-size: 16px; font-weight: 800; border: 1px solid #E2E8F0" />
+													<button onclick={() => mutasiDelta = 1} class="px-3 py-2 rounded-lg" style="font-size: 12px; font-weight: 600; background: #D1FAE5; color: #059669">+1</button>
+													<button onclick={() => mutasiDelta = 10} class="px-3 py-2 rounded-lg" style="font-size: 12px; font-weight: 600; background: #D1FAE5; color: #059669">+10</button>
+												</div>
+												<div style="font-size: 10px; color: #94A3B8; margin-top: 6px">Positif = tambah (restock), negatif = kurangi (rusak/expired)</div>
+											</div>
 
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Alasan</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Alasan</span>
 							<select bind:value={mutasiReason} class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; background: #fff">
 								<option value="restock">Restock dari supplier</option>
 								<option value="rusak">Barang rusak</option>
@@ -501,7 +501,7 @@
 								<option value="transfer">Transfer antar gudang</option>
 								<option value="lainnya">Lainnya</option>
 							</select>
-						</div>
+						</label>
 
 						{#if mutasiProductId !== ''}
 							{@const p = products.find((x) => x.id === Number(mutasiProductId))}
@@ -550,49 +550,49 @@
 					<button onclick={closeEdit}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></button>
 				</div>
 				<form onsubmit={(e) => { e.preventDefault(); saveEdit(); }} class="p-5 space-y-3">
-					<div>
-						<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Nama</label>
+					<label class="block">
+						<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Nama</span>
 						<input bind:value={editForm.name} required class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0" />
-					</div>
+					</label>
 					<div class="grid grid-cols-2 gap-3">
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">SKU</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">SKU</span>
 							<input bind:value={editForm.sku} required class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; font-family: 'SF Mono', Monaco, monospace" />
-						</div>
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Barcode</label>
+						</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Barcode</span>
 							<input bind:value={editForm.barcode} required class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; font-family: 'SF Mono', Monaco, monospace" />
-						</div>
+						</label>
 					</div>
-					<div>
-						<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Kategori</label>
+					<label class="block">
+						<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Kategori</span>
 						<select bind:value={editForm.category} required class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; background: #fff">
 							{#each categories.filter((c) => c.id !== 'all') as c}
 								<option value={c.id}>{c.label}</option>
 							{/each}
 						</select>
-					</div>
+					</label>
 					<div class="grid grid-cols-2 gap-3">
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Harga (Rp)</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Harga (Rp)</span>
 							<input type="number" bind:value={editForm.price} required min="0" class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0" />
-						</div>
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Stok</label>
+						</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Stok</span>
 							<input type="number" bind:value={editForm.stock} required min="0" class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0" />
-						</div>
+						</label>
 					</div>
 					<div class="grid grid-cols-2 gap-3">
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Unit</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Unit</span>
 							<select bind:value={editForm.unit} class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; background: #fff">
 								<option value="pcs">pcs</option><option value="btl">btl</option><option value="kg">kg</option><option value="ltr">ltr</option><option value="bks">bks</option>
 							</select>
-						</div>
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Icon</label>
+						</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Icon</span>
 							<input bind:value={editForm.image} maxlength="4" class="w-full mt-1 px-3 py-2 rounded-lg text-center" style="font-size: 18px; border: 1px solid #E2E8F0" />
-						</div>
+						</label>
 					</div>
 					{#if editError}
 						<div class="px-3 py-2 rounded-lg flex items-start gap-2" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; font-size: 12px">
@@ -620,48 +620,48 @@
 					<button onclick={closeCreate}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></button>
 				</div>
 				<form onsubmit={(e) => { e.preventDefault(); saveCreate(); }} class="p-5 space-y-3">
-					<div>
-						<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Nama Produk</label>
+					<label class="block">
+						<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Nama Produk</span>
 						<input bind:value={createForm.name} required class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0" placeholder="Contoh: Teh Pucuk 350ml" />
-					</div>
+					</label>
 					<div class="grid grid-cols-2 gap-3">
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">SKU</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">SKU</span>
 							<input bind:value={createForm.sku} required class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; font-family: 'SF Mono', Monaco, monospace" placeholder="MNM006" />
-						</div>
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Barcode</label>
+						</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Barcode</span>
 							<input bind:value={createForm.barcode} required class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; font-family: 'SF Mono', Monaco, monospace" placeholder="8991234567890" />
-						</div>
+						</label>
 					</div>
-					<div>
-						<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Kategori</label>
+					<label class="block">
+						<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Kategori</span>
 						<select bind:value={createForm.category} required class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; background: #fff">
 							{#each categories.filter((c) => c.id !== 'all') as c}
 								<option value={c.id}>{c.label}</option>
 							{/each}
 						</select>
-					</div>
+					</label>
 					<div class="grid grid-cols-3 gap-3">
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Harga (Rp)</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Harga (Rp)</span>
 							<input type="number" bind:value={createForm.price} required min="0" class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0" />
-						</div>
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Stok Awal</label>
+						</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Stok Awal</span>
 							<input type="number" bind:value={createForm.stock} required min="0" class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0" />
-						</div>
-						<div>
-							<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Unit</label>
+						</label>
+						<label class="block">
+							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Unit</span>
 							<select bind:value={createForm.unit} class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; background: #fff">
 								<option value="pcs">pcs</option><option value="btl">btl</option><option value="kg">kg</option><option value="ltr">ltr</option><option value="bks">bks</option>
 							</select>
-						</div>
+						</label>
 					</div>
-					<div>
-						<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Icon (emoji)</label>
+					<label class="block">
+						<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Icon (emoji)</span>
 						<input bind:value={createForm.image} maxlength="4" class="w-full mt-1 px-3 py-2 rounded-lg text-center" style="font-size: 18px; border: 1px solid #E2E8F0" placeholder="📦" />
-					</div>
+					</label>
 					{#if createError}
 						<div class="px-3 py-2 rounded-lg flex items-start gap-2" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; font-size: 12px">
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 2px; flex-shrink: 0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>

@@ -861,8 +861,8 @@
 						<div class="rounded-2xl p-5" style="background: #fff; border: 1px solid #E2E8F0">
 							<div style="font-size: 14px; font-weight: 700; color: #0F172A; margin-bottom: 12px">Konfigurasi Bot Telegram</div>
 							<div class="space-y-3">
-								<div>
-									<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Bot Token</label>
+								<label class="block">
+									<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Bot Token</span>
 									<input
 										type="password"
 										bind:value={telegram.botToken}
@@ -870,9 +870,9 @@
 										class="w-full mt-1 px-3 py-2 rounded-lg"
 										style="font-size: 12px; border: 1px solid #E2E8F0; font-family: 'SF Mono', Monaco, monospace"
 									/>
-								</div>
-								<div>
-									<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Chat ID</label>
+								</label>
+								<label class="block">
+									<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Chat ID</span>
 									<input
 										type="text"
 										bind:value={telegram.chatId}
@@ -880,7 +880,7 @@
 										class="w-full mt-1 px-3 py-2 rounded-lg"
 										style="font-size: 12px; border: 1px solid #E2E8F0; font-family: 'SF Mono', Monaco, monospace"
 									/>
-								</div>
+								</label>
 								<button
 									onclick={() => alert('Test notifikasi akan dikirim (fitur demo, belum tersambung ke Telegram API)')}
 									class="w-full py-2 rounded-lg"
@@ -910,15 +910,16 @@
 								{/each}
 
 								<div class="pt-3 mt-3" style="border-top: 1px solid #E2E8F0">
-									<label style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Threshold "Transaksi Besar"</label>
-									<input
-										type="number"
-										bind:value={telegram.threshold}
-										class="w-full mt-1 px-3 py-2 rounded-lg"
-										style="font-size: 12px; border: 1px solid #E2E8F0"
-									/>
-									<div style="font-size: 10px; color: #94A3B8; margin-top: 4px">Saat ini: {fmt(telegram.threshold)}</div>
-								</div>
+																	<label for="telegram-threshold" style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Threshold "Transaksi Besar"</label>
+																	<input
+																		id="telegram-threshold"
+																		type="number"
+																		bind:value={telegram.threshold}
+																		class="w-full mt-1 px-3 py-2 rounded-lg"
+																		style="font-size: 12px; border: 1px solid #E2E8F0"
+																	/>
+																	<div style="font-size: 10px; color: #94A3B8; margin-top: 4px">Saat ini: {fmt(telegram.threshold)}</div>
+																</div>
 							</div>
 						</div>
 					</div>

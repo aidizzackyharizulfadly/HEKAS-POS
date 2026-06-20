@@ -2017,14 +2017,14 @@
 					{ label: 'No. HP', placeholder: '08xxxxxxxxxx' },
 					{ label: 'Email (opsional)', placeholder: 'email@domain.com' },
 				] as f}
-					<div class="mb-3">
-						<label style="font-size: 12; font-weight: 600; display: block; margin-bottom: 4">{f.label}</label>
+					<label class="block mb-3">
+						<span style="font-size: 12; font-weight: 600; display: block; margin-bottom: 4">{f.label}</span>
 						<input
 							placeholder={f.placeholder}
 							class="w-full px-3 py-2.5 rounded-xl border outline-none"
 							style="background: #F8FAFC; border-color: #E2EBF4; font-size: 13"
 						/>
-					</div>
+					</label>
 				{/each}
 				<button
 					onclick={() => modal = 'none'}
