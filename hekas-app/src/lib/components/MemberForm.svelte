@@ -7,6 +7,7 @@
     - showToast: (kind, msg) => void  (signature kasir: (kind, msg))
 -->
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { api, TIER_CONFIG } from '$lib/api';
   import type { Member } from '$lib/api';
 
@@ -24,15 +25,15 @@
 
   const isEdit = $derived(!!member);
 
-  // Form state
-  let name = $state(member?.name ?? '');
-  let phone = $state(member?.phone ?? '');
-  let email = $state(member?.email ?? '');
-  let address = $state(member?.address ?? '');
-  let birthday = $state(member?.birthday ?? '');
-  let tier = $state<Member['tier']>(member?.tier ?? 'Silver');
-  let points = $state<number>(member?.points ?? 0);
-  let note = $state(member?.note ?? '');
+  // Form state (untrack: initial value only, user edits are independent of prop changes)
+  let name = $state(untrack(() => member?.name ?? ''));
+  let phone = $state(untrack(() => member?.phone ?? ''));
+  let email = $state(untrack(() => member?.email ?? ''));
+  let address = $state(untrack(() => member?.address ?? ''));
+  let birthday = $state(untrack(() => member?.birthday ?? ''));
+  let tier = $state<Member['tier']>(untrack(() => member?.tier ?? 'Silver'));
+  let points = $state<number>(untrack(() => member?.points ?? 0));
+  let note = $state(untrack(() => member?.note ?? ''));
 
   let saving = $state(false);
   let errors = $state<Record<string, string>>({});

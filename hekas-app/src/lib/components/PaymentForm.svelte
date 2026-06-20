@@ -9,6 +9,7 @@
   //   - Tombol "Bayar" disabled jika remaining !== 0 atau ada entry invalid
   //   - Tombol "Bayar Sisa dgn Tunai" (auto-fill cash untuk remaining)
 
+  import { untrack } from 'svelte';
   import type { PaymentMethod, PaymentMethodKind } from '$lib/payment.js';
   import {
     PAYMENT_METHOD_LABEL, PAYMENT_METHOD_ICON,
@@ -32,18 +33,20 @@
   } = $props();
 
   // State
-  let payments: PaymentMethod[] = $state([
-    {
-      id: genPaymentMethodId(),
-      kind: 'tunai' as PaymentMethodKind,
-      label: undefined,
-      amount: grandTotal,           // default: full amount
-      tendered: grandTotal,         // default: customer bayar pas
-      change: 0,
-      reference: undefined,
-      paid_at: new Date().toISOString(),
-    },
-  ]);
+  let payments: PaymentMethod[] = $state(
+    untrack(() => [
+      {
+        id: genPaymentMethodId(),
+        kind: 'tunai' as PaymentMethodKind,
+        label: undefined,
+        amount: grandTotal,           // default: full amount
+        tendered: grandTotal,         // default: customer bayar pas
+        change: 0,
+        reference: undefined,
+        paid_at: new Date().toISOString(),
+      },
+    ])
+  );
 
   // Derived: summary + remaining
   let summary = $derived(summarizePayments(payments));
