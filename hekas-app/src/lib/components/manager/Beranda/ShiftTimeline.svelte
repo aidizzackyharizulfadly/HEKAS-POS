@@ -8,6 +8,9 @@
    * @prop rangeStart - range waktu mulai (default 06:00)
    * @prop rangeEnd - range waktu selesai (default 22:00)
    */
+  import { shiftStatus } from '$lib/utils/status-helpers';
+  import { statusDotClass } from '$lib/utils/status-classes';
+
   type Shift = {
     id: string | number;
     cashier_name: string;
@@ -76,11 +79,9 @@
     return String(Math.floor(h)).padStart(2, '0') + ':00';
   }
 
-  // Status → color
+  // Status → color (pakai shiftStatus helper untuk konsistensi lintas komponen)
   function barColor(s: Shift): string {
-    if (s.status === 'AKTIF') return 'bg-green-500';
-    if (s.status === 'SELESAI') return 'bg-blue-400';
-    return 'bg-gray-300';
+    return statusDotClass(shiftStatus(s.status));
   }
 
   function fmtCurrency(n: number): string {
@@ -141,10 +142,10 @@
     <!-- Legend -->
     <div class="mt-3 flex gap-3 text-[10px] text-gray-500">
       <span class="flex items-center gap-1">
-        <span class="h-2 w-2 rounded-full bg-green-500"></span> Aktif
+        <span class="h-2 w-2 rounded-full {statusDotClass(shiftStatus('AKTIF'))}"></span> {shiftStatus('AKTIF').label}
       </span>
       <span class="flex items-center gap-1">
-        <span class="h-2 w-2 rounded-full bg-blue-400"></span> Selesai
+        <span class="h-2 w-2 rounded-full {statusDotClass(shiftStatus('SELESAI'))}"></span> {shiftStatus('SELESAI').label}
       </span>
     </div>
   {/if}

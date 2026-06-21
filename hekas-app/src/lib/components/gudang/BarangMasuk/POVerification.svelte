@@ -11,6 +11,7 @@
 		poVariance,
 		type POVerifyItem
 	} from '$lib/utils/gudang-helpers';
+	import { statusRowClass, statusTextClass } from '$lib/utils/status-classes';
 
 	interface Props {
 		items: POVerifyItem[];
@@ -30,8 +31,14 @@
 
 	function rowClass(item: POVerifyItem): string {
 		if (item.receivedQty === item.qty) return '';
-		if (item.receivedQty < item.qty) return 'bg-amber-50 border-l-4 border-amber-400';
-		return 'bg-red-50 border-l-4 border-red-400';
+		if (item.receivedQty < item.qty)
+			return statusRowClass({ label: '', color: 'yellow', icon: '', severity: 'warning' });
+		return statusRowClass({ label: '', color: 'red', icon: '', severity: 'error' });
+	}
+
+	function varianceClass(diff: number): string {
+		if (diff === 0) return statusTextClass({ label: '', color: 'green', icon: '', severity: 'success' });
+		return statusTextClass({ label: '', color: 'yellow', icon: '', severity: 'warning' });
 	}
 
 	function varianceLabel(item: POVerifyItem): string {
@@ -68,11 +75,7 @@
 		</div>
 		<div class="text-right">
 			<div class="text-xs text-slate-500">Variance</div>
-			<div
-				class="text-lg font-bold tabular-nums"
-				class:text-emerald-700={summary.variance === 0}
-				class:text-amber-700={summary.variance !== 0}
-			>
+			<div class="text-lg font-bold tabular-nums {varianceClass(summary.variance)}">
 				{summary.variance === 0 ? '✓ Cocok' : summary.variance > 0 ? `+${summary.variance}` : summary.variance}
 			</div>
 		</div>
@@ -130,9 +133,7 @@
 							/>
 						</td>
 						<td
-							class="px-3 py-2 text-center text-xs font-mono font-semibold tabular-nums"
-							class:text-emerald-700={diff === 0}
-							class:text-amber-700={diff !== 0}
+							class="px-3 py-2 text-center text-xs font-mono font-semibold tabular-nums {varianceClass(diff)}"
 						>
 							{varianceLabel(item)}
 						</td>

@@ -67,3 +67,21 @@ export function statusDotClass(meta: StatusMeta): string {
 export function statusTextClass(meta: StatusMeta): string {
 	return COLOR_CLASSES_TEXT[meta.color] ?? COLOR_CLASSES_TEXT.gray;
 }
+
+/**
+ * Get row-tint + left-border class untuk inline list/table status row highlight.
+ * Cocok untuk PO verification row, SJ review row, dll.
+ */
+export const ROW_LEFT_BORDER = {
+	red: 'bg-red-50 border-l-4 border-red-400',
+	yellow: 'bg-amber-50 border-l-4 border-amber-400',
+	green: 'bg-emerald-50 border-l-4 border-emerald-400',
+	purple: 'bg-purple-50 border-l-4 border-purple-400',
+	blue: 'bg-blue-50 border-l-4 border-blue-400',
+	orange: 'bg-orange-50 border-l-4 border-orange-400',
+	gray: 'bg-slate-50 border-l-4 border-slate-400'
+} as const;
+
+export function statusRowClass(meta: StatusMeta): string {
+	return ROW_LEFT_BORDER[meta.color] ?? ROW_LEFT_BORDER.gray;
+}

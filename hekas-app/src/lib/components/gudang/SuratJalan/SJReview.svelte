@@ -4,6 +4,8 @@
 	 * Review Surat Jalan — approve/reject dengan catatan wajib untuk reject.
 	 */
 	import type { SuratJalan } from '$lib/api/surat-jalan';
+	import { suratJalanStatus } from '$lib/utils/status-helpers';
+	import { statusClasses } from '$lib/utils/status-classes';
 
 	interface Props {
 		sj: SuratJalan;
@@ -54,6 +56,9 @@
 			oncancel();
 		}
 	}
+
+	/** SJ status meta — dipisah supaya reactive. */
+	const sjMeta = $derived(suratJalanStatus(sj.status ?? 'pending'));
 </script>
 
 <svelte:window onkeydown={handleKey} />
@@ -65,10 +70,9 @@
 				<div class="text-xs text-slate-500 uppercase">Surat Jalan</div>
 				<div class="font-mono text-base font-bold text-slate-900">{sj.sjNumber}</div>
 			</div>
-			<span
-				class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800"
-			>
-				{(sj.status ?? 'pending').toUpperCase()}
+			<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold {statusClasses(sjMeta)}">
+				<span aria-hidden="true">{sjMeta.icon}</span>
+				{sjMeta.label}
 			</span>
 		</div>
 		<div class="mt-2 text-sm text-slate-700">

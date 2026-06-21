@@ -1,5 +1,5 @@
 /**
- * Tests for status-classes.ts — 25 tests
+ * Tests for status-classes.ts — 25+ tests
  */
 
 import { describe, it, expect } from 'vitest';
@@ -7,11 +7,13 @@ import {
 	COLOR_CLASSES,
 	COLOR_CLASSES_SOLID,
 	COLOR_CLASSES_TEXT,
+	ROW_LEFT_BORDER,
 	statusClasses,
 	statusDotClass,
-	statusTextClass
+	statusTextClass,
+	statusRowClass
 } from '../../src/lib/utils/status-classes';
-import { orderStatus, stockStatus } from '../../src/lib/utils/status-helpers';
+import { orderStatus, stockStatus, type StatusMeta } from '../../src/lib/utils/status-helpers';
 
 describe('COLOR_CLASSES', () => {
 	it('exports 7 color variants', () => {
@@ -129,5 +131,43 @@ describe('statusTextClass', () => {
 	it('falls back to gray for unknown', () => {
 		const fakeMeta = { label: 'X', color: 'unknown' as any, icon: '•', severity: 'neutral' as const };
 		expect(statusTextClass(fakeMeta)).toBe(COLOR_CLASSES_TEXT.gray);
+	});
+});
+
+describe('statusRowClass (Q.27 — PO/SJ verification row highlight)', () => {
+	const fakeMeta = (color: StatusMeta['color']): StatusMeta => ({
+		label: 'x',
+		color,
+		icon: '•',
+		severity: 'neutral'
+	});
+
+	it('exports 7 row-tint variants with border-l-4 + tinted bg', () => {
+		expect(Object.keys(ROW_LEFT_BORDER)).toHaveLength(7);
+		// yellow→amber, green→emerald, gray→slate (Tailwind naming)
+		const colorToBg: Record<string, string> = { yellow: 'amber', green: 'emerald', gray: 'slate' };
+		for (const [color, cls] of Object.entries(ROW_LEFT_BORDER)) {
+			const bgName = colorToBg[color] ?? color;
+			expect(cls, `${color} missing bg tint`).toMatch(new RegExp(`^bg-${bgName}-`));
+			expect(cls, `${color} missing border-l-4`).toMatch(/border-l-4/);
+			expect(cls, `${color} missing border-{color}-400`).toMatch(new RegExp(`border-${bgName}-400`));
+		}
+	});
+
+	it('returns ROW_LEFT_BORDER entry for known color', () => {
+		expect(statusRowClass(fakeMeta('yellow'))).toBe(ROW_LEFT_BORDER.yellow);
+		expect(statusRowClass(fakeMeta('red'))).toBe(ROW_LEFT_BORDER.red);
+	});
+
+	it('falls back to gray for unknown color', () => {
+		const meta = fakeMeta('unknown' as any);
+		expect(statusRowClass(meta)).toBe(ROW_LEFT_BORDER.gray);
+	});
+
+	it('all colors include border-l-4 (consistent visual treatment)', () => {
+		const colors: StatusMeta['color'][] = ['red', 'yellow', 'green', 'purple', 'blue', 'orange', 'gray'];
+		for (const c of colors) {
+			expect(statusRowClass(fakeMeta(c))).toContain('border-l-4');
+		}
 	});
 });

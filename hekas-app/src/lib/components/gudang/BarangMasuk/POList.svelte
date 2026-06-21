@@ -4,6 +4,8 @@
 -->
 <script lang="ts">
   import { fmtIDR, formatDate } from '$lib/utils/format';
+  import { purchaseOrderStatus } from '$lib/utils/status-helpers';
+  import { statusClasses } from '$lib/utils/status-classes';
 
   export interface PO {
     id: number | string;
@@ -27,12 +29,6 @@
   let filter: 'all' | 'MENUNGGU_VERIFIKASI' | 'TERVERIFIKASI' | 'DITOLAK' = $state('all');
 
   const filteredPos = $derived(filter === 'all' ? pos : pos.filter((p) => p.status === filter));
-
-  const statusMap: Record<string, { label: string; bg: string; text: string }> = {
-    MENUNGGU_VERIFIKASI: { label: 'Menunggu', bg: 'bg-yellow-50', text: 'text-yellow-800' },
-    TERVERIFIKASI:       { label: 'Terverifikasi', bg: 'bg-green-50',  text: 'text-green-800'  },
-    DITOLAK:             { label: 'Ditolak', bg: 'bg-red-50',    text: 'text-red-800'    }
-  };
 </script>
 
 <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -75,7 +71,7 @@
       </thead>
       <tbody class="divide-y divide-gray-100">
         {#each filteredPos as po (po.id)}
-          {@const s = statusMap[po.status]}
+        {@const s = purchaseOrderStatus(po.status)}
           <tr class="hover:bg-gray-50">
             <td class="px-4 py-2 font-mono font-medium text-gray-800">{po.po_no}</td>
             <td class="px-4 py-2">{po.supplier_name}</td>
@@ -83,7 +79,8 @@
             <td class="px-4 py-2 text-right tabular-nums">{po.total_items}</td>
             <td class="px-4 py-2 text-right tabular-nums">{po.total_value != null ? fmtIDR(po.total_value) : '-'}</td>
             <td class="px-4 py-2">
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {s.bg} {s.text}">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium {statusClasses(s)}">
+                <span aria-hidden="true">{s.icon}</span>
                 {s.label}
               </span>
             </td>

@@ -187,6 +187,28 @@ export function suratJalanStatus(status: string): StatusMeta {
 	}
 }
 
+// ─── Purchase Order status (gudang incoming) ─────────────────────────────────
+
+export type PurchaseOrderStatus = 'menunggu_verifikasi' | 'terverifikasi' | 'ditolak';
+
+export function purchaseOrderStatus(status: string): StatusMeta {
+	const s = status.toLowerCase();
+	switch (s) {
+		case 'menunggu_verifikasi':
+		case 'pending':
+			return { label: 'Menunggu', color: 'yellow', icon: '⏳', severity: 'warning' };
+		case 'terverifikasi':
+		case 'verified':
+		case 'disetujui':
+			return { label: 'Terverifikasi', color: 'green', icon: '✓', severity: 'success' };
+		case 'ditolak':
+		case 'rejected':
+			return { label: 'Ditolak', color: 'red', icon: '✕', severity: 'error' };
+		default:
+			return { label: status, color: 'gray', icon: '•', severity: 'neutral' };
+	}
+}
+
 // ─── Leave request status (manager) ────────────────────────────────────────
 
 export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';

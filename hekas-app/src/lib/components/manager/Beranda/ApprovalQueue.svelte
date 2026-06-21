@@ -10,6 +10,8 @@
    * @prop onreject - callback saat manager klik Tolak
    * @prop onview - callback saat user klik item (lihat detail)
    */
+  import { statusClasses, statusRowClass } from '$lib/utils/status-classes';
+
   type SuratJalan = {
     id: string | number;
     sj_no: string;
@@ -51,13 +53,19 @@
     const day = Math.floor(hr / 24);
     return `${day}h`;
   }
+
+  /** Pending badge + urgent row — pakai status-classes untuk konsistensi visual. */
+  const PENDING_META = { label: 'pending', color: 'yellow' as const, icon: '⏳', severity: 'warning' as const };
+  const URGENT_META = { label: 'urgent', color: 'yellow' as const, icon: '⚠️', severity: 'warning' as const };
+  const NORMAL_ROW_META = { label: 'normal', color: 'gray' as const, icon: '', severity: 'neutral' as const };
 </script>
 
 <section class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
   <header class="mb-3 flex items-center justify-between">
     <h2 class="text-base font-semibold text-gray-900">⏳ Perlu Persetujuan</h2>
     {#if items.length > 0}
-      <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+      <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {statusClasses(PENDING_META)}">
+        <span aria-hidden="true">{PENDING_META.icon}</span>
         {items.length} pending
       </span>
     {/if}
@@ -71,10 +79,8 @@
     <ul class="space-y-2">
       {#each visible as sj (sj.id)}
         <li
-          class="rounded-md border p-2.5 transition hover:border-amber-300 hover:bg-amber-50"
+          class="rounded-md border p-2.5 transition hover:border-amber-300 hover:bg-amber-50 {sj.urgent ? statusRowClass(URGENT_META) : statusRowClass(NORMAL_ROW_META)}"
           class:border-amber-300={sj.urgent}
-          class:bg-amber-50={sj.urgent}
-          class:border-gray-200={!sj.urgent}
         >
           <!-- Header: SJ no + time -->
           <div class="mb-1.5 flex items-center justify-between">

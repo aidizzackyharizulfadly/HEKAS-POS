@@ -11,7 +11,8 @@ import {
 	attendanceStatus,
 	suratJalanStatus,
 	leaveStatus,
-	severityToColor
+	severityToColor,
+	purchaseOrderStatus
 } from '../../src/lib/utils/status-helpers';
 
 describe('stockStatus', () => {
@@ -274,5 +275,55 @@ describe('severityToColor', () => {
 
 	it('maps info to blue', () => {
 		expect(severityToColor('info')).toBe('blue');
+	});
+});
+
+describe('purchaseOrderStatus (Q.27 — PO verification badge)', () => {
+	it('maps menunggu_verifikasi → yellow warning', () => {
+		const meta = purchaseOrderStatus('MENUNGGU_VERIFIKASI');
+		expect(meta.color).toBe('yellow');
+		expect(meta.severity).toBe('warning');
+		expect(meta.label).toBe('Menunggu');
+	});
+
+	it('maps terverifikasi → green success', () => {
+		const meta = purchaseOrderStatus('TERVERIFIKASI');
+		expect(meta.color).toBe('green');
+		expect(meta.severity).toBe('success');
+		expect(meta.label).toBe('Terverifikasi');
+	});
+
+	it('maps ditolak → red error', () => {
+		const meta = purchaseOrderStatus('DITOLAK');
+		expect(meta.color).toBe('red');
+		expect(meta.severity).toBe('error');
+		expect(meta.label).toBe('Ditolak');
+	});
+
+	it('handles case-insensitive', () => {
+		expect(purchaseOrderStatus('menunggu_verifikasi').color).toBe('yellow');
+		expect(purchaseOrderStatus('pending').color).toBe('yellow');
+		expect(purchaseOrderStatus('verified').color).toBe('green');
+		expect(purchaseOrderStatus('rejected').color).toBe('red');
+	});
+
+	it('handles indonesian aliases', () => {
+		expect(purchaseOrderStatus('disetujui').color).toBe('green');
+		expect(purchaseOrderStatus('ditolak').color).toBe('red');
+	});
+
+	it('falls back to gray for unknown', () => {
+		expect(purchaseOrderStatus('xyz').color).toBe('gray');
+	});
+
+	it('every status has all 4 fields (label, color, icon, severity)', () => {
+		const statuses = ['MENUNGGU_VERIFIKASI', 'TERVERIFIKASI', 'DITOLAK', 'unknown'];
+		for (const s of statuses) {
+			const meta = purchaseOrderStatus(s);
+			expect(meta.label).toBeTruthy();
+			expect(meta.color).toBeTruthy();
+			expect(meta.icon).toBeTruthy();
+			expect(meta.severity).toBeTruthy();
+		}
 	});
 });
