@@ -552,3 +552,149 @@ npx playwright test cashier-pos.spec.ts  # specific
 - `engines.npm: >=10.0.0`
 - `license: MIT`
 - New script: `test:all` (vitest + playwright)
+
+---
+
+## 🧩 Fase Q.20 — Helpers Batch 1: Search/Time/Validation (144 tests)
+
+**Commit: `6be9a1e`** — 3 helper modules + 3 test files.
+
+| Helper | Tests | Highlights |
+|---|---:|---|
+| `search-filters.ts` | 35 | `searchAndFilter`, `sortBy`, `groupBy`, `paginate`, `dedupeBy` |
+| `time-helpers.ts` | 43 | `relativeAge`, `formatDateShort`, `formatDateLong`, `formatDateRange`, `durationDays` |
+| `validation-helpers.ts` | 66 | `composeValidators`, `required`, `pattern`, `PATTERNS`, `oneOf`, `clampNumber` |
+
+Refactor impact: 2 components (HeldDrafts + OutgoingList) pakai helpers baru. Bugs fixed:
+- `truncate` budget math (suffix length sekarang termasuk)
+- `range` descending infinite loop (guard dengan `start >= end` di step>0)
+- `padStart/padEnd` null safety (`String(s ?? '')` bukan `String(null)`)
+
+---
+
+## 🧩 Fase Q.21 — Helpers Batch 2: String/Array/Status (210 tests)
+
+**Commit: `169af29`** — 3 helper modules + 3 test files. **Cumulative: 554 tests**.
+
+| Helper | Tests | Highlights |
+|---|---:|---|
+| `string-helpers.ts` | 75 | `truncate`, `slugify`, `maskPhone`, `maskEmail`, `escapeHtml`, `template` |
+| `array-helpers.ts` | 90 | `chunk`, `range`, `groupBy`, `groupSumBy`, `countBy`, `uniqueBy`, `zip2/3/N` |
+| `status-helpers.ts` | 45 | `stockStatus`, `paymentStatus`, `orderStatus`, `shiftStatus`, `attendanceStatus`, `suratJalanStatus`, `leaveStatus`, `severityToColor` |
+
+Refactor impact: `ProductCatalog.svelte` pakai `searchAndFilter`, `uniqueBy`, `stockStatus`, `formatCurrency`. Status metadata shape seragam `{ label, color, icon, severity }` siap pakai di `<Badge>`/`<Alert>`.
+
+---
+
+## 🎯 Fase Q.22 — Structure Alignment to Target (100% Match)
+
+**Commit: `944c9c2`** — Strict align struktur ke target FE_HANDOFF v2.0.0.
+
+| # | Perubahan | Tipe |
+|---|---|---|
+| 1 | `api/http.ts` → `api/client.ts` | rename (17 imports updated) |
+| 2 | `ui/select.svelte` | create (shadcn-svelte combobox, ARIA listbox, keyboard a11y) |
+| 3 | `manager/Penjualan/SalesAnalytics.svelte` | create (KpiStrip + BarChart + PaymentMethodChart + SalesTable) |
+| 4 | `manager/Inventaris/InventoryAnalytics.svelte` | create (FastMovingList + Stok Kritis pakai stockStatus) |
+| 5 | `manager/Keuangan/FinanceAnalytics.svelte` | create (LabaRugiCard + period selector Hari/Minggu/Bulan/Tahun) |
+| 6 | `Laporan/BusinessInsights.svelte` → `BusinessAnalytics.svelte` | rename (97% similarity preserved) |
+| 7 | `SuratJalan/SJApproval.svelte` → `SJManagement.svelte` | rename (98% similarity preserved) |
+
+### Hasil Alignment
+
+| Layer | Sebelum | Sesudah |
+|---|---|---|
+| Files matching target | 124/131 | **131/131** ✅ |
+| `api/client.ts` | ❌ (was `http.ts`) | ✅ |
+| `ui/select.svelte` | ❌ | ✅ |
+| `manager/Penjualan/SalesAnalytics.svelte` | ❌ | ✅ |
+| `manager/Inventaris/InventoryAnalytics.svelte` | ❌ | ✅ |
+| `manager/Keuangan/FinanceAnalytics.svelte` | ❌ | ✅ |
+| `Laporan/BusinessAnalytics.svelte` | ❌ (was BusinessInsights) | ✅ |
+| `SuratJalan/SJManagement.svelte` | ❌ (was SJApproval) | ✅ |
+
+**svelte-check**: 0 errors, 51 warnings (mostly pre-existing route pages)
+**Tests**: 554/554 pass
+
+---
+
+## 🔌 Fase Q.23 — Manager Analytics Pages Wired to Orchestrators
+
+**Commits: `50053f4` + `08414fe`** — 3 manager pages pakai orchestrator pattern.
+
+### Pattern Diterapkan
+
+```svelte
+<RoleShell role="manager" title="X" {user}>
+  {#snippet actions()}<button onclick={() => location.reload()}>Refresh</button>{/snippet}
+  <XAnalytics />
+</RoleShell>
+```
+
+### Hasil
+
+| Page | Before | After | Net |
+|---|---|---|---|
+| `/manager/penjualan` | 56 baris (inline KpiStrip+BarChart) | 27 baris (`<SalesAnalytics />`) | -30 baris, +2 widgets |
+| `/manager/inventaris` | 24 baris (🚧 placeholder) | 28 baris (`<InventoryAnalytics />`) | +4 baris, full functionality |
+| `/manager/keuangan` | 24 baris (🚧 placeholder) | 28 baris (`<FinanceAnalytics />`) | +4 baris, full functionality |
+
+### User-visible widgets per page
+
+| Page | Widgets |
+|---|---|
+| **Penjualan** | KPI Strip · Best Sellers (bar) · Metode Pembayaran (pie) · Rincian Penjualan (table) |
+| **Inventaris** | Fast Moving (top 10) · Stok Kritis (color-coded badges) |
+| **Keuangan** | Laba Rugi (profit + growth) · Ringkasan cards · Period selector (Hari/Minggu/Bulan/Tahun) |
+
+---
+
+## 📊 Statistik Kumulatif Sesi
+
+| Metric | Value |
+|---|---:|
+| Total `.svelte` components | **131** |
+| Helper modules | **27** (5 target + 22 extras) |
+| Unit tests | **554** (15 files) |
+| E2E tests | **110** (5 files) |
+| API modules | 17 (12 named + 5 extras) |
+| Server API routes | 4 |
+| GitHub Actions workflows | 4 |
+| Lines of code (hekas-app/src) | ~17,000+ |
+| svelte-check errors | **0** |
+| svelte-check warnings | 51 (mostly pre-existing) |
+| Working tree | clean ✅ |
+
+## 📜 Total Commits Sesi Ini (24)
+
+```
+2026-06-21:
+  08414fe  feat(pages): Q.23 use SalesAnalytics on /manager/penjualan
+  50053f4  feat(pages): Q.23 use InventoryAnalytics + FinanceAnalytics
+  944c9c2  refactor: Q.22 align structure to target
+  169af29  feat(utils): Q.21 string/array/status helpers (210 new tests)
+  6be9a1e  feat(utils): Q.20 search-filters + time-helpers + validation-helpers
+  ae3f605  ci: Q.19 GitHub Actions setup
+  202eb17  chore: expand .gitignore
+  a439965  test(e2e): Q.18 Playwright scenarios
+  ba5bb10  feat(utils): Q.17 helpers
+  5733c85  docs: PROGRESS.md Q.16-Q.17
+  71ce275  feat(components): Q.17 manager
+  e565ddb  feat(components): Q.16 gudang
+  9e7a6f8  docs: PROGRESS.md Q.12-Q.15
+  557e298  feat(components): Q.15 orders
+  647c330  feat(components): Q.14 POS
+  5702fa1  feat(components): Q.13 shift/member
+  e8a018d  feat(components): Q.12 cart/POS
+  34c2e9b  fix(a11y): remove autofocus
+  ae0bc16  feat: Fase Q wrap-up
+  45aae0f  fix(a11y): dedupe tabindex
+  10c1789  refactor(components): move 11 root components
+  022329a  step 7-9: gudang + manager + API
+  de5c86f  step 6: kasir 28 components
+  8aa8098  step 4-5: shared + shadcn
+  4e4ae0b  step 3: API 9 modules
+  e6b8661  step 2: auth 3 modules
+  a5ca512  step 1: svelte.config
+  77209f7  step 0: STRUCTURE_AUDIT
+```
