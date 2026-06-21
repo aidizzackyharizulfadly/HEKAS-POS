@@ -35,9 +35,10 @@
 		user?: User | null;
 		onlogout?: () => void;
 		children?: import('svelte').Snippet;
+		actions?: import('svelte').Snippet;
 	}
 
-	let { role, title, subtitle, user = null, onlogout, children }: Props = $props();
+	let { role, title, subtitle, user = null, onlogout, children, actions }: Props = $props();
 
 	const menuByRole: Record<string, MenuItem[]> = {
 		kasir: kasirMenu,
@@ -52,7 +53,7 @@
 <div class="flex h-screen overflow-hidden" style="background: #F0F4F8">
 	<Sidebar {menu} {activePath} />
 	<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-		<TopBar {title} {subtitle} {user} {role} {onlogout} />
+		<TopBar {title} {subtitle} {user} {role} {onlogout} {actions} />
 		<main class="flex-1 overflow-y-auto">
 			{#if children}{@render children()}{/if}
 		</main>

@@ -8,6 +8,14 @@
 	import type { ProductImageMeta } from '$lib/types/api';
 	import ImageUploader from '$lib/components/ImageUploader.svelte';
 	import { getStorageQuota, formatBytes } from '$lib/utils/image';
+	import RoleShell from '$lib/components/shared/RoleShell.svelte';
+
+	// ─── Current user (untuk RoleShell TopBar) ────────────────────────────────
+	const currentUser = { name: 'Admin Gudang', role: 'gudang' as const };
+	async function handleLogout() {
+		await api.auth.logout();
+		goto('/login');
+	}
 
 	// ─── State ──────────────────────────────────────────────────────────────────
 	type TabId = 'inventaris' | 'mutasi';
@@ -292,38 +300,28 @@
 	}
 </script>
 
-<div class="flex flex-col h-screen overflow-hidden" style="font-family: 'Inter', sans-serif; background: #F0F4F8">
-	<!-- ── Header ────────────────────────────────────────────────────────── -->
-	<header class="shrink-0 px-6 py-4 flex items-center justify-between border-b" style="background: #fff; border-color: #E2E8F0">
-		<div>
-			<h1 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0">Manajemen Gudang</h1>
-			<p style="font-size: 12px; color: #64748B; margin: 2px 0 0">
-				Gudang Utama •
-				<strong style="color: #059669">{stats.total}</strong> produk aktif ·
-				<strong style="color: {stats.outOfStock > 0 ? '#DC2626' : '#64748B'}">{stats.outOfStock}</strong> habis ·
-				<strong style="color: {stats.lowStock > 0 ? '#F59E0B' : '#64748B'}">{stats.lowStock}</strong> hampir habis ·
-				<strong style="color: {storageQuota.productsImageCount > 0 ? '#2563EB' : '#94A3B8'}">🖼️ {storageQuota.productsImageCount}</strong> dengan foto
-			</p>
-		</div>
-		<div class="flex items-center gap-2">
-			<button onclick={loadAll} class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style="font-size: 12px; font-weight: 600; background: #F1F5F9; color: #475569">
-				<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-					<path d="M3 12a9 9 0 0114.93-6.82M21 12a9 9 0 01-14.93 6.82" />
-					<polyline points="21 4 21 9 16 9" /><polyline points="3 20 3 15 8 15" />
-				</svg>
-				Refresh
-			</button>
-			<button onclick={openCreate} class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style="font-size: 12px; font-weight: 600; background: #2563EB; color: #fff">
-				<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-					<line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-				</svg>
-				Tambah Produk
-			</button>
-			<button onclick={() => goto('/login')} class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style="font-size: 12px; font-weight: 600; background: transparent; color: #64748B; border: 1px solid #E2E8F0">
-				Logout
-			</button>
-		</div>
-	</header>
+<RoleShell
+	role="gudang"
+	title="Manajemen Gudang"
+	subtitle="Gudang Utama · {stats.total} produk aktif · {stats.outOfStock} habis · {stats.lowStock} hampir habis · 🖼️ {storageQuota.productsImageCount} dengan foto"
+	user={currentUser}
+	onlogout={handleLogout}
+>
+	{#snippet actions()}
+		<button onclick={loadAll} aria-label="Refresh data" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style="font-size: 12px; font-weight: 600; background: #F1F5F9; color: #475569">
+			<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+				<path d="M3 12a9 9 0 0114.93-6.82M21 12a9 9 0 01-14.93 6.82" />
+				<polyline points="21 4 21 9 16 9" /><polyline points="3 20 3 15 8 15" />
+			</svg>
+			Refresh
+		</button>
+		<button onclick={openCreate} aria-label="Tambah produk baru" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style="font-size: 12px; font-weight: 600; background: #2563EB; color: #fff">
+			<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+				<line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+			</svg>
+			Tambah Produk
+		</button>
+	{/snippet}
 
 	<!-- ── KPI Strip ─────────────────────────────────────────────────────── -->
 	<div class="shrink-0 grid grid-cols-4 gap-3 px-6 py-4" style="background: #fff; border-bottom: 1px solid #E2E8F0">
@@ -689,11 +687,11 @@
 						<button type="submit" disabled={saving} class="flex-1 py-2.5 rounded-lg" style="background: #059669; color: #fff; font-size: 13px; font-weight: 700; opacity: {saving ? 0.6 : 1}">
 							{saving ? 'Menyimpan…' : 'Tambah Produk'}
 						</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	{/if}
+						</div>
+						</form>
+						</div>
+						</div>
+						{/if}
 
 	<!-- ── Toast ───────────────────────────────────────────────────────────── -->
 	{#if toast}
@@ -740,13 +738,13 @@
 						alt="Product"
 						style="max-width: 90vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); cursor: default"
 					/>
-				</div>
-			{/if}
 			</div>
+		{/if}
+	</RoleShell>
 
-			<style>
-	@keyframes spin {
-		from { transform: rotate(0deg); }
-		to { transform: rotate(360deg); }
-	}
+	<style>
+@keyframes spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}
 </style>

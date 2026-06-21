@@ -31,9 +31,10 @@
 		role?: 'kasir' | 'manager' | 'gudang';
 		onlogout?: () => void;
 		children?: import('svelte').Snippet;
+		actions?: import('svelte').Snippet;
 	}
 
-	let { title, subtitle, user = null, role, onlogout, children }: Props = $props();
+	let { title, subtitle, user = null, role, onlogout, children, actions }: Props = $props();
 </script>
 
 <header
@@ -54,7 +55,9 @@
 	</div>
 
 	<div class="flex items-center gap-3">
-		{#if children}
+		{#if actions}
+			{@render actions()}
+		{:else if children}
 			{@render children()}
 		{/if}
 
