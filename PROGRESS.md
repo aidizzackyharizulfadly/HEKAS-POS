@@ -436,3 +436,52 @@ Setiap component implement:
 - ✅ Submitting state dengan disabled button + spinner text
 - ✅ Quick presets / shortcuts untuk common actions
 - ✅ Type safety dengan derived typed returns (`$derived.by`)
+
+### Q.18 — E2E Playwright Scenarios (110 tests)
+Commits — 5 file E2E tests, ~1080 baris:
+
+**`tests/e2e/cashier-pos.spec.ts`** (POS transaction flow)
+- POS grid + search + add to cart
+- Cart counter + stepper + subtotal kalkulasi
+- PaymentModal muncul + method switch
+- A11y: heading hierarchy, button accessible names, keyboard nav
+
+**`tests/e2e/gudang-flow.spec.ts`** (Gudang inventory + PO)
+- RestockDialog validation (qty >= 0, alasan required)
+- POInputForm (supplier + items validation)
+- POVerification (accept-all, variance)
+- OutgoingList (search + filter)
+- PickingProcess (progress bar + scan input)
+
+**`tests/e2e/login.spec.ts`** (Auth + session)
+- Login form structure + a11y labels
+- Invalid creds → error message
+- Valid creds → redirect ke home
+- PIN login numpad interaction
+- Session persistence across reload
+- Logout clears session
+- Role-based access (kasir/gudang/manager)
+
+**`tests/e2e/manager-flow.spec.ts`** (Manager dashboard)
+- Beranda summary cards (Finance/Inventory/Attendance)
+- FinanceSummary margin mismatch detection
+- InventorySummary low stock threshold alert
+- EmployeeList search + sort
+- LeaveRequests approve/reject inline form
+- Laporan + Pengaturan + AI pages
+
+**`tests/e2e/shift-management.spec.ts`** (Shift + nav + perf)
+- StartShiftDialog (modal awal + preset buttons)
+- StartShiftDialog validation
+- EndShiftDialog (kas awal/penjualan/expected summary)
+- Protected route redirect
+- Sidebar navigation
+- Performance (< 5s load time)
+- Console error monitoring
+
+**Total: 110 E2E tests across 5 files.** Run dengan:
+```bash
+npx playwright install   # pertama kali (install browser)
+npx playwright test      # run all
+npx playwright test cashier-pos.spec.ts  # specific
+```
