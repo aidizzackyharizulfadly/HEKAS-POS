@@ -6,14 +6,14 @@
 import type {
   CartItem, CheckoutInput, CheckoutResult, Member,
   Transaction, TransactionItem, HeldTransaction,
-} from './types.js';
-import { TIER_CONFIG } from './types.js';
+} from '../types/api.js';
+import { TIER_CONFIG } from '../types/api.js';
 import { storage, seedIfEmpty, genInvoiceNo, genHoldId } from '$lib/utils/storage.js';
 import { recordTransaction } from './members.js';
-import type { PaymentMethod, PaymentSplitSummary } from '../payment.js';
+import type { PaymentMethod, PaymentSplitSummary } from '../utils/payment.js';
 import {
   validatePaymentSplit, summarizePayments, PAYMENT_METHOD_NEEDS_TENDERED,
-} from '../payment.js';
+} from '../utils/payment.js';
 
 const delay = (ms = 20) => new Promise<void>((r) => setTimeout(r, ms));
 

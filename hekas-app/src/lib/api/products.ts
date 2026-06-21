@@ -2,7 +2,7 @@
 // Semua operasi dibungkus Promise + delay kecil (10-30ms) supaya UI terasa
 // seperti beneran manggil HTTP request — gampang ditukar ke fetch() nanti.
 
-import type { Product } from './types.js';
+import type { Product } from '../types/api.js';
 import { storage, seedIfEmpty, nextProductId } from '$lib/utils/storage.js';
 
 /** Simulasi latency jaringan (biar terasa realistis) */
@@ -102,15 +102,9 @@ export async function updateProduct(id: number, patch: Partial<CreateProductInpu
 }
 
 // ─── Fase F: image operations ────────────────────────────────────────────────
-export interface ProductImageMeta {
-  image_data: string;
-  image_mime: string;
-  image_size: number;
-  image_width: number;
-  image_height: number;
-}
+// Note: ProductImageMeta shape defined in $lib/types/api (canonical source)
 
-export async function setProductImage(id: number, meta: ProductImageMeta): Promise<Product> {
+export async function setProductImage(id: number, meta: import('$lib/types/api').ProductImageMeta): Promise<Product> {
   seedIfEmpty();
   await delay();
   const all = storage.get<Product[]>('products', []);

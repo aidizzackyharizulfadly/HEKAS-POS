@@ -4,7 +4,8 @@
 	import { fade, scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { api } from '$lib/api';
-	import type { Product, ProductImageMeta } from '$lib/api';
+	import type { Product } from '$lib/types/domain';
+	import type { ProductImageMeta } from '$lib/types/api';
 	import ImageUploader from '$lib/components/ImageUploader.svelte';
 	import { getStorageQuota, formatBytes } from '$lib/utils/image';
 

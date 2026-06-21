@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import type { Transaction } from '$lib/api';
+	import type { Transaction } from '$lib/types/domain';
 	import {
 		printReceipt, connectThermal, disconnectThermal, isThermalConnected,
 		isThermalSupported, loadSettings, saveSettings, DEFAULT_STORE_SETTINGS,

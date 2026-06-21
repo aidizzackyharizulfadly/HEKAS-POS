@@ -5,7 +5,7 @@
 //
 // Browser detection ada di helper isThermalSupported().
 
-import type { Transaction } from '$lib/api';
+import type { Transaction } from '$lib/types/domain';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 export interface StoreSettings {

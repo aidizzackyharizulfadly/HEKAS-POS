@@ -3,7 +3,8 @@
 	import { fade, scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { api } from '$lib/api';
-	import type { Product, Member, CartItem, HeldTransaction, User, CheckoutResult, Transaction } from '$lib/api';
+	import type { Product, Member, CartItem, HeldTransaction, User, Transaction } from '$lib/types/domain';
+	import type { CheckoutResult } from '$lib/types/api';
 	import type { PaymentMethod as PaymentMethodFull } from '$lib/utils/payment';
 	import PrintPreview from '$lib/components/PrintPreview.svelte';
 	import ClosingShift from '$lib/components/ClosingShift.svelte';
@@ -505,7 +506,7 @@
 		try {
 			// Restore cart from held snapshot
 			cart = h.cart.map((c) => ({
-				id: c.product_id,
+				id: c.product_id ?? c.id ?? 0,
 				name: c.name,
 				price: c.price,
 				category: '',         // not needed in cart; will be reloaded from products

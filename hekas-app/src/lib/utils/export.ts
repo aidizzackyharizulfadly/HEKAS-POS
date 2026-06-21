@@ -2,7 +2,7 @@
 // CSV (Excel-compatible UTF-8 BOM) + print-friendly HTML report trigger.
 // Browser-only — semua via Blob + download anchor.
 
-import type { Transaction } from './api/types.js';
+import type { Transaction } from '../types/api.js';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 function fmtIDR(n: number): string {

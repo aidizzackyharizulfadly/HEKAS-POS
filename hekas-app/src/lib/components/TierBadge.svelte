@@ -6,7 +6,7 @@
     - showIcon: boolean (default: true)
 -->
 <script lang="ts">
-  import { TIER_CONFIG } from '$lib/api';
+  import { TIER_CONFIG } from '$lib/types/api';
 
   let {
     tier,

@@ -10,12 +10,12 @@
   //   - Tombol "Bayar Sisa dgn Tunai" (auto-fill cash untuk remaining)
 
   import { untrack } from 'svelte';
-  import type { PaymentMethod, PaymentMethodKind } from '$lib/payment.js';
+  import type { PaymentMethod, PaymentMethodKind } from '$lib/utils/payment';
   import {
     PAYMENT_METHOD_LABEL, PAYMENT_METHOD_ICON,
     PAYMENT_METHOD_NEEDS_TENDERED, PAYMENT_METHOD_NEEDS_REFERENCE,
     genPaymentMethodId, summarizePayments,
-  } from '$lib/payment.js';
+  } from '$lib/utils/payment';
 
   // Props
   let {

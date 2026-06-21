@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Transaction } from '$lib/api';
+	import type { Transaction } from '$lib/types/domain';
 	import type { StoreSettings } from '$lib/utils/print';
 	import { DEFAULT_STORE_SETTINGS } from '$lib/utils/print';
 	import { PAYMENT_METHOD_LABEL } from '$lib/utils/payment';

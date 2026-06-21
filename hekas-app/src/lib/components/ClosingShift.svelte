@@ -9,7 +9,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api } from '$lib/api';
-  import type { ClosingReport } from '$lib/api';
+  import type { ClosingReport } from '$lib/types/api';
   import { fmtIDR, printReport } from '$lib/utils/export';
 
   let { open, onClose, showToast }: {

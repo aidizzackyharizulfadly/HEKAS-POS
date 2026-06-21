@@ -2,7 +2,7 @@
 // Semua agregasi dihitung client-side dari data transactions di localStorage.
 // Nanti kalau ada backend beneran, ini tinggal pindah ke SQL GROUP BY.
 
-import type { DashboardSummary } from './types.js';
+import type { DashboardSummary } from '../types/api.js';
 import { storage, seedIfEmpty } from '$lib/utils/storage.js';
 
 const delay = (ms = 25) => new Promise<void>((r) => setTimeout(r, ms));

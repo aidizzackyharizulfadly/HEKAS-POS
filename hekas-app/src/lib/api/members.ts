@@ -1,7 +1,7 @@
 // HEKAS POS — API layer: Members (loyalty) — Fase E enhanced
 
-import type { Member, PointEntry, TierEntry } from './types.js';
-import { TIER_CONFIG } from './types.js';
+import type { Member, PointEntry, TierEntry } from '../types/api.js';
+import { TIER_CONFIG } from '../types/api.js';
 import { storage, seedIfEmpty } from '$lib/utils/storage.js';
 
 const delay = (ms = 15) => new Promise<void>((r) => setTimeout(r, ms));

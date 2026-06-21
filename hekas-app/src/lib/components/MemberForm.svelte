@@ -9,7 +9,7 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import { api, TIER_CONFIG } from '$lib/api';
-  import type { Member } from '$lib/api';
+  import type { Member } from '$lib/types/domain';
 
   let {
     member = null,

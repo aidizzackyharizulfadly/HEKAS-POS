@@ -10,7 +10,7 @@
 //   hekas:counters        → { products: number, transactions: number }
 //   hekas:seeded          → "1" (penanda sudah di-seed)
 
-import type { Product, Member, User } from './types.js';
+import type { Product, Member, User } from '../types/api.js';
 
 // ─── SSR-safe localStorage ──────────────────────────────────────────────────
 const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';

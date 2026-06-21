@@ -17,7 +17,7 @@
 //   }
 // }
 
-import { storage, seedIfEmpty } from './api/storage.js';
+import { storage, seedIfEmpty } from './storage.js';
 
 const BACKUP_KEYS = [
   'products',

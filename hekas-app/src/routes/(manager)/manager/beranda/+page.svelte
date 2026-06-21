@@ -3,10 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import { api } from '$lib/api';
-	import type {
-		DashboardSummary, Product, Member, User,
-		Transaction,
-	} from '$lib/api';
+	import type { DashboardSummary, ClosingReport } from '$lib/types/api';
+	import type { Product, Member, User, Transaction } from '$lib/types/domain';
 	import PrintPreview from '$lib/components/PrintPreview.svelte';
 	import BackupRestore from '$lib/components/BackupRestore.svelte';
 	import MemberForm from '$lib/components/MemberForm.svelte';

@@ -11,7 +11,7 @@
 -->
 <script lang="ts">
   import { processImage, getStorageQuota, formatBytes, canAddImage, type ProcessedImage, type StorageQuota } from '$lib/utils/image';
-  import type { ProductImageMeta } from '$lib/api';
+  import type { ProductImageMeta } from '$lib/types/api';
 
   let {
     productId,
