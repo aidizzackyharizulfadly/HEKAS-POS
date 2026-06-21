@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Pre-push hook — run full unit test suite before pushing.
+# Skip when SKIP_SIMPLE_GIT_HOOKS=1 (emergency pushes).
+set -e
+
+if [ "$SKIP_SIMPLE_GIT_HOOKS" = "1" ]; then
+	echo "[INFO] SKIP_SIMPLE_GIT_HOOKS=1 — skipping pre-push hook."
+	exit 0
+fi
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "🧪 [pre-push] running vitest..."
+cd hekas-app && npm run test --silent || {
+	echo "❌ [pre-push] vitest gagal. Push dibatalkan."
+	exit 1
+}
+
+echo "✅ [pre-push] all tests passed."

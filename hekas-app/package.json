@@ -21,7 +21,20 @@
 		"test:coverage": "vitest run --coverage",
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
-		"test:all": "vitest run && playwright test"
+		"test:all": "vitest run && playwright test",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
+		"lint": "eslint . || echo 'eslint not configured yet'",
+		"hooks:install": "bash ../scripts/hooks/install.sh",
+		"hooks:uninstall": "rm -f ../../.git/hooks/pre-commit ../../.git/hooks/commit-msg ../../.git/hooks/pre-push"
+	},
+	"lint-staged": {
+		"*.{js,ts,svelte}": [
+			"prettier --check"
+		],
+		"*.{json,md,css,yml,yaml}": [
+			"prettier --check"
+		]
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.49.0",
@@ -31,6 +44,9 @@
 		"@tailwindcss/vite": "^4.3.0",
 		"@vitest/coverage-v8": "^2.1.0",
 		"jsdom": "^25.0.0",
+		"lint-staged": "^17.0.8",
+		"prettier": "^3.8.4",
+		"prettier-plugin-svelte": "^4.1.1",
 		"svelte": "^5.56.1",
 		"svelte-check": "^4.6.0",
 		"tailwindcss": "^4.3.0",

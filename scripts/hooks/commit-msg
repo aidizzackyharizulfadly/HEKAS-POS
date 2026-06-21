@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Commit-msg hook — enforce conventional commits.
+# Allowed types: feat, fix, docs, refactor, test, chore, ci, style, perf, build, revert.
+# Format: <type>(<scope>)?: <subject>
+set -e
+
+msg_file="$1"
+subject=$(head -1 "$msg_file")
+
+# Allow merge commits and revert commits as-is
+if echo "$subject" | grep -qE "^Merge (branch|remote-tracking branch)"; then
+	exit 0
+fi
+if echo "$subject" | grep -qE "^Revert \""; then
+	exit 0
+fi
+
+# Conventional commit pattern (relaxed: scope optional, breaking ! optional)
+if echo "$subject" | grep -qE "^(feat|fix|docs|refactor|test|chore|ci|style|perf|build|revert)(\([^)]+\))?!?: .{3,}$"; then
+	exit 0
+fi
+
+echo ""
+echo "❌ Commit message tidak sesuai conventional format."
+echo "   Got: '$subject'"
+echo ""
+echo "   Expected: <type>(<scope>)?: <subject>"
+echo "   Types: feat | fix | docs | refactor | test | chore | ci | style | perf | build | revert"
+echo ""
+echo "   Examples:"
+echo "     feat(auth): add JWT refresh token rotation"
+echo "     fix(pos): handle void transaction race condition"
+echo "     docs: update PROGRESS.md with Q.27 status"
+echo "     refactor(components): migrate 5 more to status helpers"
+echo ""
+exit 1
