@@ -1030,7 +1030,7 @@ hekas-app/tests/component/
 
 ## 🎯 Fase I — Structure Audit Fix (4 deviations resolved)
 
-**Date:** 2026-06-22 | **Commits:** TBD
+**Date:** 2026-06-22 | **Commit:** `4b507ab`
 
 Audit terhadap target struktur menemukan 4 minor deviations. Semua sudah di-fix.
 
@@ -1126,7 +1126,7 @@ Semua components mengikuti pola sama dengan existing 21:
 
 ```
 2026-06-21:
-  TBD       refactor(structure): Fase I — fix 4 deviations (21 UI components + logo + cleanup)
+  4b507ab  refactor(structure): Fase I — fix 4 deviations (21 UI components + logo + cleanup)
   5628dc0  test(component): Fase H — 7 components, 48 tests
   0f71104  docs: PROGRESS.md Fase H — update commit hash
   a3efc22  test(component): enable Svelte component tests via custom compile plugin
