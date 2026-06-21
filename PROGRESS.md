@@ -894,6 +894,90 @@ Commits: `4d2fd72` (initial setup), `998f58c` (install script + pre-commit scrip
 ---
 
 
+## 🧩 Fase H — Component Test Coverage Expansion (7 components, 48 tests)
+
+**Commit:** TBD | **Branch:** `main` | **Date:** 2026-06-21
+
+### 🎯 Goal
+
+Expand component test coverage beyond 2 seed tests (EmptyState + StatCard) to cover the simple, reusable primitives shared across roles.
+
+### 📦 Components Tested (7)
+
+| # | Component | File | Domain | Tests |
+|---|---|---|---|---:|
+| 1 | **Breadcrumb** | `shared/Breadcrumb.svelte` | nav | 6 |
+| 2 | **LoadingSpinner** | `shared/LoadingSpinner.svelte` | a11y + variants | 9 |
+| 3 | **Pagination** | `shared/Pagination.svelte` | logic + callbacks | 9 |
+| 4 | **Badge** | `ui/badge.svelte` | variants | 9 |
+| 5 | **Alert** | `ui/alert.svelte` | variants + icons | 8 |
+| 6 | **Separator** | `ui/separator.svelte` | orientation | 4 |
+| 7 | **Skeleton** | `ui/skeleton.svelte` | decorative | 3 |
+| | **Total** | | | **48** |
+
+### 🛠️ Test API Pattern
+
+Shared helper di `tests/component/helpers/mount.ts`:
+
+```ts
+import { mountComponent, unmountComponent, type MountHandle } from './helpers/mount';
+
+let handle: MountHandle;
+beforeEach(() => { handle = mountComponent(Breadcrumb, { items: [...] }); });
+afterEach(() => { unmountComponent(handle); });
+
+it('renders all item labels', () => {
+    expect(handle.host.textContent).toContain('Beranda');
+});
+```
+
+### 🧪 Test Categories (examples)
+
+| Category | Example |
+|---|---|
+| **Variant class assertions** | Badge: `bg-emerald-100` for `variant: 'success'` |
+| **a11y attrs** | LoadingSpinner: `role=status, aria-live=polite, aria-busy=true` |
+| **Conditional rendering** | Pagination: hidden when `total <= 1` |
+| **State derivation** | Pagination: `aria-current=page` on current button |
+| **Callback wiring** | Pagination: `vi.fn()` → click → assert called with page |
+| **Boundary checks** | Pagination: prev disabled at page 1, next disabled at last |
+| **CSS merge** | Badge: `cn()` merges `class` prop with default variant classes |
+
+### 📊 Cumulative Test Counts
+
+| Layer | Before Fase H | After Fase H | Δ |
+|---|---:|---:|---:|
+| Unit tests | 582 | 582 | — |
+| Component tests | 10 | **58** | **+48** |
+| E2E tests | 110 | 110 | — |
+| **Active tests** | 702 | **750** | **+48** |
+
+### 🐛 Issues Resolved During H
+
+| Issue | Fix |
+|---|---|
+| Import paths `../../../src/` (3 levels) | Sed-fixed to `../../src/` (2 levels) |
+| `MountHandle<Component>` generic type error in svelte-check | Helper uses `any` for component param |
+| `Component` import from svelte unused | Removed from test files (not needed) |
+
+### 📁 Files Added
+
+```
+hekas-app/tests/component/
+├── helpers/
+│   └── mount.ts                    # MountHandle interface + helpers (44 lines)
+├── Breadcrumb.test.ts              # 6 tests (98 lines)
+├── LoadingSpinner.test.ts          # 9 tests (113 lines)
+├── Pagination.test.ts              # 9 tests (137 lines)
+├── Badge.test.ts                   # 9 tests (101 lines)
+├── Alert.test.ts                   # 8 tests (75 lines)
+├── Separator.test.ts               # 4 tests (54 lines)
+└── Skeleton.test.ts                # 3 tests (42 lines)
+```
+
+---
+
+
 ## 📊 Statistik Kumulatif Sesi
 
 | Metric | Value |
@@ -901,9 +985,9 @@ Commits: `4d2fd72` (initial setup), `998f58c` (install script + pre-commit scrip
 | Total `.svelte` components | **131** |
 | Helper modules | **28** (5 target + 23 extras) |
 | Unit tests | **582** (16 files) |
-| Component tests | **10** (2 files) |
+| Component tests | **58** (9 files) |
 | E2E tests | **110** (5 files) |
-| **Total tests** | **702** (unit + component + e2e) |
+| **Total tests** | **750** (unit + component + e2e) |
 | API modules | 17 (12 named + 5 extras) |
 | Server API routes | 4 |
 | GitHub Actions workflows | 4 |
@@ -913,11 +997,12 @@ Commits: `4d2fd72` (initial setup), `998f58c` (install script + pre-commit scrip
 | svelte-check warnings | 51 (mostly pre-existing) |
 | Working tree | clean ✅ |
 
-## 📜 Total Commits Sesi Ini (32)
+## 📜 Total Commits Sesi Ini (33)
 
 ```
 2026-06-21:
-  998f58c  chore: add hooks install script + pre-commit script
+  TBD       test(component): Fase H — 7 components, 48 tests
+  a3efc22  test(component): enable Svelte component tests via custom compile plugin
   4d2fd72  chore: add pre-commit hooks setup
   d34b8db  docs: STRUCTURE_AUDIT.md utils count update
   a8a2ed0  docs: PROGRESS.md Q.24-Q.27 status helpers adoption
