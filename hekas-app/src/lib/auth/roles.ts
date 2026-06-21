@@ -83,8 +83,6 @@ export const managerMenu: MenuItem[] = [
 	{ label: 'Keuangan',        path: '/manager/keuangan',   icon: '💰' },
 	{ label: 'Karyawan',        path: '/manager/karyawan',   icon: '👥' },
 	{ label: 'Laporan',         path: '/manager/laporan',    icon: '📊' },
-	{ label: 'Surat Jalan',     path: '/manager/surat-jalan', icon: '📄' },
-	{ label: 'AI Assistant',    path: '/manager/ai',         icon: '✨' },
 	{ label: 'Pengaturan',      path: '/manager/pengaturan', icon: '⚙️' }
 ];
 
