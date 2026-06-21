@@ -25,8 +25,11 @@ export default defineConfig({
 		}
 	},
 	resolve: {
-		alias: {
-			$lib: './src/lib'
-		}
+		alias: [
+			{ find: '$app/navigation', replacement: new URL('./tests/unit/mocks/app-navigation.ts', import.meta.url).pathname },
+			{ find: '$app/state', replacement: new URL('./tests/unit/mocks/app-state.ts', import.meta.url).pathname },
+			{ find: '$app/environment', replacement: new URL('./tests/unit/mocks/app-environment.ts', import.meta.url).pathname },
+			{ find: '$lib', replacement: new URL('./src/lib', import.meta.url).pathname }
+		]
 	}
 });
