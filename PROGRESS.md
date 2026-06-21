@@ -402,3 +402,37 @@ Total 16 SCAFFOLD components sekarang punya logic detail lengkap (validasi, deri
 - $derived untuk konsistensi kalkulasi
 - $effect untuk sync external value
 - A11y lengkap (label, aria-*, role)
+
+### Q.16 — Logic Detail Batch 5: Gudang Flow (6 components)
+Commit `e565ddb` — PickingProcess, POInputForm, POVerification, OutgoingList, OutgoingDetail, SJReview
+
+### Q.17 — Logic Detail Batch 6: Manager Karyawan + Beranda (5 components)
+Commit `71ce275` — EmployeeList, LeaveRequests, AttendanceSummary, FinanceSummary, InventorySummary
+
+---
+
+## 🎉 Q-SERIES COMPLETE
+
+**Total 27 components** diisi logic detail production-ready dalam 6 batches (Q.12–Q.17):
+
+| Batch | Commit | Components |
+|---|---|---|
+| Q.12 | e8a018d | Cart, ProductCatalog, RestockDialog, StartShiftDialog |
+| Q.13 | 5702fa1 | CartItem, MemberList, EndShiftDialog, PaymentModal |
+| Q.14 | 647c330 | SearchBar, Numpad, HeldDrafts, BarcodeScanner |
+| Q.15 | 557e298 | DiscountModal, OrderSummary, OrderDetail, VoidConfirmDialog |
+| Q.16 | e565ddb | PickingProcess, POInputForm, POVerification, OutgoingList, OutgoingDetail, SJReview |
+| Q.17 | 71ce275 | EmployeeList, LeaveRequests, AttendanceSummary, FinanceSummary, InventorySummary |
+
+**SCAFFOLD count: 59 → 0** ✓ SEMUA component punya logic detail.
+
+Setiap component implement:
+- ✅ Validation + error alert dengan `role="alert"`
+- ✅ Keyboard shortcuts (Enter/Escape/+/-/Backspace/Delete/Ctrl+Enter/Arrow)
+- ✅ Loading/empty states (skeleton + empty state + reset filter)
+- ✅ `$derived` calculations untuk konsistensi kalkulasi
+- ✅ `$effect` untuk sync external value
+- ✅ A11y compliance (label for, aria-*, role, sr-only)
+- ✅ Submitting state dengan disabled button + spinner text
+- ✅ Quick presets / shortcuts untuk common actions
+- ✅ Type safety dengan derived typed returns (`$derived.by`)
