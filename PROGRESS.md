@@ -382,3 +382,23 @@ Test Files  3 passed (3)
 
 Sebagian besar (45/76) di route pages yang **bukan** dari scaffold Q-series —
 trade-off dari kode R-series sebelumnya. Bisa dibersihkan di fase R berikutnya.
+
+### Q.12 — Logic Detail Batch 1 (4 components)
+Commit `e8a018d` — Cart, ProductCatalog, RestockDialog, StartShiftDialog
+
+### Q.13 — Logic Detail Batch 2 (4 components)
+Commit `5702fa1` — CartItem, MemberList, EndShiftDialog, PaymentModal
+
+### Q.14 — Logic Detail Batch 3 (4 components)
+Commit `647c330` — SearchBar, Numpad, HeldDrafts, BarcodeScanner
+
+### Q.15 — Logic Detail Batch 4 (4 components)
+Commit `557e298` — DiscountModal, OrderSummary, OrderDetail, VoidConfirmDialog
+
+Total 16 SCAFFOLD components sekarang punya logic detail lengkap (validasi, derived, keyboard shortcuts, loading/empty states, error handling). Setiap component implement:
+- Validation + error alert
+- Keyboard shortcuts (Enter/Escape/+/-/Backspace)
+- Loading/empty states
+- $derived untuk konsistensi kalkulasi
+- $effect untuk sync external value
+- A11y lengkap (label, aria-*, role)
