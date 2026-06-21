@@ -1,8 +1,10 @@
 <script lang="ts">
 	/**
 	 * OutgoingList (HEKAS POS — gudang/BarangKeluar)
-	 * List outgoing orders — search + status filter + select for detail.
+	 * List outgoing orders — pakai searchAndFilter + relativeAge helpers.
 	 */
+	import { searchAndFilter } from '$lib/utils/search-filters';
+	import { relativeAge } from '$lib/utils/time-helpers';
 
 	interface Outgoing {
 		id: string;
@@ -32,27 +34,13 @@
 	};
 
 	const filtered = $derived(
-		items.filter((o) => {
-			if (statusFilter !== 'all' && o.status !== statusFilter) return false;
-			if (!search.trim()) return true;
-			const q = search.toLowerCase();
-			return (
-				o.soNumber.toLowerCase().includes(q) ||
-				o.destination.toLowerCase().includes(q) ||
-				o.id.toLowerCase().includes(q)
-			);
+		searchAndFilter<Outgoing>(items, {
+			searchFields: ['soNumber', 'destination', 'id'],
+			query: search,
+			filters:
+				statusFilter !== 'all' ? [(o) => o.status === statusFilter] : undefined
 		})
 	);
-
-	function ageLabel(ts: number): string {
-		const ms = Date.now() - ts;
-		const days = Math.floor(ms / 86_400_000);
-		if (days < 1) return 'hari ini';
-		if (days === 1) return 'kemarin';
-		if (days < 7) return `${days} hari lalu`;
-		if (days < 30) return `${Math.floor(days / 7)} minggu lalu`;
-		return `${Math.floor(days / 30)} bulan lalu`;
-	}
 
 	function handleKey(e: KeyboardEvent, o: Outgoing) {
 		if (e.key === 'Enter' || e.key === ' ') {
@@ -105,6 +93,7 @@
 		<ul class="space-y-2" role="list" aria-label="Outgoing orders">
 			{#each filtered as o (o.id)}
 				{@const badge = STATUS_BADGES[o.status]}
+				{@const age = relativeAge(o.createdAt)}
 				<li>
 					<button
 						type="button"
@@ -117,7 +106,9 @@
 							<div class="flex-1 min-w-0">
 								<div class="flex items-center gap-2">
 									<div class="font-mono text-xs text-slate-500 font-semibold">{o.soNumber}</div>
-									<span class="text-[10px] text-slate-400">· {ageLabel(o.createdAt)}</span>
+									{#if age}
+										<span class="text-[10px] text-slate-400">· {age}</span>
+									{/if}
 								</div>
 								<div class="font-semibold text-sm text-slate-800 mt-0.5 truncate">
 									{o.destination}

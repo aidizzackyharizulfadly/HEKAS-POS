@@ -1,9 +1,11 @@
 <script lang="ts">
 	/**
 	 * HeldDrafts (HEKAS POS — kasir/POS)
-	 * List transaksi yang di-hold — recall atau hapus dengan konfirmasi.
+	 * List transaksi yang di-hold — pakai relativeAge dari time-helpers.
 	 */
 	import type { HeldTransaction } from '$lib/types/domain';
+	import { relativeAge } from '$lib/utils/time-helpers';
+	import { formatIDR } from '$lib/utils/cart-totals';
 
 	interface Props {
 		drafts: HeldTransaction[];
@@ -14,30 +16,18 @@
 
 	let { drafts, onrecall, ondelete, loading = false }: Props = $props();
 
-	const fmt = (n: number) =>
-		n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
-
 	function draftTotal(d: HeldTransaction): number {
 		return d.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 	}
 
 	function draftAge(d: HeldTransaction): string {
-		const ts = (d as any).heldAt as string | number | undefined;
-		if (!ts) return '';
-		const ms = Date.now() - new Date(ts).getTime();
-		const mins = Math.floor(ms / 60000);
-		if (mins < 1) return 'baru saja';
-		if (mins < 60) return `${mins} menit lalu`;
-		const hours = Math.floor(mins / 60);
-		if (hours < 24) return `${hours} jam lalu`;
-		return `${Math.floor(hours / 24)} hari lalu`;
+		return relativeAge((d as any).heldAt);
 	}
 
 	function handleDelete(d: HeldTransaction) {
-		const id = d.id;
 		const items = d.cart.length;
 		if (confirm(`Hapus draft ini (${items} item)? Tindakan tidak bisa dibatalkan.`)) {
-			ondelete(id);
+			ondelete(d.id);
 		}
 	}
 
@@ -87,7 +77,7 @@
 						{/if}
 					</div>
 					<div class="text-sm text-slate-800 mt-0.5">
-						{d.cart.length} item · <span class="font-semibold">{fmt(total)}</span>
+						{d.cart.length} item · <span class="font-semibold">{formatIDR(total)}</span>
 					</div>
 					{#if (d as any).customerName}
 						<div class="text-xs text-slate-500 truncate">👤 {(d as any).customerName}</div>
