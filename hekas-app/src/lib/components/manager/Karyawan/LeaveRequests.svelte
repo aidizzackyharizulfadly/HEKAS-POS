@@ -2,6 +2,7 @@
 	/**
 	 * LeaveRequests (HEKAS POS — manager/Karyawan)
 	 * Pakai manager-helpers untuk duration dan date range.
+	 * Badge pakai leaveStatus + statusClasses untuk konsistensi UI.
 	 */
 	import type { LeaveRequest } from '$lib/api/employees';
 	import {
@@ -9,6 +10,8 @@
 		isLeavePending,
 		formatLeaveDateRange
 	} from '$lib/utils/manager-helpers';
+	import { leaveStatus } from '$lib/utils/status-helpers';
+	import { statusClasses } from '$lib/utils/status-classes';
 
 	interface Props {
 		requests: LeaveRequest[];
@@ -163,16 +166,11 @@
 								</div>
 							{/if}
 						{:else}
+							{@const meta = leaveStatus(r.status)}
 							<span
-								class="px-2 py-0.5 rounded text-xs font-bold flex-shrink-0
-								{r.status === 'approved'
-									? 'bg-emerald-100 text-emerald-700'
-									: r.status === 'rejected'
-										? 'bg-red-100 text-red-700'
-										: 'bg-amber-100 text-amber-700'}"
+								class="px-2 py-0.5 rounded text-xs font-bold flex-shrink-0 {statusClasses(meta)}"
 							>
-								{r.status === 'approved' ? '✓' : r.status === 'rejected' ? '✕' : '⋯'}
-								{r.status}
+								{meta.icon} {meta.label}
 							</span>
 						{/if}
 					</div>

@@ -1,10 +1,12 @@
 <script lang="ts">
 	/**
 	 * OutgoingList (HEKAS POS — gudang/BarangKeluar)
-	 * List outgoing orders — pakai searchAndFilter + relativeAge helpers.
+	 * List outgoing orders — pakai searchAndFilter + relativeAge + statusClasses helpers.
 	 */
 	import { searchAndFilter } from '$lib/utils/search-filters';
 	import { relativeAge } from '$lib/utils/time-helpers';
+	import { statusClasses } from '$lib/utils/status-classes';
+	import type { StatusMeta } from '$lib/utils/status-helpers';
 
 	interface Outgoing {
 		id: string;
@@ -26,11 +28,17 @@
 	let search = $state('');
 	let statusFilter = $state<'all' | Outgoing['status']>('all');
 
-	const STATUS_BADGES: Record<Outgoing['status'], { label: string; cls: string }> = {
-		pending: { label: 'Pending', cls: 'bg-slate-100 text-slate-700' },
-		picking: { label: 'Picking', cls: 'bg-amber-100 text-amber-800' },
-		ready: { label: 'Ready', cls: 'bg-blue-100 text-blue-800' },
-		shipped: { label: 'Shipped', cls: 'bg-emerald-100 text-emerald-800' }
+	// Status mapping untuk outgoing workflow — pakai StatusMeta shape + statusClasses.
+	// pending (initial), picking (in progress), ready (siap kirim), shipped (selesai).
+	const STATUS_META: Record<Outgoing['status'], StatusMeta> = {
+		pending: { label: 'Pending', color: 'gray', icon: '○', severity: 'neutral' },
+		picking: { label: 'Picking', color: 'yellow', icon: '◐', severity: 'warning' },
+		ready: { label: 'Ready', color: 'blue', icon: '◉', severity: 'info' },
+		shipped: { label: 'Shipped', color: 'green', icon: '✓', severity: 'success' }
+	};
+	const statusBadge = (s: Outgoing['status']) => {
+		const meta = STATUS_META[s];
+		return { label: meta.label, cls: statusClasses(meta) };
 	};
 
 	const filtered = $derived(
@@ -92,7 +100,7 @@
 	{:else}
 		<ul class="space-y-2" role="list" aria-label="Outgoing orders">
 			{#each filtered as o (o.id)}
-				{@const badge = STATUS_BADGES[o.status]}
+				{@const badge = statusBadge(o.status)}
 				{@const age = relativeAge(o.createdAt)}
 				<li>
 					<button

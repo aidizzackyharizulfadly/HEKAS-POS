@@ -3,17 +3,23 @@
 	 * ShiftList (HEKAS POS — kasir/Shift)
 	 * List shift — own shift history dengan summary.
 	 *
-	 * Status: SCAFFOLD — TypeScript props + Tailwind styling siap.
-	 * Logic detail akan diisi di iterasi berikutnya.
+	 * Status: pakai shiftStatus helper + statusClasses untuk badge konsistensi.
 	 */
 	import type { Shift } from '$lib/api/shifts';
+	import { shiftStatus } from '$lib/utils/status-helpers';
+	import { statusClasses } from '$lib/utils/status-classes';
+	import { formatDateTime } from '$lib/utils/time-helpers';
+	import { formatCurrency } from '$lib/utils/format';
 	interface Props {
 		shifts: Shift[];
 		onSelect?: (s: Shift) => void;
 	}
 	let { shifts, onSelect }: Props = $props();
-	const fmt = (n: number) => n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
-	const fmtDate = (ts: number) => new Date(ts).toLocaleString('id-ID');
+
+	const shiftBadge = (s: Shift) => {
+		const meta = shiftStatus(s.status);
+		return { label: meta.label, cls: statusClasses(meta) };
+	};
 </script>
 
 <ul class="space-y-2" role="list">
@@ -24,14 +30,14 @@
 				<div class="flex justify-between items-start">
 					<div>
 						<div class="text-xs text-slate-500">Dibuka</div>
-						<div class="font-semibold text-sm">{fmtDate(s.openedAt)}</div>
+						<div class="font-semibold text-sm">{formatDateTime(s.openedAt)}</div>
 					</div>
-					<span class="px-2 py-0.5 rounded-full text-xs font-semibold {s.status === 'open' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">{s.status}</span>
+					<span class="px-2 py-0.5 rounded-full text-xs font-semibold {shiftBadge(s).cls}">{shiftBadge(s).label}</span>
 				</div>
 				<div class="mt-2 grid grid-cols-3 gap-2 text-sm">
-					<div><div class="text-xs text-slate-500">Penjualan</div><div class="font-bold">{fmt(s.totalSales)}</div></div>
+					<div><div class="text-xs text-slate-500">Penjualan</div><div class="font-bold">{formatCurrency(s.totalSales)}</div></div>
 					<div><div class="text-xs text-slate-500">Tx</div><div class="font-bold">{s.totalTx}</div></div>
-					<div><div class="text-xs text-slate-500">Kas awal</div><div class="font-bold">{fmt(s.openingCash)}</div></div>
+					<div><div class="text-xs text-slate-500">Kas awal</div><div class="font-bold">{formatCurrency(s.openingCash)}</div></div>
 				</div>
 			</button>
 		</li>

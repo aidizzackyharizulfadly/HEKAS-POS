@@ -4,6 +4,8 @@
 -->
 <script lang="ts">
   import { fmtIDR, formatDateTime } from '$lib/utils/format';
+  import { statusClasses } from '$lib/utils/status-classes';
+  import type { StatusMeta } from '$lib/utils/status-helpers';
 
   export interface SJItem {
     product_id: number | string;
@@ -141,9 +143,10 @@
       <div class="text-xs font-semibold text-gray-600 mb-2">Riwayat Approval</div>
       <div class="space-y-2">
         {#each sj.approvals as a}
+          {@const decisionMeta: StatusMeta = a.decision === 'APPROVE' ? { label: 'Disetujui', color: 'green', icon: '✓', severity: 'success' } : { label: 'Ditolak', color: 'red', icon: '✗', severity: 'error' }}
           <div class="flex items-start gap-3 text-xs">
             <span class="font-mono text-gray-500 w-32 flex-shrink-0">{formatDateTime(a.decided_at)}</span>
-            <span class="px-2 py-0.5 rounded {a.decision === 'APPROVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+            <span class="px-2 py-0.5 rounded {statusClasses(decisionMeta)}">
               {a.stage} · {a.decision}
             </span>
             <span class="text-gray-700">{a.decided_by}</span>

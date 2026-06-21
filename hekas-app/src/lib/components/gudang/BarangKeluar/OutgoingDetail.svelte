@@ -2,7 +2,10 @@
 	/**
 	 * OutgoingDetail (HEKAS POS — gudang/BarangKeluar)
 	 * Detail outgoing order — items dengan picking progress + status actions.
+	 * Pakai statusClasses untuk badge konsistensi dengan OutgoingList.
 	 */
+	import { statusClasses } from '$lib/utils/status-classes';
+	import type { StatusMeta } from '$lib/utils/status-helpers';
 
 	interface Item {
 		productId: number;
@@ -41,13 +44,15 @@
 	const progressPct = $derived(totalQty > 0 ? Math.round((totalPicked / totalQty) * 100) : 0);
 
 	const statusBadge = $derived.by(() => {
-		const map: Record<string, { label: string; cls: string }> = {
-			pending: { label: 'Pending', cls: 'bg-slate-100 text-slate-700' },
-			picking: { label: 'Picking', cls: 'bg-amber-100 text-amber-800' },
-			ready: { label: 'Ready', cls: 'bg-blue-100 text-blue-800' },
-			shipped: { label: 'Shipped', cls: 'bg-emerald-100 text-emerald-800' }
+		// Same mapping sebagai OutgoingList untuk konsistensi lintas view.
+		const map: Record<string, StatusMeta> = {
+			pending: { label: 'Pending', color: 'gray', icon: '○', severity: 'neutral' },
+			picking: { label: 'Picking', color: 'yellow', icon: '◐', severity: 'warning' },
+			ready: { label: 'Ready', color: 'blue', icon: '◉', severity: 'info' },
+			shipped: { label: 'Shipped', color: 'green', icon: '✓', severity: 'success' }
 		};
-		return map[outgoing.status] ?? { label: outgoing.status, cls: 'bg-slate-100 text-slate-700' };
+		const meta = map[outgoing.status] ?? { label: outgoing.status, color: 'gray' as const, icon: '•', severity: 'neutral' as const };
+		return { label: meta.label, cls: statusClasses(meta) };
 	});
 
 	function rowClass(item: Item): string {
