@@ -1,8 +1,13 @@
 // HEKAS POS — API layer: Members (loyalty) — Fase E enhanced
+//
+// Per FE_HANDOFF §16: BE belum expose members CRUD. Jadi di HTTP mode,
+// kita fallback ke localStorage cache. User bisa pre-populate localStorage
+// dari `data/seed-members.json` untuk demo.
 
 import type { Member, PointEntry, TierEntry } from '../types/api.js';
 import { TIER_CONFIG } from '../types/api.js';
 import { storage, seedIfEmpty } from '$lib/utils/storage.js';
+import { API_MODE } from './http.js';
 
 const delay = (ms = 15) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -14,6 +19,9 @@ export interface ListMembersFilter {
 }
 
 export async function listMembers(filter: ListMembersFilter = {}): Promise<Member[]> {
+  // Members CRUD belum ada di BE (FE_HANDOFF §16) — pakai localStorage cache
+  // (di-pre-populate saat seedIfEmpty()). HTTP mode pun masih pakai local.
+  void API_MODE; // referenced to keep dual-mode intent
   seedIfEmpty();
   await delay();
   const all = storage.get<Member[]>('members', []);

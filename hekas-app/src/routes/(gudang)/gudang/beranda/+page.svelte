@@ -14,7 +14,7 @@
 	let activeTab = $state<TabId>('inventaris');
 
 	let products = $state<Product[]>([]);
-	let categories = $state<{ id: string; label: string }[]>([]);
+	let categories = $state<{ id: string; label: string; name?: string; icon?: string }[]>([]);
 	let loading = $state(true);
 	let saving = $state(false);
 	let error = $state<string | null>(null);
@@ -72,10 +72,12 @@
 		try {
 			loading = true;
 			error = null;
-			[products, categories] = await Promise.all([
+			const [prods, cats] = await Promise.all([
 				api.products.listProducts(),
-				api.products.listCategories(),
+				api.products.listCategories()
 			]);
+			products = prods;
+			categories = cats.map((cat) => ({ id: cat.id, label: cat.name, name: cat.name, icon: cat.icon }));
 		} catch (e: any) {
 			error = e.message ?? 'Gagal memuat data';
 		} finally {
@@ -257,8 +259,9 @@
 				sku: createForm.sku!,
 				barcode: createForm.barcode!,
 				stock: Number(createForm.stock),
-				unit: createForm.unit,
-				image: createForm.image,
+				unit: createForm.unit ?? 'pcs',
+				image: createForm.image ?? '📦',
+				is_active: true,
 			});
 			await loadAll();
 			closeCreate();

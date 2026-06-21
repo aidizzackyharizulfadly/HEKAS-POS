@@ -85,7 +85,7 @@
 			const range = getRange();
 			const [s, t, p, u, m] = await Promise.all([
 				api.analytics.getSummary(range),
-				api.transactions.listTransactions({ from: range.from, to: range.to, limit: 200 }),
+				api.orders.listTransactions({ from: range.from, to: range.to, limit: 200 }),
 				api.products.listProducts(),
 				api.auth.listUsers(),
 				api.members.listMembers(),
@@ -113,7 +113,7 @@
 		reprintLoading = true;
 		try {
 			// Fetch full tx with items
-			const full = await api.transactions.getTransaction(t.id);
+			const full = await api.orders.getTransaction(t.id);
 			if (full) {
 				reprintTx = full;
 				reprintOpen = true;

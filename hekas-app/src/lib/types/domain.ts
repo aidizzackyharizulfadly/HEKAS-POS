@@ -17,23 +17,38 @@ export interface User {
 
 // ─── Product & Image ───────────────────────────────────────────────────────
 export interface Product {
-	id: number;
+	id: number;       // display ID (FE uses sequential number)
+	uuid?: string;    // BE UUID (when in HTTP mode)
 	name: string;
 	price: number; // IDR (whole rupiah)
+	price_buy?: number; // HPP (harga beli) — gudang/manager only
 	category: string; // minuman | snack | sembako | frozen | rokok | lainnya
+	category_id?: string; // UUID dari BE
 	sku: string;
 	barcode: string;
 	stock: number;
+	min_stock?: number; // threshold stok kritis
+	max_stock?: number;
 	unit: string; // btl | pcs | kg | ltr | bks
 	image: string; // emoji fallback
-	is_active: boolean;
-	// Fase F (optional)
-	image_data?: string;
+	image_url?: string; // URL gambar (from BE)
+	image_data?: string; // base64 (mock)
 	image_mime?: string;
 	image_size?: number;
 	image_width?: number;
 	image_height?: number;
 	image_updated_at?: string;
+	images?: ProductImageBE[]; // multi-image from BE
+	is_active: boolean;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface ProductImageBE {
+	id: string;
+	image_url: string;
+	is_primary: boolean;
+	sort_order: number;
 }
 
 export interface ProductImageMeta {
@@ -175,8 +190,9 @@ export interface TransactionItem {
 
 export interface Transaction {
 	id: number;
+	uuid?: string; // BE UUID
 	invoice_no: string;
-	user_id: number;
+	user_id: number | string;
 	outlet_id: number | null;
 	member_id: string | null;
 	subtotal: number;

@@ -58,7 +58,7 @@
         to = new Date().toISOString();
       }
 
-      report = await api.transactions.getClosingReport({ from, to });
+      report = await api.orders.getClosingReport({ from, to });
     } catch (e: any) {
       showToast?.(e?.message ?? 'Gagal memuat laporan', 'error');
     } finally {

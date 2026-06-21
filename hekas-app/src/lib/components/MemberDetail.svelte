@@ -55,7 +55,7 @@
     try {
       stats = await api.members.getMemberStats(member.id);
       // Ambil 10 transaksi terakhir dari localStorage
-      const txs = await api.transactions.listTransactions();
+      const txs = await api.orders.listTransactions();
       recentTxs = txs
         .filter((t: any) => t.member_id === member.id)
         .slice(0, 10);

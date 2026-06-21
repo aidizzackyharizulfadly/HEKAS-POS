@@ -93,23 +93,8 @@
 		}
 	}
 
-	// ─── Types ──────────────────────────────────────────────────────────────────
-	interface Product {
-		id: number;
-		name: string;
-		price: number;
-		category: string;
-		sku: string;
-		barcode: string;
-		stock: number;
-		unit: string;
-		image: string;
-		image_data?: string;
-		image_mime?: string;
-		image_size?: number;
-		image_width?: number;
-		image_height?: number;
-	}
+	// ─── Types (Product, Member, CartItem, HeldTransaction, User, Transaction imported from $lib/types/domain) ─────
+	// Local Product removed — use domain.Product (supports BE UUID + mock number)
 
 	interface CartItem extends Product {
 		qty: number;
@@ -180,7 +165,7 @@
 
 	async function refreshHeld() {
 		try {
-			held = await api.transactions.listHeld();
+			held = await api.orders.listHeld();
 		} catch (e: any) {
 			showToast('error', `Gagal memuat transaksi ditahan: ${e.message}`);
 		}
@@ -369,7 +354,7 @@
 			const paid = payMethod === 'tunai'
 				? Number(cashInput.replace(/\D/g, '')) || total
 				: total;
-			const result = await api.transactions.checkout({
+			const result = await api.orders.checkout({
 				user_id: currentUser?.id ?? 1,
 				outlet_id: currentUser?.outlet_id ?? undefined,
 				member_id: member?.id ?? null,
@@ -384,7 +369,7 @@
 			});
 			lastReceipt = result;
 			// Fetch full transaction with items for receipt printing
-			lastReceiptTx = await api.transactions.getTransaction(result.id);
+			lastReceiptTx = await api.orders.getTransaction(result.id);
 			// Refresh state — stock decreased, possibly member points updated
 			await Promise.all([refreshProducts(), refreshMembers(), refreshHeld()]);
 			clearCart();
@@ -416,7 +401,7 @@
 		processing = true;
 		try {
 			const totalPaid = methods.reduce((s, m) => s + m.amount, 0);
-			const result = await api.transactions.checkout({
+			const result = await api.orders.checkout({
 				user_id: currentUser?.id ?? 1,
 				outlet_id: currentUser?.outlet_id ?? undefined,
 				member_id: member?.id ?? null,
@@ -430,7 +415,7 @@
 				payments: methods,
 			});
 			lastReceipt = result;
-			lastReceiptTx = await api.transactions.getTransaction(result.id);
+			lastReceiptTx = await api.orders.getTransaction(result.id);
 			await Promise.all([refreshProducts(), refreshMembers(), refreshHeld()]);
 			clearCart();
 			paymentFormOpen = false;
@@ -476,7 +461,7 @@
 		if (cart.length === 0 || processing) return;
 		processing = true;
 		try {
-			await api.transactions.holdTransaction({
+			await api.orders.holdTransaction({
 				user_id: currentUser?.id ?? 1,
 				member_id: member?.id ?? null,
 				cart: cart.map((c) => ({
@@ -526,7 +511,7 @@
 				member = m;
 			}
 			// Remove from held list
-			await api.transactions.recallHeld(h.id);
+			await api.orders.recallHeld(h.id);
 			await refreshHeld();
 			modal = 'none';
 			showToast('success', `Transaksi ${h.id} dilanjutkan`);

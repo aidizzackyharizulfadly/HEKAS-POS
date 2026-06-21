@@ -1,7 +1,17 @@
-// HEKAS POS — API layer: Transactions
-// Inti dari POS: checkout (atomic: re-price + decrement stock + record tx +
-// earn member points). Semua dibungkus Promise biar swap ke fetch() nanti
-// tinggal ganti implementasi.
+// HEKAS POS — API layer: Orders (= Transactions, Wafiq BE uses /orders/)
+//
+// Dual-mode: HTTP (Wafiq BE) | localStorage mock.
+//
+// BE shape (per FE_HANDOFF §9.5):
+//   {ok:true, data:[...]}         — list orders
+//   {ok:true, data:{...}}         — order detail (with items[])
+//   POST /api/orders/draft        — create draft
+//   POST /api/orders/complete     — atomic complete (stock decrement + payment)
+//   POST /api/orders/:id/void     — void (manager only — kasir pakai via shift)
+//   GET  /api/held-drafts/        — held drafts (separate endpoint)
+//
+// Money: BE returns strings (PostgreSQL numeric).
+// IDs: UUID strings. FE types use number | string — we normalize at boundary.
 
 import type {
   CartItem, CheckoutInput, CheckoutResult, Member,
@@ -14,11 +24,146 @@ import type { PaymentMethod, PaymentSplitSummary } from '../utils/payment.js';
 import {
   validatePaymentSplit, summarizePayments, PAYMENT_METHOD_NEEDS_TENDERED,
 } from '../utils/payment.js';
+import { API_MODE, httpFetch, unwrapList, unwrapOne } from './http.js';
+
+// ─── BE Mappers ──────────────────────────────────────────────────────────
+interface BEOrderItem {
+  id: string;
+  orderId: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: string;
+  subtotal: string;
+  discount: string;
+  notes: string | null;
+}
+
+interface BEOrder {
+  id: string;
+  orderNumber: string;
+  outletId: string;
+  shiftId: string;
+  cashierId: string;
+  memberId: string | null;
+  status: 'pending' | 'paid' | 'voided' | 'refunded' | 'partial_refunded';
+  subtotal: string;
+  discount: string;
+  tax: string;
+  total: string;
+  paid: string;
+  change: string;
+  notes: string | null;
+  idempotencyKey: string;
+  createdAt: string;
+  completedAt: string | null;
+  voidedAt: string | null;
+  voidedBy: string | null;
+  voidReason: string | null;
+  items?: BEOrderItem[];
+}
+
+function beToFeOrder(o: BEOrder): Transaction {
+  return {
+    id: hashUuidToId(o.id),
+    uuid: o.id,
+    invoice_no: o.orderNumber,
+    user_id: hashUuidToId(o.cashierId),
+    outlet_id: o.outletId as any, // keep as string (UUID) for now
+    member_id: o.memberId,
+    subtotal: parseFloat(o.subtotal) || 0,
+    discount_pct: 0,
+    discount_amt: parseFloat(o.discount) || 0,
+    total: parseFloat(o.total) || 0,
+    paid: parseFloat(o.paid) || 0,
+    change_amt: parseFloat(o.change) || 0,
+    payment_method: 'tunai' as any, // FE tidak breakdown per payment method di header
+    payments: [{
+      id: 'pm_' + o.id,
+      kind: 'tunai' as any,
+      amount: parseFloat(o.paid) || 0,
+      paid_at: o.completedAt ?? o.createdAt
+    }],
+    is_split: false,
+    status: o.status === 'paid' ? 'completed' : o.status === 'voided' ? 'void' : 'completed',
+    note: o.notes,
+    created_at: o.createdAt,
+    items: (o.items ?? []).map((it, i) => ({
+      id: i + 1,
+      transaction_id: hashUuidToId(o.id),
+      product_id: hashUuidToId(it.productId),
+      product_name: it.productName,
+      qty: it.quantity,
+      price: parseFloat(it.unitPrice) || 0,
+      disc_pct: 0,
+      subtotal: parseFloat(it.subtotal) || 0,
+    } satisfies TransactionItem))
+  };
+}
+
+function hashUuidToId(uuid: string): number {
+  let h = 0;
+  for (let i = 0; i < uuid.length; i++) {
+    h = (h * 31 + uuid.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h) || 1;
+}
 
 const delay = (ms = 20) => new Promise<void>((r) => setTimeout(r, ms));
-
-// ─── checkout ───────────────────────────────────────────────────────────────
+// ─── checkout (HTTP mode: 2-step BE: draft → complete) ──────────────────
 export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
+  if (API_MODE === 'http') {
+    // Step 1: create draft
+    const draftRes = await httpFetch<BEOrder>('/api/orders/draft', {
+      method: 'POST',
+      body: JSON.stringify({
+        items: input.items.map((it) => ({
+          productId: it.product_id,
+          quantity: it.qty,
+          unitPrice: String(0), // BE re-prices from DB
+          discount: String(it.disc_pct ? Math.round(it.qty * 0) : 0) // placeholder, BE computes
+        })),
+        memberId: input.member_id ?? undefined,
+        notes: input.note ?? undefined
+      })
+    });
+    const draft = unwrapOne<BEOrder>(draftRes);
+
+    // Step 2: complete with payments
+    const primary = input.payments?.[0]?.kind ?? input.payment_method ?? 'TUNAI';
+    const completed = await httpFetch<BEOrder>('/api/orders/complete', {
+      method: 'POST',
+      body: JSON.stringify({
+        orderId: draft.id,
+        payments: (input.payments ?? []).map((p) => ({
+          method: p.kind.toUpperCase(),
+          amount: String(p.amount)
+        })),
+        idempotencyKey: crypto.randomUUID()
+      })
+    });
+    const order = unwrapOne<BEOrder>(completed);
+
+    const fe = beToFeOrder(order);
+    return {
+      invoice_no: fe.invoice_no,
+      id: fe.id as any,
+      subtotal: fe.subtotal,
+      discount_pct: fe.discount_pct,
+      discount_amt: fe.discount_amt,
+      total: fe.total,
+      paid: fe.paid,
+      change_amt: fe.change_amt,
+      payment_method: fe.payment_method,
+      payments: fe.payments,
+      is_split: fe.is_split,
+      member_id: fe.member_id,
+      points_earned: 0, // BE belum expose poin calc — fallback ke FE client-side
+      updated_member: null
+    };
+  }
+
+  // ─── Mock mode (unchanged localStorage logic) ─────────────────────────
   seedIfEmpty();
   await delay(40);
 
@@ -47,6 +192,7 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
   const discountPct = input.discount_pct ?? 0;
   const discountAmt = Math.round((subtotal * discountPct) / 100);
   const total = subtotal - discountAmt;
+
 
   // ─── Normalisasi payment: legacy single → array, multi → array ─────────
   let payments: PaymentMethod[];
@@ -206,6 +352,20 @@ function inflateLegacyPayments(tx: Transaction): Transaction {
 }
 
 export async function listTransactions(filter: ListTxFilter = {}): Promise<Transaction[]> {
+  if (API_MODE === 'http') {
+    const params = new URLSearchParams();
+    if (filter.from) params.set('from', filter.from);
+    if (filter.to) params.set('to', filter.to);
+    if (filter.status === 'completed') params.set('status', 'paid');
+    if (filter.status === 'void') params.set('status', 'voided');
+    if (filter.limit) params.set('limit', String(filter.limit));
+    const raw = await httpFetch<BEOrder[] | { items: BEOrder[] }>(
+      `/api/orders/${params.toString() ? '?' + params : ''}`
+    );
+    const list = unwrapList<BEOrder>(raw);
+    return list.map(beToFeOrder);
+  }
+
   seedIfEmpty();
   await delay();
   const all = storage.get<Transaction[]>('transactions', []);
@@ -233,6 +393,16 @@ export async function listTransactions(filter: ListTxFilter = {}): Promise<Trans
 
 // ─── get detail ─────────────────────────────────────────────────────────────
 export async function getTransaction(id: number | string): Promise<Transaction | null> {
+  if (API_MODE === 'http') {
+    try {
+      const raw = await httpFetch<BEOrder>(`/api/orders/${id}`);
+      return beToFeOrder(unwrapOne<BEOrder>(raw));
+    } catch (e: any) {
+      if (e?.status === 404) return null;
+      throw e;
+    }
+  }
+
   seedIfEmpty();
   await delay();
   const all = storage.get<Transaction[]>('transactions', []);
@@ -246,12 +416,19 @@ export async function getTransaction(id: number | string): Promise<Transaction |
 }
 
 // ─── void ───────────────────────────────────────────────────────────────────
-export async function voidTransaction(id: number): Promise<void> {
+export async function voidTransaction(id: number | string, reason?: string, pin?: string): Promise<void> {
+  if (API_MODE === 'http') {
+    await httpFetch(`/api/orders/${id}/void`, {
+      method: 'POST',
+      body: JSON.stringify({ reason, pin })
+    });
+    return;
+  }
   seedIfEmpty();
   await delay(40);
   const txs = storage.get<Transaction[]>('transactions', []);
   const products = storage.get<any[]>('products', []);
-  const idx = txs.findIndex((t) => t.id === id);
+  const idx = txs.findIndex((t) => t.id === Number(id));
   if (idx === -1) throw new Error(`Transaksi #${id} tidak ditemukan`);
   if (txs[idx].status !== 'completed') throw new Error('Transaksi sudah void / held');
 
@@ -283,6 +460,34 @@ export interface HoldInput {
 }
 
 export async function holdTransaction(input: HoldInput): Promise<HeldTransaction> {
+  if (API_MODE === 'http') {
+    const raw = await httpFetch<unknown>('/api/held-drafts/', {
+      method: 'POST',
+      body: JSON.stringify({
+        items: input.cart.map((c) => ({
+          productId: c.product_id,
+          quantity: c.qty,
+          unitPrice: String(c.price)
+        })),
+        notes: input.note
+      })
+    });
+    const draft = unwrapOne<any>(raw);
+    return {
+      id: draft.id,
+      user_id: input.user_id,
+      member_id: input.member_id ?? null,
+      cart: input.cart,
+      subtotal: input.cart.reduce((s, c) => s + c.price * c.qty, 0),
+      discount_pct: input.discount_pct ?? 0,
+      total: input.cart.reduce((s, c) => s + c.price * c.qty, 0),
+      items: input.cart.length,
+      time: new Date().toISOString().slice(11, 16),
+      held_at: new Date().toISOString(),
+      note: input.note ?? null
+    };
+  }
+
   seedIfEmpty();
   await delay();
   const all = storage.get<HeldTransaction[]>('held', []);
@@ -308,6 +513,28 @@ export async function holdTransaction(input: HoldInput): Promise<HeldTransaction
 
 // ─── held: list ─────────────────────────────────────────────────────────────
 export async function listHeld(): Promise<HeldTransaction[]> {
+  if (API_MODE === 'http') {
+    const raw = await httpFetch<unknown>('/api/held-drafts/');
+    return unwrapList<any>(raw).map((d) => ({
+      id: d.id,
+      user_id: d.cashierId as any,
+      member_id: d.memberId as any,
+      cart: (d.items ?? []).map((it: any) => ({
+        product_id: it.productId,
+        name: it.productName ?? '',
+        price: parseFloat(it.unitPrice) || 0,
+        qty: it.quantity
+      })),
+      subtotal: parseFloat(d.subtotal) || 0,
+      discount_pct: 0,
+      total: parseFloat(d.total) || 0,
+      items: (d.items ?? []).length,
+      time: new Date(d.createdAt).toISOString().slice(11, 16),
+      held_at: d.createdAt,
+      note: d.notes
+    }));
+  }
+
   seedIfEmpty();
   await delay();
   const all = storage.get<HeldTransaction[]>('held', []);
@@ -320,6 +547,10 @@ export async function listHeld(): Promise<HeldTransaction[]> {
 
 // ─── held: recall (delete after resumed) ────────────────────────────────────
 export async function recallHeld(id: string): Promise<void> {
+  if (API_MODE === 'http') {
+    await httpFetch(`/api/held-drafts/${id}`, { method: 'DELETE' });
+    return;
+  }
   seedIfEmpty();
   await delay();
   const all = storage.get<HeldTransaction[]>('held', []);
@@ -351,6 +582,63 @@ export interface ClosingReportFilter {
 export async function getClosingReport(
   filter: ClosingReportFilter = {},
 ): Promise<ClosingReport> {
+  if (API_MODE === 'http') {
+    // FE_HANDOFF §9.14: BE returns Excel binary for /reports/sales, not JSON.
+    // For closing report (JSON), we compute client-side from BE order list.
+    const orders = await listTransactions({
+      from: filter.from?.slice(0, 10),
+      to: filter.to?.slice(0, 10),
+      limit: 1000
+    });
+    const completed = orders.filter((t) => t.status === 'completed');
+    const voided = orders.filter((t) => t.status === 'void');
+
+    const subtotal = completed.reduce((s, t) => s + t.subtotal, 0);
+    const discount_amt = completed.reduce((s, t) => s + t.discount_amt, 0);
+    const total = completed.reduce((s, t) => s + t.total, 0);
+    const paid_total = completed.reduce((s, t) => s + t.paid, 0);
+
+    const payMap = new Map<string, { count: number; total: number }>();
+    for (const t of completed) {
+      const cur = payMap.get(t.payment_method as string) ?? { count: 0, total: 0 };
+      payMap.set(t.payment_method as string, { count: cur.count + 1, total: cur.total + t.total });
+    }
+
+    const prodMap = new Map<string, { name: string; qty: number; total: number }>();
+    for (const t of completed) {
+      for (const it of (t.items ?? [])) {
+        const cur = prodMap.get(it.product_name) ?? { name: it.product_name, qty: 0, total: 0 };
+        prodMap.set(it.product_name, { name: cur.name, qty: cur.qty + it.qty, total: cur.total + it.subtotal });
+      }
+    }
+
+    const hourMap = new Map<string, { count: number; total: number }>();
+    for (const t of completed) {
+      const hr = t.created_at.slice(11, 13) + ':00';
+      const cur = hourMap.get(hr) ?? { count: 0, total: 0 };
+      hourMap.set(hr, { count: cur.count + 1, total: cur.total + t.total });
+    }
+
+    return {
+      from: filter.from ?? '',
+      to: filter.to ?? '',
+      cashier_name: filter.user_id ? `User #${filter.user_id}` : 'Semua Kasir',
+      tx_count: completed.length,
+      void_count: voided.length,
+      subtotal,
+      discount_amt,
+      total,
+      paid_total,
+      by_payment: Array.from(payMap.entries())
+        .map(([method, v]) => ({ method, count: v.count, total: v.total }))
+        .sort((a, b) => b.total - a.total),
+      top_products: Array.from(prodMap.values()).sort((a, b) => b.total - a.total).slice(0, 10),
+      hour_breakdown: Array.from(hourMap.entries())
+        .map(([hour, v]) => ({ hour, count: v.count, total: v.total }))
+        .sort((a, b) => a.hour.localeCompare(b.hour))
+    };
+  }
+
   seedIfEmpty();
   await delay();
   const txs = storage.get<Transaction[]>('transactions', []);
