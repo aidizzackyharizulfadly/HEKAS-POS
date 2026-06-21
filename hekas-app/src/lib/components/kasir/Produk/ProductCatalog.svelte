@@ -3,8 +3,14 @@
 	 * ProductCatalog (HEKAS POS — kasir/Produk)
 	 * Katalog produk untuk kasir — grid dengan search + filter category +
 	 * stock badge + keyboard navigation.
+	 *
+	 * Refactor: pakai helpers (searchAndFilter, stockStatus, uniqueBy, formatCurrency).
 	 */
 	import type { Product } from '$lib/types/domain';
+	import { searchAndFilter } from '$lib/utils/search-filters';
+	import { uniqueBy } from '$lib/utils/array-helpers';
+	import { stockStatus } from '$lib/utils/status-helpers';
+	import { formatCurrency } from '$lib/utils/format';
 
 	interface Props {
 		products: Product[];
@@ -17,26 +23,39 @@
 	let search = $state('');
 	let category = $state<string>('all');
 
-	const categories = $derived(
-		['all', ...Array.from(new Set(products.map((p) => (p as any).category).filter(Boolean)))]
-	);
+	const categories = $derived([
+		'all',
+		...uniqueBy(products, (p: any) => p.category)
+			.map((p: any) => p.category as string)
+			.filter(Boolean)
+	]);
+
 	const filtered = $derived(
-		products.filter((p) => {
-			if (category !== 'all' && (p as any).category !== category) return false;
-			if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
-			return true;
+		searchAndFilter<typeof products[number]>(products, {
+			searchFields: ['name', 'sku', 'barcode'],
+			query: search,
+			filters: category !== 'all' ? [(p) => (p as any).category === category] : undefined
 		})
 	);
 
-	const formatIDR = (n: number) =>
-		n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+	/** Tailwind classes per status color */
+	const COLOR_CLASSES: Record<string, string> = {
+		red: 'bg-red-100 text-red-700',
+		yellow: 'bg-amber-100 text-amber-700',
+		green: 'bg-emerald-100 text-emerald-700',
+		purple: 'bg-purple-100 text-purple-700',
+		blue: 'bg-blue-100 text-blue-700',
+		orange: 'bg-orange-100 text-orange-700',
+		gray: 'bg-slate-100 text-slate-600'
+	};
 
-	function stockBadge(p: Product): { label: string; cls: string } {
+	function stockBadge(p: Product): { label: string; cls: string; isOut: boolean } {
 		const stock = (p as any).stock as number | undefined;
-		if (stock === undefined) return { label: '', cls: '' };
-		if (stock === 0) return { label: 'Habis', cls: 'bg-red-100 text-red-700' };
-		if (stock < 10) return { label: `Sisa ${stock}`, cls: 'bg-amber-100 text-amber-700' };
-		return { label: `Stok ${stock}`, cls: 'bg-slate-100 text-slate-600' };
+		if (stock === undefined) return { label: '', cls: '', isOut: false };
+		const meta = stockStatus(stock);
+		const isOut = stock <= 0;
+		const label = meta.label === 'Tersedia' ? `Stok ${stock}` : meta.label === 'Hampir habis' ? `Sisa ${stock}` : meta.label;
+		return { label, cls: COLOR_CLASSES[meta.color] ?? COLOR_CLASSES.gray, isOut };
 	}
 
 	function handleKey(e: KeyboardEvent, p: Product) {
@@ -100,7 +119,7 @@
 		>
 			{#each filtered as p (p.id)}
 				{@const badge = stockBadge(p)}
-				{@const isOut = (p as any).stock === 0}
+				{@const isOut = badge.isOut}
 				<button
 					type="button"
 					onclick={() => !isOut && onaddToCart(p)}
@@ -117,7 +136,7 @@
 						{/if}
 					</div>
 					<div class="text-sm font-semibold text-slate-800 line-clamp-2 mt-1">{p.name}</div>
-					<div class="text-sm font-bold text-blue-600 mt-1">{formatIDR(p.price)}</div>
+					<div class="text-sm font-bold text-blue-600 mt-1">{formatCurrency(p.price)}</div>
 				</button>
 			{/each}
 		</div>
