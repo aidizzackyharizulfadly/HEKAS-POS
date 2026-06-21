@@ -11,7 +11,7 @@
   import { api, TIER_CONFIG } from '$lib/api';
   import type { Member } from '$lib/types/domain';
   import type { MemberStats } from '$lib/types/api';
-  import TierBadge from './TierBadge.svelte';
+  import TierBadge from './kasir/Pelanggan/TierBadge.svelte';
 
   let {
     member,

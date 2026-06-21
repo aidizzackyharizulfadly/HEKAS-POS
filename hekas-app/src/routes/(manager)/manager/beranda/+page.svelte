@@ -9,7 +9,7 @@
 	import BackupRestore from '$lib/components/BackupRestore.svelte';
 	import MemberForm from '$lib/components/MemberForm.svelte';
 	import MemberDetail from '$lib/components/MemberDetail.svelte';
-	import TierBadge from '$lib/components/TierBadge.svelte';
+	import TierBadge from '$lib/components/kasir/Pelanggan/TierBadge.svelte';
 	import RoleShell from '$lib/components/shared/RoleShell.svelte';
 	import { exportTransactionsCSV, fmtIDR, printReport } from '$lib/utils/export';
 	import { isBackupStale } from '$lib/utils/backup';

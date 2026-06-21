@@ -1,5 +1,7 @@
 <!--
-  TierBadge.svelte — Reusable tier badge for Member
+  TierBadge.svelte — Reusable member tier badge.
+  Per FRONTEND_ARCHITECTURE §3 `lib/components/kasir/Pelanggan/TierBadge.svelte`.
+
   Props:
     - tier: 'Silver' | 'Gold' | 'Platinum'
     - size: 'sm' | 'md' | 'lg' (default: 'md')
@@ -43,6 +45,7 @@
     white-space: nowrap;
     border: 1px solid {config.color}30;
   "
+  aria-label="Member tier: {config.label}"
 >
   {#if showIcon}
     <span style="font-size: {sz.iconSize}; line-height: 1;">

@@ -1,24 +1,104 @@
-<!-- Sub-route placeholder (R2 — FRONTEND_ARCHITECTURE.md §4) -->
-<!-- TODO R1: Extract content dari monolithic page ke sini -->
+<!--
+  /kasir/produk — Product catalog (read-only for kasir).
+  Per FRONTEND_ARCHITECTURE §4.2 (kasir routes).
+  Uses R3a components: ProductGrid, ProductCard.
+-->
 <script lang="ts">
-  import { page } from '$app/state';
-  const role = 'kasir';
-  const path = page.url.pathname;
+  import { onMount } from 'svelte';
+  import RoleShell from '$lib/components/shared/RoleShell.svelte';
+  import ProductGrid from '$lib/components/kasir/POS/ProductGrid.svelte';
+  import { api } from '$lib/api';
+  import type { Product } from '$lib/types/domain';
+
+  let currentUser = $state<{ id: number; full_name: string; role: string } | null>(null);
+  let products = $state<Product[]>([]);
+  let loading = $state(true);
+
+  // Try load current user from session
+  onMount(async () => {
+    try {
+      const u = await api.auth.getCurrentUser();
+      if (u) currentUser = { id: u.id as number, full_name: u.full_name, role: u.role };
+    } catch {
+      // Not logged in
+    }
+    try {
+      products = await api.products.listProducts();
+    } catch (e) {
+      console.error('Failed to load products', e);
+    } finally {
+      loading = false;
+    }
+  });
+
+  function handleLogout() {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('hekas:currentUser');
+      localStorage.removeItem('hekas:currentRole');
+      window.location.href = '/login';
+    }
+  }
+
+  function handleProductClick(p: Product) {
+    // Kasir can only VIEW — not edit/add. Could open detail modal in future.
+    console.log('[kasir/produk] viewed product', p.id, p.name);
+  }
 </script>
 
 <svelte:head>
   <title>Produk · HEKAS POS</title>
 </svelte:head>
 
-<div class="flex items-center justify-center min-h-[60vh] p-8">
-  <div class="text-center max-w-md">
-    <div class="text-6xl mb-4">🚧</div>
-    <h1 class="text-2xl font-bold text-slate-900 mb-2">Produk</h1>
-    <p style="font-size: 14px; color: #64748B; margin-bottom: 16px">
-      Halaman ini belum diimplementasi. Lihat route <code>{path}</code> di role <strong>{role}</strong>.
-    </p>
-    <p style="font-size: 12px; color: #94A3B8">
-      Placeholder created by R2 refactor. Konten akan diekstrak dari monolithic page di fase berikutnya.
-    </p>
+<RoleShell
+  role="kasir"
+  title="Produk"
+  subtitle="Katalog produk (lihat saja — kelola di Gudang)"
+  user={currentUser}
+  onlogout={handleLogout}
+>
+  <div class="kasir-produk">
+    {#if loading}
+      <div class="kasir-produk__loading" role="status" aria-label="memuat produk">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Memuat produk...</p>
+      </div>
+    {:else}
+      <ProductGrid
+        {products}
+        onproductclick={handleProductClick}
+        emptyTitle="Belum ada produk"
+        emptyDescription="Tambahkan produk melalui modul Gudang."
+      />
+    {/if}
   </div>
-</div>
+</RoleShell>
+
+<style>
+  .kasir-produk {
+    width: 100%;
+  }
+  .kasir-produk__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 16px;
+    color: #64748B;
+    gap: 12px;
+  }
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid #E2E8F0;
+    border-top-color: #2563EB;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .kasir-produk__loading p {
+    margin: 0;
+    font-size: 13px;
+  }
+</style>
