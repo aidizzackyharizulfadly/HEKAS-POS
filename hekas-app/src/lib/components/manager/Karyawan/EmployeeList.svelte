@@ -1,9 +1,10 @@
 <script lang="ts">
 	/**
 	 * EmployeeList (HEKAS POS — manager/Karyawan)
-	 * List karyawan — search + role filter + status filter + sortable table.
+	 * Pakai manager-helpers untuk filter/sort logic.
 	 */
 	import type { Employee } from '$lib/api/employees';
+	import { filterEmployees, sortEmployees, nameInitials } from '$lib/utils/manager-helpers';
 
 	interface Props {
 		employees: Employee[];
@@ -27,28 +28,9 @@
 	};
 
 	const filtered = $derived(
-		employees.filter((e) => {
-			if (roleFilter !== 'all' && e.role !== roleFilter) return false;
-			if (statusFilter !== 'all' && e.status !== statusFilter) return false;
-			if (!search.trim()) return true;
-			const q = search.toLowerCase();
-			return (
-				e.fullName.toLowerCase().includes(q) ||
-				e.username.toLowerCase().includes(q) ||
-				((e as any).email ?? '').toLowerCase().includes(q)
-			);
-		})
+		filterEmployees(employees, { search, role: roleFilter, status: statusFilter })
 	);
-
-	const sorted = $derived(
-		[...filtered].sort((a, b) => {
-			let cmp = 0;
-			if (sortKey === 'name') cmp = a.fullName.localeCompare(b.fullName);
-			else if (sortKey === 'role') cmp = a.role.localeCompare(b.role);
-			else if (sortKey === 'status') cmp = a.status.localeCompare(b.status);
-			return sortDir === 'asc' ? cmp : -cmp;
-		})
-	);
+	const sorted = $derived(sortEmployees(filtered, sortKey, sortDir));
 
 	function toggleSort(key: typeof sortKey) {
 		if (sortKey === key) {
@@ -62,14 +44,6 @@
 	function sortIcon(key: typeof sortKey): string {
 		if (sortKey !== key) return '↕';
 		return sortDir === 'asc' ? '↑' : '↓';
-	}
-
-	function initials(name: string): string {
-		return name
-			.split(/\s+/)
-			.slice(0, 2)
-			.map((s) => s[0]?.toUpperCase() ?? '')
-			.join('');
 	}
 
 	function handleKey(e: KeyboardEvent, e2: Employee) {
@@ -187,7 +161,7 @@
 										class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0"
 										aria-hidden="true"
 									>
-										{initials(emp.fullName)}
+										{nameInitials(emp.fullName)}
 									</div>
 									<div class="min-w-0">
 										<div class="font-semibold text-slate-800 truncate">{emp.fullName}</div>

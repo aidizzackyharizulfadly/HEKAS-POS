@@ -1,9 +1,10 @@
 <script lang="ts">
 	/**
 	 * InventorySummary (HEKAS POS — manager/Beranda)
-	 * Ringkasan inventory — value, low stock, fast moving, turnover days.
-	 * Derived health status + threshold warnings.
+	 * Pakai computeInventoryHealth untuk derived health bands.
 	 */
+	import { computeInventoryHealth, type InventoryHealth } from '$lib/utils/manager-helpers';
+
 	interface Props {
 		totalValue: number;
 		lowStock: number;
@@ -22,30 +23,34 @@
 		lowStockThreshold = 10
 	}: Props = $props();
 
+	const health = $derived(
+		computeInventoryHealth({
+			totalValue,
+			lowStock,
+			fastMoving,
+			turnoverDays,
+			totalSkus
+		})
+	);
+
 	const fmt = (n: number) =>
 		n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
 
-	const lowStockPct = $derived(
-		totalSkus && totalSkus > 0 ? (lowStock / totalSkus) * 100 : 0
-	);
+	const TURNOVER_LABEL: Record<InventoryHealth['turnoverLabel'], { label: string; cls: string; dot: string }> = {
+		sangat_cepat: { label: 'Sangat cepat', cls: 'text-emerald-700', dot: 'bg-emerald-500' },
+		sehat: { label: 'Sehat', cls: 'text-blue-700', dot: 'bg-blue-500' },
+		lambat: { label: 'Lambat', cls: 'text-amber-700', dot: 'bg-amber-500' },
+		sangat_lambat: { label: 'Sangat lambat', cls: 'text-red-700', dot: 'bg-red-500' }
+	};
 
-	const turnoverHealth = $derived.by(() => {
-		if (turnoverDays <= 7) return { label: 'Sangat cepat', cls: 'text-emerald-700', dot: 'bg-emerald-500' };
-		if (turnoverDays <= 30) return { label: 'Sehat', cls: 'text-blue-700', dot: 'bg-blue-500' };
-		if (turnoverDays <= 60) return { label: 'Lambat', cls: 'text-amber-700', dot: 'bg-amber-500' };
-		return { label: 'Sangat lambat', cls: 'text-red-700', dot: 'bg-red-500' };
+	const lowStockColor = $derived.by(() => {
+		if (lowStock === 0) return 'text-emerald-700';
+		if (health.lowStockPct < 5) return 'text-blue-700';
+		if (health.lowStockPct < 15) return 'text-amber-700';
+		return 'text-red-700';
 	});
 
-	const lowStockHealth = $derived.by(() => {
-		if (lowStock === 0) return { cls: 'text-emerald-700' };
-		if (lowStockPct < 5) return { cls: 'text-blue-700' };
-		if (lowStockPct < 15) return { cls: 'text-amber-700' };
-		return { cls: 'text-red-700' };
-	});
-
-	const fastMovingPct = $derived(
-		totalSkus && totalSkus > 0 ? Math.round((fastMoving / totalSkus) * 100) : 0
-	);
+	const turnoverInfo = $derived(TURNOVER_LABEL[health.turnoverLabel]);
 </script>
 
 <div class="space-y-3">
@@ -64,10 +69,10 @@
 
 		<div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
 			<div class="text-[10px] text-amber-700 uppercase font-semibold">Stok Rendah</div>
-			<div class="text-lg font-bold {lowStockHealth} tabular-nums">{lowStock}</div>
+			<div class="text-lg font-bold {lowStockColor} tabular-nums">{lowStock}</div>
 			{#if totalSkus !== undefined}
 				<div class="text-[10px] text-slate-500">
-					{lowStockPct.toFixed(1)}% dari total
+					{health.lowStockPct.toFixed(1)}% dari total
 				</div>
 			{/if}
 		</div>
@@ -76,7 +81,7 @@
 			<div class="text-[10px] text-emerald-700 uppercase font-semibold">Fast Moving</div>
 			<div class="text-lg font-bold text-emerald-900 tabular-nums">{fastMoving}</div>
 			{#if totalSkus !== undefined}
-				<div class="text-[10px] text-slate-500">{fastMovingPct}% SKU</div>
+				<div class="text-[10px] text-slate-500">{health.fastMovingPct}% SKU</div>
 			{/if}
 		</div>
 
@@ -86,9 +91,9 @@
 				<div class="text-lg font-bold text-blue-900 tabular-nums">{turnoverDays}</div>
 				<div class="text-xs text-slate-600">hari</div>
 			</div>
-			<div class="flex items-center gap-1 text-[10px] {turnoverHealth.cls} font-semibold">
-				<span class="w-1.5 h-1.5 rounded-full {turnoverHealth.dot}"></span>
-				{turnoverHealth.label}
+			<div class="flex items-center gap-1 text-[10px] {turnoverInfo.cls} font-semibold">
+				<span class="w-1.5 h-1.5 rounded-full {turnoverInfo.dot}"></span>
+				{turnoverInfo.label}
 			</div>
 		</div>
 	</div>

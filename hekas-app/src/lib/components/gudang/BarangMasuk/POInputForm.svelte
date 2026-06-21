@@ -1,60 +1,62 @@
 <script lang="ts">
 	/**
 	 * POInputForm (HEKAS POS — gudang/BarangMasuk)
-	 * Form buat Purchase Order baru — supplier, expected date, multi items,
-	 * derived total + validasi per item.
+	 * Form buat Purchase Order baru — pakai gudang-helpers untuk validation.
 	 */
 	import type { Product } from '$lib/types/domain';
-
-	interface POItem {
-		productId: number;
-		qty: number;
-	}
+	import {
+		validatePOItems,
+		aggregatePOItems,
+		defaultExpectedDate,
+		type POInputItem
+	} from '$lib/utils/gudang-helpers';
 
 	interface Props {
 		products: Product[];
-		onsubmit: (po: { supplier: string; expectedDate: string; items: POItem[] }) => void | Promise<void>;
+		onsubmit: (po: { supplier: string; expectedDate: string; items: POInputItem[] }) => void | Promise<void>;
 		oncancel: () => void;
 		defaultLeadDays?: number;
+		aggregateDuplicates?: boolean;
 	}
 
 	let {
 		products,
 		onsubmit,
 		oncancel,
-		defaultLeadDays = 7
+		defaultLeadDays = 7,
+		aggregateDuplicates = true
 	}: Props = $props();
 
 	let supplier = $state('');
 	let expectedDate = $state('');
-	let items = $state<POItem[]>([{ productId: 0, qty: 1 }]);
+	let items = $state<POInputItem[]>([{ productId: 0, qty: 1 }]);
 	let submitting = $state(false);
 	let error = $state('');
 
-	// Init default date
 	$effect(() => {
 		if (!expectedDate) {
-			const d = new Date();
-			d.setDate(d.getDate() + defaultLeadDays);
-			expectedDate = d.toISOString().slice(0, 10);
+			expectedDate = defaultExpectedDate(defaultLeadDays);
 		}
 	});
 
-	const validItems = $derived(items.filter((it) => it.productId > 0 && it.qty > 0));
-	const totalUnits = $derived(validItems.reduce((s, it) => s + it.qty, 0));
-	const distinctProducts = $derived(new Set(validItems.map((it) => it.productId)).size);
-	const hasDuplicates = $derived(distinctProducts < validItems.length);
+	const validation = $derived(validatePOItems(items));
+	const hasDuplicates = $derived(validation.hasDuplicates);
+	const totalUnits = $derived(validation.totalUnits);
+	const validItems = $derived(
+		aggregateDuplicates ? aggregatePOItems(items) : validation.validItems
+	);
 
 	const valid = $derived(
-		supplier.trim().length >= 2 && validItems.length > 0 && !hasDuplicates && !submitting
+		supplier.trim().length >= 2 && validItems.length > 0 && !submitting
 	);
 
 	function productName(id: number): string {
 		return products.find((p) => p.id === id)?.name ?? '—';
 	}
 
-	function productSku(id: number): string {
-		return String((products.find((p) => p.id === id) as any)?.sku ?? '');
+	function productStock(id: number): number | undefined {
+		const p = products.find((x) => x.id === id) as any;
+		return p?.stock;
 	}
 
 	function addItem() {
@@ -69,16 +71,10 @@
 		}
 	}
 
-	function productStock(id: number): number | undefined {
-		const p = products.find((x) => x.id === id) as any;
-		return p?.stock;
-	}
-
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
 		if (!valid) {
-			if (hasDuplicates) error = 'Ada produk yang duplikat. Gabungkan qty-nya.';
-			else if (supplier.trim().length < 2) error = 'Nama supplier minimal 2 karakter.';
+			if (supplier.trim().length < 2) error = 'Nama supplier minimal 2 karakter.';
 			else if (validItems.length === 0) error = 'Minimal 1 item dengan produk + qty valid.';
 			else error = 'Form tidak valid.';
 			return;
@@ -201,7 +197,7 @@
 
 		{#if hasDuplicates}
 			<div role="alert" class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
-				⚠️ Ada produk duplikat. Akan dibuat 1 baris per produk (qty diagregat saat submit).
+				⚠️ Ada produk duplikat. {aggregateDuplicates ? 'Qty diagregat saat submit.' : 'Hapus duplikat.'}
 			</div>
 		{/if}
 	</div>

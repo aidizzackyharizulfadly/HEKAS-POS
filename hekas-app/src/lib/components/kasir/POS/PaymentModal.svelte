@@ -2,9 +2,19 @@
 	/**
 	 * PaymentModal (HEKAS POS — kasir/POS)
 	 * Modal pembayaran — pilih metode, input nominal, hitung kembalian.
-	 * Quick amount buttons + auto-focus + Enter untuk confirm.
+	 * Logic kalkulasi di-delegate ke $lib/utils/payment-helpers.
 	 */
 	import type { Snippet } from 'svelte';
+	import {
+		PAYMENT_METHODS,
+		QUICK_CASH_AMOUNTS,
+		calcChange,
+		isExactPayment,
+		shortfall,
+		isPaymentValid,
+		defaultPaidFor,
+		type PaymentMethod
+	} from '$lib/utils/payment-helpers';
 
 	interface Props {
 		open: boolean;
@@ -14,8 +24,6 @@
 		children?: Snippet;
 	}
 
-	type PaymentMethod = 'cash' | 'qris' | 'debit' | 'credit' | 'ewallet';
-
 	let { open, total, onclose, onconfirm, children }: Props = $props();
 
 	let method = $state<PaymentMethod>('cash');
@@ -23,26 +31,14 @@
 	let submitting = $state(false);
 	let error = $state('');
 
-	const QUICK_CASH = [50000, 100000, 200000, 500000, 1000000];
-
-	const change = $derived(Math.max(0, paid - total));
 	const isCash = $derived(method === 'cash');
-	const isExact = $derived(paid === total);
-	const enoughPaid = $derived(paid >= total);
-	const valid = $derived(
-		(!isCash || enoughPaid) && Number.isFinite(paid) && !submitting
-	);
+	const change = $derived(calcChange(paid, total));
+	const exact = $derived(isExactPayment(paid, total));
+	const short = $derived(shortfall(paid, total));
+	const valid = $derived(isPaymentValid(method, paid, total) && !submitting);
 
 	const fmt = (n: number) =>
 		n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
-
-	const METHODS: { id: PaymentMethod; label: string; emoji: string }[] = [
-		{ id: 'cash', label: 'Tunai', emoji: '💵' },
-		{ id: 'qris', label: 'QRIS', emoji: '📱' },
-		{ id: 'debit', label: 'Debit', emoji: '💳' },
-		{ id: 'credit', label: 'Kredit', emoji: '💳' },
-		{ id: 'ewallet', label: 'E-Wallet', emoji: '📲' }
-	];
 
 	function reset() {
 		method = 'cash';
@@ -58,7 +54,7 @@
 
 	function selectMethod(m: PaymentMethod) {
 		method = m;
-		if (m !== 'cash') paid = total;
+		paid = defaultPaidFor(m, total);
 	}
 
 	async function handleConfirm() {
@@ -121,7 +117,7 @@
 			</div>
 
 			<div class="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Metode pembayaran">
-				{#each METHODS as m (m.id)}
+				{#each PAYMENT_METHODS as m (m.id)}
 					<button
 						type="button"
 						role="radio"
@@ -155,7 +151,7 @@
 					<div>
 						<p class="text-[10px] font-semibold text-slate-500 uppercase mb-1">Tambah cepat</p>
 						<div class="grid grid-cols-5 gap-1">
-							{#each QUICK_CASH as n (n)}
+							{#each QUICK_CASH_AMOUNTS as n (n)}
 								<button
 									type="button"
 									onclick={() => addQuick(n)}
@@ -174,11 +170,11 @@
 						>
 							✓ Kembali: {fmt(change)}
 						</div>
-					{:else if isExact}
+					{:else if exact}
 						<div class="text-sm text-blue-700 font-semibold">✓ Pas — tanpa kembalian</div>
 					{:else if paid < total}
 						<div class="text-sm text-red-700 font-semibold">
-							Kurang: {fmt(total - paid)}
+							Kurang: {fmt(short)}
 						</div>
 					{/if}
 				</div>

@@ -1,10 +1,14 @@
 <script lang="ts">
 	/**
 	 * LeaveRequests (HEKAS POS — manager/Karyawan)
-	 * List pengajuan cuti — pending/all filter, approve/reject dengan notes,
-	 * derived duration + sorting by date.
+	 * Pakai manager-helpers untuk duration dan date range.
 	 */
 	import type { LeaveRequest } from '$lib/api/employees';
+	import {
+		leaveDurationDays,
+		isLeavePending,
+		formatLeaveDateRange
+	} from '$lib/utils/manager-helpers';
 
 	interface Props {
 		requests: LeaveRequest[];
@@ -34,9 +38,7 @@
 	};
 
 	const filtered = $derived(
-		filter === 'pending'
-			? requests.filter((r) => r.status === 'pending')
-			: requests
+		filter === 'pending' ? requests.filter(isLeavePending) : requests
 	);
 
 	const sorted = $derived(
@@ -48,17 +50,7 @@
 		})
 	);
 
-	const pendingCount = $derived(requests.filter((r) => r.status === 'pending').length);
-
-	function durationDays(r: LeaveRequest): number {
-		try {
-			const start = new Date(r.startDate).getTime();
-			const end = new Date(r.endDate).getTime();
-			return Math.max(1, Math.round((end - start) / 86_400_000) + 1);
-		} catch {
-			return 0;
-		}
-	}
+	const pendingCount = $derived(requests.filter(isLeavePending).length);
 
 	function startReview(id: string, decision: 'approved' | 'rejected') {
 		reviewing = id;
@@ -80,19 +72,6 @@
 			cancelReview();
 		} catch {
 			submitting = false;
-		}
-	}
-
-	function formatDateRange(start: string, end: string): string {
-		try {
-			const s = new Date(start);
-			const e = new Date(end);
-			if (s.toDateString() === e.toDateString()) {
-				return s.toLocaleDateString('id-ID', { dateStyle: 'medium' });
-			}
-			return `${s.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} → ${e.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
-		} catch {
-			return `${start} → ${end}`;
 		}
 	}
 </script>
@@ -143,7 +122,7 @@
 		<ul class="space-y-2" role="list" aria-label="Pengajuan cuti">
 			{#each sorted as r (r.id)}
 				{@const isReviewing = reviewing === r.id}
-				{@const days = durationDays(r)}
+				{@const days = leaveDurationDays(r)}
 				<li class="p-3 bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors">
 					<div class="flex items-start gap-3">
 						<span class="text-2xl flex-shrink-0" aria-hidden="true">
@@ -158,7 +137,7 @@
 								<span class="text-[10px] text-slate-500">· {days} hari</span>
 							</div>
 							<div class="text-xs text-slate-500 mt-0.5">
-								{formatDateRange(r.startDate, r.endDate)}
+								{formatLeaveDateRange(r.startDate, r.endDate)}
 							</div>
 							<div class="text-xs text-slate-700 mt-1.5">{r.reason}</div>
 						</div>

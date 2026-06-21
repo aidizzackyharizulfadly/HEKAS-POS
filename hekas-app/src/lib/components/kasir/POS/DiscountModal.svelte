@@ -1,8 +1,15 @@
 <script lang="ts">
 	/**
 	 * DiscountModal (HEKAS POS — kasir/POS)
-	 * Modal diskon — pilih nominal/persen, validasi max, preview potongan real-time.
+	 * Modal diskon — pakai $lib/utils/discount-helpers untuk kalkulasi.
 	 */
+	import {
+		computeDiscount,
+		isDiscountValid,
+		DISCOUNT_PERCENT_PRESETS,
+		DISCOUNT_NOMINAL_PRESETS
+	} from '$lib/utils/discount-helpers';
+
 	interface Props {
 		open: boolean;
 		subtotal: number;
@@ -17,18 +24,8 @@
 	let value = $state<number>(0);
 	let error = $state('');
 
-	const clampedValue = $derived(
-		type === 'percent' ? Math.min(Math.max(value, 0), maxPercent) : Math.min(Math.max(value, 0), subtotal)
-	);
-	const discountAmt = $derived(
-		type === 'percent' ? Math.round((subtotal * clampedValue) / 100) : Math.round(clampedValue)
-	);
-	const finalTotal = $derived(Math.max(0, subtotal - discountAmt));
-
-	const valid = $derived(clampedValue > 0 && subtotal > 0);
-
-	const PRESETS_PERCENT = [5, 10, 15, 20, 25];
-	const PRESETS_NOMINAL = [10000, 25000, 50000, 100000];
+	const result = $derived(computeDiscount({ type, value, subtotal, maxPercent }));
+	const valid = $derived(isDiscountValid({ type, value, subtotal, maxPercent }));
 
 	const fmt = (n: number) =>
 		n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
@@ -49,7 +46,7 @@
 			error = 'Masukkan nilai diskon yang valid.';
 			return;
 		}
-		onapply({ type, value: clampedValue, amount: discountAmt });
+		onapply({ type, value: result.value, amount: result.amount });
 		reset();
 	}
 
@@ -120,7 +117,7 @@
 			<div>
 				<p class="text-[10px] font-semibold text-slate-500 uppercase mb-1">Preset cepat</p>
 				<div class="grid {type === 'percent' ? 'grid-cols-5' : 'grid-cols-4'} gap-1">
-					{#each (type === 'percent' ? PRESETS_PERCENT : PRESETS_NOMINAL) as preset (preset)}
+					{#each (type === 'percent' ? DISCOUNT_PERCENT_PRESETS : DISCOUNT_NOMINAL_PRESETS) as preset (preset)}
 						{@const isAllowed = type === 'percent' ? preset <= maxPercent : preset <= subtotal}
 						<button
 							type="button"
@@ -140,12 +137,12 @@
 					<span class="font-mono">{fmt(subtotal)}</span>
 				</div>
 				<div class="flex justify-between text-red-600 font-semibold">
-					<span>Potongan ({type === 'percent' ? `${clampedValue}%` : 'nominal'})</span>
-					<span class="font-mono">−{fmt(discountAmt)}</span>
+					<span>Potongan ({type === 'percent' ? `${result.value}%` : 'nominal'})</span>
+					<span class="font-mono">−{fmt(result.amount)}</span>
 				</div>
 				<div class="flex justify-between font-bold text-slate-900 border-t border-slate-200 pt-1 mt-1">
 					<span>Setelah diskon</span>
-					<span class="font-mono">{fmt(finalTotal)}</span>
+					<span class="font-mono">{fmt(result.total)}</span>
 				</div>
 			</div>
 

@@ -1,20 +1,20 @@
 <script lang="ts">
 	/**
 	 * POVerification (HEKAS POS — gudang/BarangMasuk)
-	 * Verifikasi qty received vs ordered — highlight discrepancy + bulk accept.
+	 * Verifikasi qty received vs ordered — pakai gudang-helpers.
 	 */
 	import { untrack } from 'svelte';
-
-	interface Item {
-		productId: number;
-		productName: string;
-		qty: number;
-		receivedQty: number;
-	}
+	import {
+		poVerifySummary,
+		poAcceptAllOrdered,
+		poClearReceived,
+		poVariance,
+		type POVerifyItem
+	} from '$lib/utils/gudang-helpers';
 
 	interface Props {
-		items: Item[];
-		onsubmit: (verified: Item[]) => void | Promise<void>;
+		items: POVerifyItem[];
+		onsubmit: (verified: POVerifyItem[]) => void | Promise<void>;
 		oncancel: () => void;
 	}
 
@@ -23,23 +23,22 @@
 	let submitting = $state(false);
 	let error = $state('');
 
-	const totalOrdered = $derived(verified.reduce((s, it) => s + it.qty, 0));
-	const totalReceived = $derived(verified.reduce((s, it) => s + it.receivedQty, 0));
-	const totalVariance = $derived(totalReceived - totalOrdered);
-
-	const discrepancies = $derived(
-		verified.filter((it) => it.receivedQty !== it.qty).length
-	);
+	const summary = $derived(poVerifySummary(verified));
 
 	const fmt = (n: number) =>
 		n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
 
-	function acceptAllOrdered() {
-		verified = verified.map((v) => ({ ...v, receivedQty: v.qty }));
+	function rowClass(item: POVerifyItem): string {
+		if (item.receivedQty === item.qty) return '';
+		if (item.receivedQty < item.qty) return 'bg-amber-50 border-l-4 border-amber-400';
+		return 'bg-red-50 border-l-4 border-red-400';
 	}
 
-	function clearReceived() {
-		verified = verified.map((v) => ({ ...v, receivedQty: 0 }));
+	function varianceLabel(item: POVerifyItem): string {
+		const diff = poVariance(item);
+		if (diff === 0) return '✓';
+		if (diff > 0) return `+${diff}`;
+		return `${diff}`;
 	}
 
 	async function handleSubmit(e: Event) {
@@ -57,20 +56,6 @@
 			submitting = false;
 		}
 	}
-
-	function rowClass(item: Item): string {
-		if (item.receivedQty === item.qty) return '';
-		if (item.receivedQty < item.qty)
-			return 'bg-amber-50 border-l-4 border-amber-400';
-		return 'bg-red-50 border-l-4 border-red-400';
-	}
-
-	function variance(item: Item): string {
-		const diff = item.receivedQty - item.qty;
-		if (diff === 0) return '✓';
-		if (diff > 0) return `+${diff}`;
-		return `${diff}`;
-	}
 </script>
 
 <form onsubmit={handleSubmit} class="space-y-3">
@@ -78,38 +63,38 @@
 		<div>
 			<div class="text-xs text-slate-500 uppercase">Ringkasan</div>
 			<div class="font-semibold text-slate-800">
-				{verified.length} produk · {totalReceived}/{totalOrdered} unit
+				{verified.length} produk · {summary.received}/{summary.ordered} unit
 			</div>
 		</div>
 		<div class="text-right">
 			<div class="text-xs text-slate-500">Variance</div>
 			<div
 				class="text-lg font-bold tabular-nums"
-				class:text-emerald-700={totalVariance === 0}
-				class:text-amber-700={totalVariance !== 0}
+				class:text-emerald-700={summary.variance === 0}
+				class:text-amber-700={summary.variance !== 0}
 			>
-				{totalVariance === 0 ? '✓ Cocok' : totalVariance > 0 ? `+${totalVariance}` : totalVariance}
+				{summary.variance === 0 ? '✓ Cocok' : summary.variance > 0 ? `+${summary.variance}` : summary.variance}
 			</div>
 		</div>
 	</div>
 
-	{#if discrepancies > 0}
+	{#if summary.discrepancies > 0}
 		<div role="alert" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
-			⚠️ {discrepancies} item tidak sesuai order. Periksa sebelum konfirmasi.
+			⚠️ {summary.discrepancies} item tidak sesuai order. Periksa sebelum konfirmasi.
 		</div>
 	{/if}
 
 	<div class="flex gap-2 text-xs">
 		<button
 			type="button"
-			onclick={acceptAllOrdered}
+			onclick={() => (verified = poAcceptAllOrdered(verified))}
 			class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200 font-semibold"
 		>
 			✓ Accept semua sesuai order
 		</button>
 		<button
 			type="button"
-			onclick={clearReceived}
+			onclick={() => (verified = poClearReceived(verified))}
 			class="px-2 py-1 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 font-semibold"
 		>
 			Reset ke 0
@@ -128,6 +113,7 @@
 			</thead>
 			<tbody>
 				{#each verified as item, i (item.productId)}
+					{@const diff = poVariance(item)}
 					<tr class="border-t {rowClass(item)}">
 						<td class="px-3 py-2 font-medium text-slate-800">{item.productName}</td>
 						<td class="px-3 py-2 text-center tabular-nums">{item.qty}</td>
@@ -145,10 +131,10 @@
 						</td>
 						<td
 							class="px-3 py-2 text-center text-xs font-mono font-semibold tabular-nums"
-							class:text-emerald-700={item.receivedQty === item.qty}
-							class:text-amber-700={item.receivedQty !== item.qty}
+							class:text-emerald-700={diff === 0}
+							class:text-amber-700={diff !== 0}
 						>
-							{variance(item)}
+							{varianceLabel(item)}
 						</td>
 					</tr>
 				{/each}

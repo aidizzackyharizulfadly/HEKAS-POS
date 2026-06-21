@@ -1,10 +1,13 @@
 <script lang="ts">
 	/**
 	 * Cart (HEKAS POS — kasir/POS)
-	 * Container cart — iterate items, hitung subtotal/diskon/pajak/total,
-	 * emit qty/remove/clear ke parent.
+	 * Container cart — iterate items + show CartSummary.
+	 *
+	 * Kalkulasi totals di-delegate ke $lib/utils/cart-totals untuk
+	 * konsistensi (di-tes terpisah).
 	 */
 	import type { CartItem } from '$lib/types/domain';
+	import { computeCartTotals, sumSubtotal, sumQty, formatIDR } from '$lib/utils/cart-totals';
 
 	interface Props {
 		items: CartItem[];
@@ -26,17 +29,10 @@
 		children
 	}: Props = $props();
 
-	// Derived totals
-	const subtotal = $derived(
-		items.reduce((sum, it) => sum + it.price * it.qty, 0)
-	);
-	const discount = $derived(Math.round(subtotal * (discountPct / 100)));
-	const taxable = $derived(subtotal - discount);
-	const tax = $derived(Math.round(taxable * (taxPct / 100)));
-	const total = $derived(taxable + tax);
-	const itemCount = $derived(items.reduce((sum, it) => sum + it.qty, 0));
-
-	const formatIDR = (n: number) => `Rp ${n.toLocaleString('id-ID')}`;
+	// Derived totals (via shared helper)
+	const subtotal = $derived(sumSubtotal(items));
+	const totals = $derived(computeCartTotals({ subtotal, discountPct, taxPct }));
+	const itemCount = $derived(sumQty(items));
 
 	function handleClear() {
 		if (items.length === 0) return;
@@ -77,21 +73,21 @@
 		<div class="mt-4 pt-3 border-t border-slate-200 space-y-1 text-sm">
 			<div class="flex justify-between text-slate-600">
 				<span>Subtotal</span>
-				<span>{formatIDR(subtotal)}</span>
+				<span>{formatIDR(totals.subtotal)}</span>
 			</div>
 			{#if discountPct > 0}
 				<div class="flex justify-between text-amber-600">
 					<span>Diskon ({discountPct}%)</span>
-					<span>−{formatIDR(discount)}</span>
+					<span>−{formatIDR(totals.discount)}</span>
 				</div>
 			{/if}
 			<div class="flex justify-between text-slate-600">
 				<span>PPN ({taxPct}%)</span>
-				<span>{formatIDR(tax)}</span>
+				<span>{formatIDR(totals.tax)}</span>
 			</div>
 			<div class="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-100">
 				<span>Total</span>
-				<span>{formatIDR(total)}</span>
+				<span>{formatIDR(totals.total)}</span>
 			</div>
 		</div>
 	{/if}
