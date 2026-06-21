@@ -11,6 +11,8 @@
 	import SettingsPanel from '$lib/components/SettingsPanel.svelte';
 	import ShortcutsHelp from '$lib/components/ShortcutsHelp.svelte';
 	import PaymentForm from '$lib/components/PaymentForm.svelte';
+	import KasirRail from '$lib/components/kasir/KasirRail.svelte';
+	import KasirCommandBar from '$lib/components/kasir/KasirCommandBar.svelte';
 	import { loadSettings, printReceipt } from '$lib/utils/print';
 	import { onMount } from 'svelte';
 	import { registerShortcut, unregisterShortcut, startListening, stopListening } from '$lib/utils/shortcuts';
@@ -308,6 +310,19 @@
 	let lastTriggerEl: HTMLElement | null = null; // for focus restoration on modal close
 	let audioCtx: AudioContext | null = null;
 
+	// ─── Handlers for KasirRail / KasirCommandBar (extracted components) ───────
+	function openHoldModal(_e?: Event) {
+		// lastTriggerEl not set in extracted component (focus management stays local)
+		modal = 'hold';
+	}
+	function openShortcutsModal() {
+		showShortcuts = true;
+	}
+	async function handleLogout() {
+		try { await api.auth.logout(); } catch {}
+		await goto('/login');
+	}
+
 	// ─── Totals ─────────────────────────────────────────────────────────────────
 	const subtotal = $derived(cart.reduce((s, i) => s + i.price * i.qty - i.disc, 0));
 	const discAmt = $derived(Math.round((subtotal * globalDisc) / 100));
@@ -554,298 +569,32 @@
 	>
 		Loncat ke konten utama
 	</a>
-	<!-- ── Left Rail (Cashier Cockpit) ──────────────────────────────────────── -->
-	<aside
-		class="w-[60px] flex flex-col items-center py-2.5 shrink-0 z-10 relative"
-		style="background: #0F172A; box-shadow: 1px 0 0 0 rgba(255,255,255,0.06), 4px 0 24px rgba(0,0,0,0.15)"
-	>
-		<!-- Brand monogram (replaces logo to free up space) -->
-		<div
-			class="w-9 h-9 rounded-lg flex items-center justify-center mb-3 relative"
-			style="background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%); box-shadow: 0 2px 8px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)"
-		>
-			<span style="color: #fff; font-size: 12; font-weight: 800; letter-spacing: -0.04em; font-family: 'Inter', system-ui">H</span>
-			<!-- Live status dot (pulsing) -->
-			<div
-				class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full"
-				style="background: #10B981; box-shadow: 0 0 0 2px #0F172A, 0 0 6px rgba(16,185,129,0.6); animation: pulse 2s infinite"
-			></div>
-		</div>
-
-		<!-- Section label -->
-		<div class="w-7 h-px mb-2" style="background: rgba(255,255,255,0.08)"></div>
-
-		<!-- Nav: 4 main + 2 secondary, dengan tooltip reveal on hover -->
-		<nav class="flex flex-col items-center w-full px-1.5 gap-0.5" aria-label="Menu utama">
-			{#each navItems as item}
-				{@const isActive = item.active}
-				<button
-					aria-label={item.label}
-					aria-current={isActive ? 'page' : undefined}
-					class="rail-item relative w-10 h-10 rounded-md flex items-center justify-center transition-all"
-					style="
-						background: {isActive ? 'rgba(37, 99, 235, 0.2)' : 'transparent'};
-						color: {isActive ? '#fff' : 'rgba(226,235,248,0.5)'};
-					"
-				>
-					{#if item.label === 'POS'}
-						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={isActive ? 2.4 : 1.7} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<rect x="2" y="3" width="20" height="14" rx="2" />
-							<line x1="8" y1="21" x2="16" y2="21" />
-							<line x1="12" y1="17" x2="12" y2="21" />
-						</svg>
-					{:else if item.label === 'Order'}
-						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={isActive ? 2.4 : 1.7} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-							<polyline points="14 2 14 8 20 8" />
-							<line x1="9" y1="13" x2="15" y2="13" />
-							<line x1="9" y1="17" x2="15" y2="17" />
-						</svg>
-					{:else if item.label === 'Produk'}
-						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={isActive ? 2.4 : 1.7} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-							<polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-							<line x1="12" y1="22.08" x2="12" y2="12" />
-						</svg>
-					{:else if item.label === 'Pelanggan'}
-						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={isActive ? 2.4 : 1.7} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-							<circle cx="9" cy="7" r="4" />
-							<path d="M23 21v-2a4 4 0 00-3-3.87" />
-							<path d="M16 3.13a4 4 0 010 7.75" />
-						</svg>
-					{:else if item.label === 'Shift'}
-						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={isActive ? 2.4 : 1.7} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<circle cx="12" cy="12" r="10" />
-							<polyline points="12 6 12 12 16 14" />
-						</svg>
-					{:else if item.label === 'Laporan'}
-						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={isActive ? 2.4 : 1.7} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<line x1="18" y1="20" x2="18" y2="10" />
-							<line x1="12" y1="20" x2="12" y2="4" />
-							<line x1="6" y1="20" x2="6" y2="14" />
-						</svg>
-					{:else if item.label === 'Lainnya'}
-						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={isActive ? 2.4 : 1.7} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<circle cx="5" cy="12" r="1" />
-							<circle cx="12" cy="12" r="1" />
-							<circle cx="19" cy="12" r="1" />
-						</svg>
-					{:else if item.label === 'Setting'}
-						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={isActive ? 2.4 : 1.7} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<circle cx="12" cy="12" r="3" />
-							<path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001 1.51H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" />
-						</svg>
-					{/if}
-					<!-- Active indicator (subtle left bar) -->
-					{#if isActive}
-						<div
-							class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r"
-							style="background: #60A5FA"
-						></div>
-					{/if}
-				</button>
-			{/each}
-		</nav>
-
-		<!-- Spacer -->
-		<div class="flex-1"></div>
-
-		<!-- Held transactions badge -->
-		{#if held.length > 0}
-			<button
-				onclick={(e) => { lastTriggerEl = e.currentTarget; modal = 'hold'; }}
-				aria-label="Lihat {held.length} transaksi yang ditahankan"
-				class="group relative w-10 h-10 rounded-md flex items-center justify-center mb-1 transition-all"
-				style="background: rgba(245,158,11,0.15); color: #F59E0B; border: 1px solid rgba(245,158,11,0.3)"
-			>
-				<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<circle cx="12" cy="12" r="10" />
-					<line x1="10" y1="15" x2="10" y2="9" />
-					<line x1="14" y1="15" x2="14" y2="9" />
-				</svg>
-				<div class="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center tabular-nums" style="background: #F59E0B; color: #fff; font-size: 9; font-weight: 800; box-shadow: 0 0 0 2px #0F172A">
-					{held.length}
-				</div>
-			</button>
-		{/if}
-
-		<!-- Section label -->
-		<div class="w-7 h-px my-2" style="background: rgba(255,255,255,0.08)"></div>
-
-		<!-- User + Logout (icon-only) -->
-		<div class="flex flex-col items-center gap-1 w-full px-1.5">
-			<button
-				aria-label="Ganti user kasir"
-				class="rail-item w-10 h-10 rounded-md flex items-center justify-center transition-all"
-				style="color: rgba(226,235,248,0.45)"
-			>
-				<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-					<circle cx="12" cy="7" r="4" />
-				</svg>
-			</button>
-			<button
-				onclick={() => { showClosingShift = true; }}
-				aria-label="Tutup shift (keluar)"
-				class="rail-item w-10 h-10 rounded-md flex items-center justify-center transition-all"
-				style="color: rgba(226,235,248,0.35)"
-			>
-				<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-					<polyline points="16 17 21 12 16 7" />
-					<line x1="21" y1="12" x2="9" y2="12" />
-				</svg>
-			</button>
-		</div>
-	</aside>
+	<!-- ── Left Rail (extracted to <KasirRail>) ──────────────────────────────────── -->
+		<KasirRail
+			heldCount={held.length}
+			onholdclick={openHoldModal}
+			onSettingClick={() => (showSettings = true)}
+			onlogout={handleLogout}
+			userName={currentUser?.full_name ?? 'Kasir'}
+		/>
 
 	<!-- ── Main workspace ───────────────────────────────────────────────── -->
 	<div id="main-content" class="flex flex-col flex-1 min-w-0 overflow-hidden" style="background: linear-gradient(180deg, #F8FAFC 0%, #EFF1F5 100%)">
-		<!-- ── Command Bar (3-zone cockpit) ──────────────────────────────── -->
-		<div
-			class="flex items-stretch shrink-0"
-			style="background: #fff; border-bottom: 1px solid #E2E8F0; box-shadow: 0 1px 0 0 rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.04); height: 64"
-		>
-			<!-- ZONE A: Shift context (kiri, fixed width) -->
-			<div class="flex items-center gap-3 pl-5 pr-6 shrink-0" style="border-right: 1px solid #F1F5F9; min-width: 280px">
-				<!-- Shift avatar -->
-				<div
-					class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 tabular-nums"
-					style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); color: #fff; font-size: 12; box-shadow: 0 2px 8px rgba(37,99,235,0.3), inset 0 1px 0 rgba(255,255,255,0.2)"
-				>
-					SW
-				</div>
-				<div class="flex flex-col min-w-0">
-					<div class="flex items-center gap-1.5">
-						<span style="font-size: 13.5; font-weight: 700; color: #0F172A; letter-spacing: -0.005em">Siti Wulandari</span>
-						<span class="px-1.5 py-0.5 rounded" style="background: #DBEAFE; color: #1D4ED8; font-size: 9.5; font-weight: 700; letter-spacing: 0.06em">CASHIER</span>
-					</div>
-					<div class="flex items-center gap-1.5 tabular-nums" style="font-size: 11; color: #64748B; font-weight: 500">
-						<span>Duamart Panjen</span>
-						<span style="color: #CBD5E1">/</span>
-						<span style="color: #1E40AF; font-weight: 600">Shift #12345</span>
-					</div>
-				</div>
-			</div>
-
-			<!-- ZONE B: Live metrics (tengah, fills space) -->
-			<div class="flex-1 flex items-center justify-center gap-6 px-6 min-w-0">
-				<!-- Sales today -->
-				<div class="flex items-center gap-2.5">
-					<div class="w-9 h-9 rounded-md flex items-center justify-center" style="background: #ECFDF5; color: #059669">
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-							<polyline points="16 7 22 7 22 13" />
-						</svg>
-					</div>
-					<div class="flex flex-col">
-						<span style="font-size: 9.5; color: #64748B; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em">Penjualan hari ini</span>
-						<span class="tabular-nums" style="font-size: 15; font-weight: 800; color: #0F172A; letter-spacing: -0.01em">{fmt(847500)}</span>
-					</div>
-				</div>
-
-				<!-- Vertical divider -->
-				<div class="w-px h-9" style="background: #E2E8F0"></div>
-
-				<!-- Transactions count -->
-				<div class="flex items-center gap-2.5">
-					<div class="w-9 h-9 rounded-md flex items-center justify-center" style="background: #EFF6FF; color: #2563EB">
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<rect x="2" y="5" width="20" height="14" rx="2" />
-							<line x1="2" y1="10" x2="22" y2="10" />
-						</svg>
-					</div>
-					<div class="flex flex-col">
-						<span style="font-size: 9.5; color: #64748B; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em">Transaksi</span>
-						<span class="tabular-nums" style="font-size: 15; font-weight: 800; color: #0F172A; letter-spacing: -0.01em">23 <span style="font-size: 11; color: #94A3B8; font-weight: 600">/ 35 target</span></span>
-					</div>
-				</div>
-
-				<!-- Vertical divider -->
-				<div class="w-px h-9" style="background: #E2E8F0"></div>
-
-				<!-- Shift timer -->
-				<div class="flex items-center gap-2.5">
-					<div class="w-9 h-9 rounded-md flex items-center justify-center relative" style="background: #FEF3C7; color: #D97706">
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<circle cx="12" cy="12" r="10" />
-							<polyline points="12 6 12 12 16 14" />
-						</svg>
-						<div class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style="background: #10B981; box-shadow: 0 0 0 1.5px #FEF3C7; animation: pulse 2s infinite"></div>
-					</div>
-					<div class="flex flex-col">
-						<span style="font-size: 9.5; color: #64748B; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em">Shift berjalan</span>
-						<span class="tabular-nums" style="font-size: 15; font-weight: 800; color: #0F172A; letter-spacing: -0.01em">{timeStr}</span>
-					</div>
-				</div>
-			</div>
-
-			<!-- ZONE C: Hardware + actions (kanan) -->
-			<div class="flex items-center gap-2 px-5 shrink-0" style="border-left: 1px solid #F1F5F9">
-				<!-- Hardware status strip (compact horizontal) -->
-				<div
-					class="flex items-center gap-1.5 px-2 py-1.5 rounded-md mr-1"
-					style="background: #F8FAFC; border: 1px solid #E2E8F0"
-					title="Status perangkat keras"
-					role="status"
-					aria-label="Status perangkat keras"
-				>
-					<!-- Printer online -->
-					<span class="hardware-pill inline-flex items-center gap-1 px-1.5 py-0.5 rounded" style="background: #ECFDF5; color: #059669; font-size: 10; font-weight: 600">
-						<span class="w-1.5 h-1.5 rounded-full" style="background: #10B981; box-shadow: 0 0 4px rgba(16,185,129,0.6)"></span>
-						PRN
-					</span>
-					<!-- Scanner online -->
-					<span class="hardware-pill inline-flex items-center gap-1 px-1.5 py-0.5 rounded" style="background: #ECFDF5; color: #059669; font-size: 10; font-weight: 600">
-						<span class="w-1.5 h-1.5 rounded-full" style="background: #10B981; box-shadow: 0 0 4px rgba(16,185,129,0.6)"></span>
-						SCN
-					</span>
-					<!-- Drawer online -->
-					<span class="hardware-pill inline-flex items-center gap-1 px-1.5 py-0.5 rounded" style="background: #ECFDF5; color: #059669; font-size: 10; font-weight: 600">
-						<span class="w-1.5 h-1.5 rounded-full" style="background: #10B981; box-shadow: 0 0 4px rgba(16,185,129,0.6)"></span>
-						CD
-					</span>
-					<!-- Customer display offline -->
-					<span class="hardware-pill inline-flex items-center gap-1 px-1.5 py-0.5 rounded" style="background: #F1F5F9; color: #94A3B8; font-size: 10; font-weight: 600">
-						<span class="w-1.5 h-1.5 rounded-full" style="background: #CBD5E1"></span>
-						CDP
-					</span>
-				</div>
-
-				<!-- Mobile/tablet cart FAB -->
-				<button
-					class="cart-fab items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all"
-					style="background: #F1F5F9; color: #475569; font-size: 12; font-weight: 600; border: 1px solid #E2E8F0"
-					aria-label="Buka keranjang belanja"
-					aria-expanded={cartDrawerOpen}
-					onclick={() => (cartDrawerOpen = !cartDrawerOpen)}
-				>
-					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<circle cx="9" cy="21" r="1" />
-						<circle cx="20" cy="21" r="1" />
-						<path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
-					</svg>
-					<span class="tabular-nums">{totalQty}</span>
-				</button>
-
-				<!-- Vertical divider -->
-				<div class="w-px h-7" style="background: #E2E8F0"></div>
-
-				<!-- Help button -->
-				<button
-					class="w-9 h-9 rounded-md flex items-center justify-center transition-all"
-					style="background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0"
-					aria-label="Bantuan & pintasan keyboard"
-				>
-					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<circle cx="12" cy="12" r="10" />
-						<path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
-						<line x1="12" y1="17" x2="12.01" y2="17" />
-					</svg>
-				</button>
-			</div>
-		</div>
+		<!-- ── Command Bar (extracted to <KasirCommandBar>) ──────────────────────── -->
+		<KasirCommandBar
+			cashierName={currentUser?.full_name ?? 'Kasir'}
+			outletName="Duamart Panjen"
+			shiftNo="#12345"
+			role="CASHIER"
+			salesTodayFmt={fmt(847500)}
+			txCount={23}
+			txTarget={35}
+			timeStr={timeStr}
+			cartItemCount={totalQty}
+			cartDrawerOpen={cartDrawerOpen}
+			onToggleCart={() => (cartDrawerOpen = !cartDrawerOpen)}
+			onShowShortcuts={openShortcutsModal}
+		/>
 
 		<!-- ── Content row ───────────────────────────────────────────────── -->
 		<div class="flex flex-1 overflow-hidden">
