@@ -1,6 +1,6 @@
 // HEKAS POS — Role configuration
 // Single source of truth untuk 3 role (Kasir, Manager, Admin Gudang)
-// Dipakai oleh /login, /login/[role], dan sidebar role guard
+// Dipakai oleh /login dan sidebar role guard
 
 export type RoleId = 'kasir' | 'manager' | 'gudang';
 

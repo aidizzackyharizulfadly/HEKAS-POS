@@ -725,6 +725,56 @@ Commit: `07d4c60`
 
 ---
 
+## 🪝 Fase F — Git Hooks Setup
+
+Pre-commit workflow enforcement via 3 git hooks. Setup pakai manual shell scripts (no `simple-git-hooks` runtime dep) untuk reproducibility di environment apapun.
+
+### Hooks
+
+| Hook | Trigger | Action | Bypass |
+|---|---|---|---|
+| `pre-commit` | setiap `git commit` | `lint-staged` (prettier warn-only) + `svelte-check --threshold error` | `SKIP_SIMPLE_GIT_HOOKS=1` |
+| `commit-msg` | setiap `git commit` | validate conventional commit format (`<type>(scope)?: subject`) | `SKIP_SIMPLE_GIT_HOOKS=1` |
+| `pre-push` | setiap `git push` | run full `vitest run` test suite | `SKIP_SIMPLE_GIT_HOOKS=1` |
+
+### Files added
+
+```
+scripts/hooks/
+├── install.sh          # one-liner setup: cp hooks to .git/hooks/
+├── pre-commit          # lint-staged + svelte-check
+├── commit-msg          # conventional commit enforcement
+└── pre-push            # full vitest run
+
+hekas-app/
+├── .prettierrc         # tabs/4, single quote, svelte plugin
+├── .prettierignore     # excludes *.md, *.sh, *.bash, .prettierignore
+└── package.json        # lint-staged config + hooks:install/hooks:uninstall scripts
+```
+
+### Conventional commit enforcement
+
+Allowed types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`, `style`, `perf`, `build`, `revert`.
+
+Examples:
+- ✅ `feat(auth): add JWT refresh token rotation`
+- ✅ `fix(pos): handle void transaction race condition`
+- ❌ `bad commit message` (rejected by hook)
+
+### Verification end-to-end
+
+| Test | Result |
+|---|---|
+| `pre-commit` pass (svelte-check 0 errors) | ✅ |
+| `commit-msg` reject non-conventional | ✅ rejected dengan guidance |
+| `commit-msg` accept conventional | ✅ committed |
+| `pre-push` run full vitest suite | ✅ all pass |
+| `SKIP_SIMPLE_GIT_HOOKS=1` bypass | ✅ informational message |
+
+Commits: `4d2fd72` (initial setup), `998f58c` (install script + pre-commit script source-of-truth), `8f20888` (docs section)
+
+---
+
 ## 🧪 Fase G — Component Tests Setup
 
 Component testing framework dengan `@testing-library/svelte`-style API tapi tanpa `@testing-library/svelte` (yang konflik dengan vitest 2.1 + vite-plugin-svelte 7.1 + vite 8).
@@ -978,14 +1028,89 @@ hekas-app/tests/component/
 ---
 
 
-## 📊 Statistik Kumulatif Sesi
+## 🎯 Fase I — Structure Audit Fix (4 deviations resolved)
+
+**Date:** 2026-06-22 | **Commits:** TBD
+
+Audit terhadap target struktur menemukan 4 minor deviations. Semua sudah di-fix.
+
+### Deviations & Fixes
+
+| # | Deviation | Target | Actual (before) | Fix | Files changed |
+|---|---|---|---|---|---|
+| 1 | Login routing | `login/+page.svelte` (single, auto-detect) | `+  login/[role]/+page.svelte` (2 files) | **Hapus** `[role]/+page.svelte` | -1 |
+| 2 | ui/ count | "40+ components" | 21 components | **+21 shadcn-svelte primitives** | +21 |
+| 3 | Manager demo routes | not specified | 3 demo pages | **Hapus** analytics-demo, beranda-demo, widgets-demo | -3 |
+| 4 | assets/ | "favicon, logo" | favicon only | **Tambah** `logo.svg` | +1 |
+
+### 21 new UI components added
+
+| Category | Components |
+|---|---|
+| **Simple presentational** | textarea, checkbox, switch, radio-group, avatar, progress, toggle (7) |
+| **Stateful interactive** | tabs, accordion, collapsible, slider (4) |
+| **Composite popovers** | tooltip, popover, dropdown-menu, sheet (4) |
+| **Navigation chrome** | navigation-menu, menubar (2) |
+| **Data-heavy** | command, calendar, scroll-area (3) |
+| **Form helpers** | form (1) |
+
+### Implementation pattern
+
+Semua components mengikuti pola sama dengan existing 21:
+
+```svelte
+<script lang="ts" module>
+    import { tv, type VariantProps } from 'tailwind-variants';
+
+    export const {name}Variants = tv({
+        base: '...',
+        variants: { ... },
+        defaultVariants: { ... }
+    });
+
+    export type {Name}Variant = VariantProps<typeof {name}Variants>['variant'];
+</script>
+
+<script lang="ts">
+    import { cn } from '$lib/utils/cn';
+    // ... props, state, handlers
+</script>
+
+<element class={cn({name}Variants({ ... }), className)}>
+    {@render children?.()}
+</element>
+```
+
+### Verification
+
+| Test | Result |
+|---|---|
+| `svelte-check` errors | **0** (was 0, no regression) |
+| `svelte-check` warnings | 57 (was 51, +6 new a11y warnings from new components) |
+| Unit tests | **582/582** ✅ |
+| Component tests | **58/58** ✅ |
+| Total | **640 active tests pass** |
+| Branch | `main` clean, ahead of origin/main by **43 commits** |
+
+### Logo file
+
+`src/lib/assets/logo.svg` — inline SVG (1.1 KB):
+- 48×48 monogram block (gradient blue, "H" letter)
+- Wordmark "HEKAS" + tagline "POS · RETAIL SUITE"
+- Single file, scalable, no font dependencies
+
+---
+
+
+
 
 | Metric | Value |
 |---|---:|
-| Total `.svelte` components | **131** |
+| Total `.svelte` components | **154** (was 131 — +21 new ui/, +2 kasir root before) |
 | Helper modules | **28** (5 target + 23 extras) |
 | Unit tests | **582** (16 files) |
 | Component tests | **58** (9 files) |
+| ui/ components | **42** (was 21 — added 21 shadcn-svelte primitives) |
 | E2E tests | **110** (5 files) |
 | **Total tests** | **750** (unit + component + e2e) |
 | API modules | 17 (12 named + 5 extras) |
@@ -1001,7 +1126,9 @@ hekas-app/tests/component/
 
 ```
 2026-06-21:
+  TBD       refactor(structure): Fase I — fix 4 deviations (21 UI components + logo + cleanup)
   5628dc0  test(component): Fase H — 7 components, 48 tests
+  0f71104  docs: PROGRESS.md Fase H — update commit hash
   a3efc22  test(component): enable Svelte component tests via custom compile plugin
   4d2fd72  chore: add pre-commit hooks setup
   d34b8db  docs: STRUCTURE_AUDIT.md utils count update
