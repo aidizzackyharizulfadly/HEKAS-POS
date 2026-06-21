@@ -896,7 +896,7 @@ Commits: `4d2fd72` (initial setup), `998f58c` (install script + pre-commit scrip
 
 ## 🧩 Fase H — Component Test Coverage Expansion (7 components, 48 tests)
 
-**Commit:** TBD | **Branch:** `main` | **Date:** 2026-06-21
+**Commit:** `5628dc0` | **Branch:** `main` | **Date:** 2026-06-21
 
 ### 🎯 Goal
 
@@ -1001,7 +1001,7 @@ hekas-app/tests/component/
 
 ```
 2026-06-21:
-  TBD       test(component): Fase H — 7 components, 48 tests
+  5628dc0  test(component): Fase H — 7 components, 48 tests
   a3efc22  test(component): enable Svelte component tests via custom compile plugin
   4d2fd72  chore: add pre-commit hooks setup
   d34b8db  docs: STRUCTURE_AUDIT.md utils count update
