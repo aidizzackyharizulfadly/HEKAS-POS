@@ -8,7 +8,8 @@
 	interface Row { productId: number; productName: string; qty: number; }
 	interface Props { open: boolean; rows: Row[]; onclose: () => void; onsubmit: (rows: Row[]) => void; }
 	let { open, rows, onclose, onsubmit }: Props = $props();
-	let items = $state<Row[]>(rows);
+	import { untrack } from 'svelte';
+	let items = $state<Row[]>(untrack(() => rows));
 	const total = $derived(items.reduce((s, r) => s + r.qty, 0));
 </script>
 

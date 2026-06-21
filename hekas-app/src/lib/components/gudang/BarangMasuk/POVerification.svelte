@@ -8,7 +8,8 @@
 	interface Item { productId: number; productName: string; qty: number; receivedQty: number; }
 	interface Props { items: Item[]; onsubmit: (verified: Item[]) => void; onCancel: () => void; }
 	let { items, onsubmit, onCancel }: Props = $props();
-	let verified = $state(items.map(i => ({ ...i })));
+	import { untrack } from 'svelte';
+	let verified = $state(untrack(() => items.map(i => ({ ...i }))));
 </script>
 
 <form onsubmit={(e) => { e.preventDefault(); onsubmit(verified); }} class="space-y-3">

@@ -19,7 +19,7 @@
 		<div class="text-lg font-bold mt-1">{items[current]?.productName}</div>
 		<div class="text-sm text-slate-600 mt-1">Qty: {items[current]?.qty} (picked: {items[current]?.picked})</div>
 	</div>
-	<input type="text" bind:value={scanned} placeholder="Scan barcode..." class="w-full px-3 py-2 border rounded-lg" autofocus />
+	<input type="text" bind:value={scanned} placeholder="Scan barcode..." class="w-full px-3 py-2 border rounded-lg" />
 	<div class="flex gap-2">
 		<button type="button" onclick={onCancel} class="flex-1 py-2 rounded-lg border font-semibold">Batal</button>
 		<button type="button" disabled={current >= items.length - 1} onclick={() => { current = Math.min(current + 1, items.length - 1); scanned = ''; }} class="flex-1 py-2 rounded-lg bg-violet-600 text-white font-semibold">Next</button>

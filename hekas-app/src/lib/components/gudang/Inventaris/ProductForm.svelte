@@ -8,10 +8,11 @@
 	import type { Product } from '$lib/types/domain';
 	interface Props { product?: Product; onsubmit: (p: Partial<Product>) => void; onCancel: () => void; }
 	let { product, onsubmit, onCancel }: Props = $props();
-	let name = $state(product?.name ?? '');
-	let price = $state(product?.price ?? 0);
-	let stock = $state((product as any)?.stock ?? 0);
-	let category = $state((product as any)?.category ?? '');
+	import { untrack } from 'svelte';
+	let name = $state(untrack(() => product?.name ?? ''));
+	let price = $state(untrack(() => product?.price ?? 0));
+	let stock = $state(untrack(() => (product as any)?.stock ?? 0));
+	let category = $state(untrack(() => (product as any)?.category ?? ''));
 </script>
 
 <form onsubmit={(e) => { e.preventDefault(); onsubmit({ name, price, stock, category } as any); }} class="space-y-3">
