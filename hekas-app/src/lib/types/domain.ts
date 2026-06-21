@@ -283,3 +283,42 @@ export interface DashboardSummary {
 		unit: string;
 	}[];
 }
+
+// ─── Analytics widgets (R3e) ───────────────────────────────────────────────
+export interface PaymentBreakdown {
+	label: string;
+	value: number;
+	color: string;
+}
+
+export interface FastMovingItem {
+	product_id: number;
+	product_name: string;
+	sku: string;
+	category: string;
+	qty_sold: number;
+	revenue: number;
+	movement_count: number;
+}
+
+export interface EmployeePerformance {
+	employee_id: number;
+	full_name: string;
+	role: 'kasir' | 'gudang' | 'manager';
+	transactions: number;
+	revenue: number;
+	rating: number;
+}
+
+export interface LabaRugiSummary {
+	range: { from: string; to: string };
+	revenue: number;
+	cogs: number;
+	gross_profit: number;
+	gross_margin_pct: number;
+	operating_expenses: number;
+	net_profit: number;
+	net_margin_pct: number;
+	prev_net_profit: number;
+	growth_pct: number;
+}
