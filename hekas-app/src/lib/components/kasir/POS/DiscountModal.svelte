@@ -31,10 +31,7 @@
 				class="p-3 rounded-lg border-2 font-semibold {type === 'nominal' ? 'border-blue-600 bg-blue-50' : 'border-slate-200'}">Nominal (Rp)</button>
 		</div>
 
-		<label class="block text-xs font-semibold text-slate-600 mb-1">
-			{type === 'percent' ? `Diskon (max ${maxPercent}%)` : 'Diskon (Rp)'}
-		</label>
-		<input type="number" bind:value min={0} max={type === 'percent' ? maxPercent : subtotal}
+		<label class="block text-sm font-semibold">{type === 'percent' ? `Diskon (max ${maxPercent}%)` : 'Diskon (Rp)'}</label><input aria-label="{type === 'percent' ? `Diskon (max ${maxPercent}%)` : 'Diskon (Rp)'}" type="number" bind:value min={0} max={type === 'percent' ? maxPercent : subtotal}
 			class="w-full px-3 py-2 border border-slate-300 rounded-lg text-lg font-bold focus:ring-2 focus:ring-blue-500" />
 
 		<div class="mt-3 p-3 bg-slate-50 rounded text-sm">

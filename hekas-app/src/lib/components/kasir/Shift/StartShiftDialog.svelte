@@ -18,8 +18,8 @@
 		<h2 class="text-lg font-bold mb-1">Mulai Shift</h2>
 		<p class="text-sm text-slate-600 mb-4">Masukkan modal awal kas</p>
 
-		<label class="block text-sm font-semibold text-slate-700 mb-1">Modal awal (Rp)</label>
-		<input type="number" bind:value={cash} min="0" step="1000"
+		<span class="block text-sm font-semibold">Modal awal (Rp)</span>
+		<input aria-label="Modal awal (Rp)" type="number" bind:value={cash} min="0" step="1000"
 			class="w-full px-3 py-2 border border-slate-300 rounded-lg text-lg font-bold focus:ring-2 focus:ring-blue-500" />
 		<p class="text-xs text-slate-500 mt-1">Estimasi: {fmt(cash)}</p>
 

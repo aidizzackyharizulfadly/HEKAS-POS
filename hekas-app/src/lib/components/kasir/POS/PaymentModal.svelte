@@ -44,8 +44,7 @@
 
 		{#if method === 'cash'}
 			<div class="mb-4">
-				<label class="text-xs text-slate-600 font-semibold">Diterima</label>
-				<input type="number" bind:value={paid} min={total}
+				<label class="block text-sm font-semibold">Diterima</label><input aria-label="Diterima" type="number" bind:value={paid} min={total}
 					class="w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-lg font-bold focus:ring-2 focus:ring-blue-500" />
 				{#if change > 0}
 					<div class="mt-2 text-sm text-emerald-600 font-semibold">Kembali: {fmt(change)}</div>

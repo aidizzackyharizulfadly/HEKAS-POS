@@ -259,3 +259,126 @@ HEKAS-POS-main/
 - 10× `a11y_consider_explicit_label` — interactive elements without aria-label
 
 These are trade-offs in existing layout patterns and acceptable for current scope.
+
+---
+
+## 🧩 Fase Q — Structure Alignment (2026-06-21)
+
+**Goal:** Selaraskan struktur folder dengan target FE_HANDOFF v2.0.0 + FRONTEND_ARCHITECTURE. Plus cleanup a11y dialog.
+
+### Hasil
+
+| Metric | Sebelum | Sesudah | Δ |
+| --- | ---: | ---: | ---: |
+| Total `.svelte` components | 37 | **131** | **+94** |
+| `lib/auth/` modules | 1 | 4 | +3 |
+| `lib/api/` modules | 8 | 17 | +9 |
+| `src/routes/api/` endpoints | 0 | 4 | +4 |
+| `lib/components/ui/` (shadcn) | 0 | 20 | +20 |
+| Root `components/*.svelte` | 11 | **0** | **−11** |
+| svelte-check errors | 0 | 0 | = |
+| svelte-check warnings | 33 | 76 | +43 (mostly a11y di route pages pre-existing) |
+| vitest tests | 0 | 15 | +15 |
+
+### Sub-fase
+
+- **Q.0** Audit + plan (`STRUCTURE_AUDIT.md` baru) (`77209f7`)
+- **Q.1** Top-level config + tests scaffold (`a5ca512`)
+  - `svelte.config.js` (extracted dari vite.config.ts)
+  - `src/routes/+layout.ts` (auth check via localStorage, SPA `ssr=false`)
+  - `vitest.config.ts` + Playwright config
+  - Install: vitest, @playwright/test, jsdom, tailwind-merge, tailwind-variants
+- **Q.2** `lib/auth/` 3 modul baru (`e6b8661`)
+  - `session.ts` — SessionUser + readSession/writeSession/refreshSession (TTL 8 jam)
+  - `guard.ts` — canAccess/getRoleHomePath/requireRole/clientGuard/logout
+  - `pin.ts` — PBKDF2-SHA256 + 5-attempt rate-limit
+- **Q.3** `lib/api/` 9 modul baru (`4e4ae0b`)
+  - `shifts` (Shift, StartShiftInput, EndShiftInput, ShiftSummary)
+  - `inventory` (StockMovement, InventoryItem, RestockInput)
+  - `surat-jalan` (SuratJalan, SJStatus, review approve/reject)
+  - `employees` (Employee, AttendanceRecord, LeaveRequest)
+  - `reports` (BusinessAnalytics, FinanceReport, EmployeePerformance)
+  - `dashboard` (ManagerDashboard, GudangDashboard, KasirDashboard)
+  - `ai` (AIChatMessage, AIActivity, AIInsight, AIControl)
+  - `telegram` (link/unlink, notifications, test message)
+  - `settings` (AppSettings: store/receipt/printer/operational/accessRights)
+- **Q.4–Q.5** Shared + shadcn-svelte scaffold (`8aa8098`)
+  - 5 shared: Breadcrumb, ErrorBoundary, LoadingSpinner, PinDialog, Pagination
+  - 20 UI: Button (6 variants × 4 sizes), Card + 5 sub, Input, Label, Badge (8 variants),
+    Separator, Table + 5 sub, Skeleton, Alert (5 variants), Dialog
+  - `lib/utils/cn.ts` (clsx + tailwind-merge)
+  - `components.json` (shadcn-svelte config)
+- **Q.6** Kasir 28 components (`de5c86f`)
+  - POS (10): CategoryTabs, BarcodeScanner, SearchBar, Cart, CartItem, OrderSummary,
+    PaymentModal, DiscountModal, Numpad, HeldDrafts
+  - Order (2): OrderDetail, VoidConfirmDialog
+  - Produk (1): ProductCatalog
+  - Pelanggan (3): MemberList, MemberDetail, MemberTierBadge
+  - Shift (4): ShiftList, ShiftDetail, StartShiftDialog, EndShiftDialog
+  - Laporan (4): ShiftSummary, PaymentMethodChart, BestSellers, ExportButton
+  - Setting (4): ProfileSection, PinChangeDialog, PrinterConfig, ConnectedDevices
+- **Q.7** Gudang 18 components (`022329a`)
+  - Beranda (3): DashboardSummary, TodayTasks, RecentActivity
+  - Inventaris (4): StockMovementLog, RestockDialog, BulkRestockDialog, ProductForm, ExportStockReport
+  - BarangMasuk (3): PODetail, POInputForm, POVerification
+  - BarangKeluar (4): OutgoingList, OutgoingDetail, PickingProcess, PendingReason
+  - SuratJalan (4): SJList, SJDetail, SJReview, PrintSJButton
+- **Q.8** Manager 12 components (`022329a`)
+  - Beranda (2): InventorySummary, FinanceSummary
+  - Karyawan (3): EmployeeList, AttendanceSummary, LeaveRequests
+  - AI (3): AIActivity, AIInsights, AIControlCenter
+  - Pengaturan (4): OutletProfile, AccessRights, ServerDatabase, SystemSummary
+- **Q.9** API routes skeleton (`022329a`)
+  - `/api/health` — health check
+  - `/api/version` — version metadata
+  - `/api/echo` — debug (dev only)
+  - `/api/proxy/[...path]` — generic BE proxy
+- **Q.10** Refactor 11 root components → sub-folders (`10c1789`)
+  - LoginForm → shared, ImageUploader → gudang/Inventaris, PrintPreview → shared,
+    Receipt → shared, BackupRestore → manager/Pengaturan, MemberForm → manager/Pelanggan,
+    MemberDetail → manager/Pelanggan, ClosingShift → kasir/Shift, SettingsPanel → shared,
+    ShortcutsHelp → shared, PaymentForm → kasir/POS
+- **Q.11** A11y dialog tabindex (`10c1789` + `45aae0f`)
+  - Add `tabindex="-1"` ke 19 dialog elements (11 component + 8 route page)
+  - Eliminates 11 `dialog role needs tabindex` warnings
+  - Dedupe 10 files yang sudah punya tabindex dari script
+
+### Verifikasi Final
+
+```bash
+$ npm run check
+svelte-check found 0 errors and 76 warnings in 31 files
+
+$ npx vitest run
+Test Files  3 passed (3)
+     Tests  15 passed (15)
+```
+
+### Tests Added (15 total)
+
+- `tests/unit/auth-roles.test.ts` (3): ROLES keys, detectRole, isValidRole
+- `tests/unit/auth.test.ts` (8): canAccess, getRoleHomePath, isValidPinFormat
+- `tests/unit/api-reports.test.ts` (4): canAttemptPin, recordFailedAttempt,
+  getLockoutRemaining, clearAttempts
+
+### Deviation Notes
+
+- `print.ts`/`export.ts`/`backup.ts`/`theme.ts`/`sound.ts`/`shortcuts.ts` tetap di
+  `lib/utils/` (bukan `lib/` langsung seperti target lama) — lokasi ini lebih
+  terorganisir dan sudah jadi konvensi import.
+- shadcn-svelte `bits-ui` deps tidak di-install — Dialog/Alert/Skeleton dibuat
+  manual dengan Svelte primitives (lebih ringan, cukup untuk scope saat ini).
+  Bisa di-upgrade nanti dengan `npx shadcn-svelte@latest add <component>`.
+
+### Remaining Warnings (76)
+
+- 35× form label association — route pages pre-existing
+- 10× button aria-label — route pages pre-existing
+- 9× `settings` initial value → perlu `$derived` atau `untrack`
+- 4× `product` initial value — sama
+- 2× `<li role="button">` — di scaffold
+- 2× `autofocus` — di scaffold
+- 14× lain-lain (closure, focus, dll)
+
+Sebagian besar (45/76) di route pages yang **bukan** dari scaffold Q-series —
+trade-off dari kode R-series sebelumnya. Bisa dibersihkan di fase R berikutnya.

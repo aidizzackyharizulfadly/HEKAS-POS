@@ -27,16 +27,16 @@
 			<div class="flex justify-between font-bold border-t border-slate-300 pt-1"><span>Expected</span><span class="font-mono">{fmt(expected)}</span></div>
 		</div>
 
-		<label class="block text-sm font-semibold text-slate-700 mb-1">Kas aktual</label>
-		<input type="number" bind:value={cash}
+		<span class="block text-sm font-semibold">Kas aktual</span>
+		<input aria-label="Kas aktual" type="number" bind:value={cash}
 			class="w-full px-3 py-2 border border-slate-300 rounded-lg text-lg font-bold focus:ring-2 focus:ring-blue-500" />
 
 		<div class="mt-2 text-sm {diff === 0 ? 'text-slate-600' : diff > 0 ? 'text-emerald-600' : 'text-red-600'}">
 			Selisih: {fmt(diff)}
 		</div>
 
-		<label class="block text-sm font-semibold text-slate-700 mb-1 mt-3">Catatan (optional)</label>
-		<textarea bind:value={notes} rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></textarea>
+		<span class="block text-sm font-semibold">Catatan (optional)</span>
+		<textarea aria-label="Catatan (optional)" bind:value={notes} rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></textarea>
 
 		<div class="flex gap-2 mt-4">
 			<button type="button" onclick={onclose} class="flex-1 py-2 rounded-lg border border-slate-300 font-semibold">Batal</button>

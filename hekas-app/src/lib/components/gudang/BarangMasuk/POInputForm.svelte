@@ -14,8 +14,8 @@
 </script>
 
 <form onsubmit={(e) => { e.preventDefault(); onsubmit({ supplier, expectedDate, items: items.filter(i => i.productId && i.qty > 0) }); }} class="space-y-3">
-	<div><label class="block text-sm font-semibold">Supplier *</label><input type="text" bind:value={supplier} required class="w-full px-3 py-2 border rounded-lg" /></div>
-	<div><label class="block text-sm font-semibold">Expected Date *</label><input type="date" bind:value={expectedDate} required class="w-full px-3 py-2 border rounded-lg" /></div>
+	<div><label class="block text-sm font-semibold">Supplier *</label><input aria-label="Supplier" type="text" bind:value={supplier} required class="w-full px-3 py-2 border rounded-lg" /></div>
+	<div><label class="block text-sm font-semibold">Expected Date *</label><input aria-label="Expected Date" type="date" bind:value={expectedDate} required class="w-full px-3 py-2 border rounded-lg" /></div>
 	<div>
 		<div class="flex justify-between items-center mb-1"><label class="text-sm font-semibold">Items</label><button type="button" onclick={() => items = [...items, { productId: 0, qty: 0 }]} class="text-xs text-blue-600">+ Tambah</button></div>
 		{#each items as item, i (i)}<div class="flex gap-2 mb-1"><select bind:value={items[i].productId} class="flex-1 px-2 py-1 border rounded text-sm"><option value={0}>— Pilih —</option>{#each products as p (p.id)}<option value={p.id}>{p.name}</option>{/each}</select><input type="number" bind:value={items[i].qty} min="1" placeholder="Qty" class="w-20 px-2 py-1 border rounded text-sm" /><button type="button" onclick={() => items = items.filter((_, j) => j !== i)} class="text-red-500">✕</button></div>{/each}

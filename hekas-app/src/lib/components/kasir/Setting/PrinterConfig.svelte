@@ -37,8 +37,7 @@
 	</div>
 
 	{#if mode === 'thermal'}
-		<label class="block text-sm font-semibold">Device</label>
-		<input type="text" bind:value={deviceName} placeholder="USB printer name" class="w-full px-3 py-2 border rounded-lg" />
+		<label class="block text-sm font-semibold">Device</label><input aria-label="Device" type="text" bind:value={deviceName} placeholder="USB printer name" class="w-full px-3 py-2 border rounded-lg" />
 	{/if}
 
 	<button type="button" onclick={() => onSave({ paperSize, mode, deviceName: deviceName || undefined })}

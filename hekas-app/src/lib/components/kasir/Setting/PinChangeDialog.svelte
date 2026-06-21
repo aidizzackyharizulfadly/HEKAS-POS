@@ -19,14 +19,14 @@
 	<div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-3">
 		<h2 class="text-lg font-bold">Ganti PIN</h2>
 
-		<label class="block text-sm font-semibold">PIN lama</label>
-		<input type="password" bind:value={oldPin} maxlength="6" inputmode="numeric" class="w-full px-3 py-2 border rounded-lg font-mono" />
+		<span class="block text-sm font-semibold">PIN lama</span>
+		<input aria-label="PIN lama" type="password" bind:value={oldPin} maxlength="6" inputmode="numeric" class="w-full px-3 py-2 border rounded-lg font-mono" />
 
-		<label class="block text-sm font-semibold">PIN baru</label>
-		<input type="password" bind:value={newPin} maxlength="6" inputmode="numeric" class="w-full px-3 py-2 border rounded-lg font-mono" />
+		<span class="block text-sm font-semibold">PIN baru</span>
+		<input aria-label="PIN baru" type="password" bind:value={newPin} maxlength="6" inputmode="numeric" class="w-full px-3 py-2 border rounded-lg font-mono" />
 
-		<label class="block text-sm font-semibold">Konfirmasi PIN baru</label>
-		<input type="password" bind:value={confirmPin} maxlength="6" inputmode="numeric" class="w-full px-3 py-2 border rounded-lg font-mono" />
+		<span class="block text-sm font-semibold">Konfirmasi PIN baru</span>
+		<input aria-label="Konfirmasi PIN baru" type="password" bind:value={confirmPin} maxlength="6" inputmode="numeric" class="w-full px-3 py-2 border rounded-lg font-mono" />
 
 		{#if confirmPin && newPin !== confirmPin}<p class="text-xs text-red-600">PIN tidak cocok</p>{/if}
 

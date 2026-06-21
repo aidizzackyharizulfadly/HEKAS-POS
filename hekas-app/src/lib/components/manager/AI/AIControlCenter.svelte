@@ -34,12 +34,10 @@
 	</label>
 
 	<div>
-		<label class="block text-sm font-semibold mb-1">Language</label>
-		<select value={control.language} onchange={(e) => onChange({ language: (e.target as HTMLSelectElement).value as 'id' | 'en' })} class="w-full px-3 py-2 border rounded-lg"><option value="id">Bahasa Indonesia</option><option value="en">English</option></select>
+		<label class="block text-sm font-semibold">Language</label><select aria-label="Language" value={control.language} onchange={(e) => onChange({ language: (e.target as HTMLSelectElement).value as 'id' | 'en' })} class="w-full px-3 py-2 border rounded-lg"><option value="id">Bahasa Indonesia</option><option value="en">English</option></select>
 	</div>
 
 	<div>
-		<label class="block text-sm font-semibold mb-1">Tone</label>
-		<select value={control.tone} onchange={(e) => onChange({ tone: (e.target as HTMLSelectElement).value as 'formal' | 'casual' | 'friendly' })} class="w-full px-3 py-2 border rounded-lg"><option value="formal">Formal</option><option value="casual">Casual</option><option value="friendly">Friendly</option></select>
+		<label class="block text-sm font-semibold">Tone</label><select aria-label="Tone" value={control.tone} onchange={(e) => onChange({ tone: (e.target as HTMLSelectElement).value as 'formal' | 'casual' | 'friendly' })} class="w-full px-3 py-2 border rounded-lg"><option value="formal">Formal</option><option value="casual">Casual</option><option value="friendly">Friendly</option></select>
 	</div>
 </div>
