@@ -1,37 +1,98 @@
 <script lang="ts">
 	/**
 	 * Cart (HEKAS POS — kasir/POS)
-	 * Container cart — iterate CartItem + show CartSummary.
-	 *
-	 * Status: SCAFFOLD — TypeScript props + Tailwind styling siap.
-	 * Logic detail akan diisi di iterasi berikutnya.
+	 * Container cart — iterate items, hitung subtotal/diskon/pajak/total,
+	 * emit qty/remove/clear ke parent.
 	 */
 	import type { CartItem } from '$lib/types/domain';
+
 	interface Props {
 		items: CartItem[];
 		onupdateQty: (id: number, qty: number) => void;
 		onremove: (id: number) => void;
+		onclear?: () => void;
+		discountPct?: number;
+		taxPct?: number;
 		children?: import('svelte').Snippet;
 	}
-	let { items, onupdateQty, onremove, children }: Props = $props();
+
+	let {
+		items,
+		onupdateQty,
+		onremove,
+		onclear,
+		discountPct = 0,
+		taxPct = 11,
+		children
+	}: Props = $props();
+
+	// Derived totals
+	const subtotal = $derived(
+		items.reduce((sum, it) => sum + it.price * it.qty, 0)
+	);
+	const discount = $derived(Math.round(subtotal * (discountPct / 100)));
+	const taxable = $derived(subtotal - discount);
+	const tax = $derived(Math.round(taxable * (taxPct / 100)));
+	const total = $derived(taxable + tax);
+	const itemCount = $derived(items.reduce((sum, it) => sum + it.qty, 0));
+
+	const formatIDR = (n: number) => `Rp ${n.toLocaleString('id-ID')}`;
+
+	function handleClear() {
+		if (items.length === 0) return;
+		if (confirm('Kosongkan keranjang?')) onclear?.();
+	}
 </script>
 
-{#if items.length === 0}
-	<div class="text-center py-12 text-slate-400">
-		<div class="text-5xl mb-2" aria-hidden="true">🛒</div>
-		<p class="text-sm">Keranjang kosong</p>
-		<p class="text-xs mt-1">Scan barcode atau pilih produk untuk mulai</p>
+<div class="flex flex-col h-full">
+	<div class="flex items-center justify-between mb-2">
+		<h3 class="text-sm font-semibold text-slate-700">
+			Keranjang <span class="text-slate-400">({itemCount})</span>
+		</h3>
+		{#if items.length > 0 && onclear}
+			<button
+				type="button"
+				onclick={handleClear}
+				aria-label="Kosongkan keranjang"
+				class="text-xs text-red-500 hover:text-red-700 hover:underline"
+			>
+				Kosongkan
+			</button>
+		{/if}
 	</div>
-{:else}
-	<div class="flex flex-col gap-2">
-		{#each items as item (item.product_id)}
-			{@render children?.()}
-		{/each}
-	</div>
-{/if}
 
-<div class="mt-4 pt-4 border-t border-slate-200 text-xs text-slate-500">
-	{items.length} item di keranjang
+	{#if items.length === 0}
+		<div class="text-center py-12 text-slate-400">
+			<div class="text-5xl mb-2" aria-hidden="true">🛒</div>
+			<p class="text-sm">Keranjang kosong</p>
+			<p class="text-xs mt-1">Scan barcode atau pilih produk untuk mulai</p>
+		</div>
+	{:else}
+		<div class="flex-1 overflow-y-auto flex flex-col gap-2">
+			{#each items as item (item.product_id)}
+				{@render children?.()}
+			{/each}
+		</div>
+
+		<div class="mt-4 pt-3 border-t border-slate-200 space-y-1 text-sm">
+			<div class="flex justify-between text-slate-600">
+				<span>Subtotal</span>
+				<span>{formatIDR(subtotal)}</span>
+			</div>
+			{#if discountPct > 0}
+				<div class="flex justify-between text-amber-600">
+					<span>Diskon ({discountPct}%)</span>
+					<span>−{formatIDR(discount)}</span>
+				</div>
+			{/if}
+			<div class="flex justify-between text-slate-600">
+				<span>PPN ({taxPct}%)</span>
+				<span>{formatIDR(tax)}</span>
+			</div>
+			<div class="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-100">
+				<span>Total</span>
+				<span>{formatIDR(total)}</span>
+			</div>
+		</div>
+	{/if}
 </div>
-
-
