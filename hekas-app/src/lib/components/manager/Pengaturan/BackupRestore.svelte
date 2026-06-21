@@ -189,7 +189,7 @@
   <!-- Modal -->
   <div
     role="dialog"
-    aria-modal="true" tabindex="-1" tabindex="-1"
+    aria-modal="true" tabindex="-1"
     aria-labelledby="backup-title"
     style="position: fixed; inset: 0; z-index: 201; display: flex; align-items: center; justify-content: center; padding: 16px; pointer-events: none;"
   >
