@@ -4,12 +4,13 @@
 	 * Katalog produk untuk kasir — grid dengan search + filter category +
 	 * stock badge + keyboard navigation.
 	 *
-	 * Refactor: pakai helpers (searchAndFilter, stockStatus, uniqueBy, formatCurrency).
+	 * Refactor: pakai helpers (searchAndFilter, stockStatus, uniqueBy, formatCurrency, statusClasses).
 	 */
 	import type { Product } from '$lib/types/domain';
 	import { searchAndFilter } from '$lib/utils/search-filters';
 	import { uniqueBy } from '$lib/utils/array-helpers';
 	import { stockStatus } from '$lib/utils/status-helpers';
+	import { statusClasses } from '$lib/utils/status-classes';
 	import { formatCurrency } from '$lib/utils/format';
 
 	interface Props {
@@ -37,25 +38,13 @@
 			filters: category !== 'all' ? [(p) => (p as any).category === category] : undefined
 		})
 	);
-
-	/** Tailwind classes per status color */
-	const COLOR_CLASSES: Record<string, string> = {
-		red: 'bg-red-100 text-red-700',
-		yellow: 'bg-amber-100 text-amber-700',
-		green: 'bg-emerald-100 text-emerald-700',
-		purple: 'bg-purple-100 text-purple-700',
-		blue: 'bg-blue-100 text-blue-700',
-		orange: 'bg-orange-100 text-orange-700',
-		gray: 'bg-slate-100 text-slate-600'
-	};
-
 	function stockBadge(p: Product): { label: string; cls: string; isOut: boolean } {
 		const stock = (p as any).stock as number | undefined;
 		if (stock === undefined) return { label: '', cls: '', isOut: false };
 		const meta = stockStatus(stock);
 		const isOut = stock <= 0;
 		const label = meta.label === 'Tersedia' ? `Stok ${stock}` : meta.label === 'Hampir habis' ? `Sisa ${stock}` : meta.label;
-		return { label, cls: COLOR_CLASSES[meta.color] ?? COLOR_CLASSES.gray, isOut };
+		return { label, cls: statusClasses(meta), isOut };
 	}
 
 	function handleKey(e: KeyboardEvent, p: Product) {

@@ -2,9 +2,12 @@
 	/**
 	 * EmployeeList (HEKAS POS — manager/Karyawan)
 	 * Pakai manager-helpers untuk filter/sort logic.
+	 * Badge pakai StatusMeta + statusClasses untuk konsistensi.
 	 */
 	import type { Employee } from '$lib/api/employees';
 	import { filterEmployees, sortEmployees, nameInitials } from '$lib/utils/manager-helpers';
+	import { statusClasses } from '$lib/utils/status-classes';
+	import type { StatusMeta } from '$lib/utils/status-helpers';
 
 	interface Props {
 		employees: Employee[];
@@ -20,11 +23,24 @@
 	let sortKey = $state<'name' | 'role' | 'status'>('name');
 	let sortDir = $state<'asc' | 'desc'>('asc');
 
-	const ROLE_BADGES: Record<string, { label: string; cls: string }> = {
-		kasir: { label: 'Kasir', cls: 'bg-blue-100 text-blue-700' },
-		manager: { label: 'Manager', cls: 'bg-purple-100 text-purple-700' },
-		gudang: { label: 'Gudang', cls: 'bg-amber-100 text-amber-700' },
-		admin: { label: 'Admin', cls: 'bg-red-100 text-red-700' }
+	// Role → StatusMeta. Konsisten dengan auth/roles.ts.
+	const ROLE_BADGES: Record<string, StatusMeta> = {
+		kasir: { label: 'Kasir', color: 'blue', icon: '🛒', severity: 'info' },
+		manager: { label: 'Manager', color: 'purple', icon: '👔', severity: 'info' },
+		gudang: { label: 'Gudang', color: 'yellow', icon: '📦', severity: 'warning' },
+		admin: { label: 'Admin', color: 'red', icon: '🔑', severity: 'error' }
+	};
+	const roleBadge = (role: string) => {
+		const meta: StatusMeta = ROLE_BADGES[role] ?? { label: role, color: 'gray', icon: '•', severity: 'neutral' };
+		return { label: meta.label, cls: statusClasses(meta) };
+	};
+
+	// Active/inactive status badge.
+	const statusBadge = (s: Employee['status']) => {
+		const meta: StatusMeta = s === 'active'
+			? { label: 'Aktif', color: 'green', icon: '●', severity: 'success' }
+			: { label: 'Non-aktif', color: 'gray', icon: '○', severity: 'neutral' };
+		return { label: meta.label, cls: statusClasses(meta) };
 	};
 
 	const filtered = $derived(
@@ -147,14 +163,16 @@
 							label: emp.role,
 							cls: 'bg-slate-100 text-slate-700'
 						}}
+						{@const roleB = roleBadge(emp.role)}
+						{@const sB = statusBadge(emp.status)}
 						<tr
-							class="border-t hover:bg-blue-50 cursor-pointer transition-colors"
+							class="hover:bg-slate-50 cursor-pointer focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
 							onclick={() => onselect?.(emp)}
 							onkeydown={(e) => handleKey(e, emp)}
 							tabindex="0"
 							role="button"
 							aria-label={`Pilih ${emp.fullName}`}
-						>
+							>
 							<td class="px-3 py-2">
 								<div class="flex items-center gap-2.5">
 									<div
@@ -177,23 +195,15 @@
 								{emp.username}
 							</td>
 							<td class="px-3 py-2 text-center">
-								<span class="px-2 py-0.5 rounded text-[10px] font-bold {badge.cls}">
-									{badge.label}
+								<span class="px-2 py-0.5 rounded text-[10px] font-bold {roleB.cls}">
+									{roleB.label}
 								</span>
 							</td>
 							<td class="px-3 py-2 text-center">
 								<span
-									class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold
-									{emp.status === 'active'
-										? 'bg-emerald-100 text-emerald-700'
-										: 'bg-slate-100 text-slate-500'}"
+									class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold {sB.cls}"
 								>
-									<span
-										class="w-1.5 h-1.5 rounded-full {emp.status === 'active'
-											? 'bg-emerald-500'
-											: 'bg-slate-400'}"
-									></span>
-									{emp.status === 'active' ? 'Aktif' : 'Nonaktif'}
+									{sB.label}
 								</span>
 							</td>
 						</tr>
