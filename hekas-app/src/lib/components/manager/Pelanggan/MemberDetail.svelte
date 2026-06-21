@@ -11,7 +11,7 @@
   import { api, TIER_CONFIG } from '$lib/api';
   import type { Member } from '$lib/types/domain';
   import type { MemberStats } from '$lib/types/api';
-  import TierBadge from './kasir/Pelanggan/TierBadge.svelte';
+  import TierBadge from '$lib/components/kasir/Pelanggan/TierBadge.svelte';
 
   let {
     member,
@@ -92,7 +92,7 @@
   tabindex="-1"
   aria-label="Tutup detail"
 >
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+  <div class="modal" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="detail-title">
     <!-- Header -->
     <div class="header" style="background: linear-gradient(135deg, {config.bg} 0%, white 100%); border-bottom: 3px solid {config.color};">
       <div class="header-content">

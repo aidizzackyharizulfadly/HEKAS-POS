@@ -90,7 +90,7 @@
 		onclick={(e) => { if (e.target === e.currentTarget) close(); }} onkeydown={(e) => { if (e.key === 'Escape') { /* TODO close */ } }}
 		transition:fade={{ duration: 150 }}
 		role="dialog"
-		aria-modal="true"
+		aria-modal="true" tabindex="-1" tabindex="-1"
 		aria-labelledby="print-preview-title"
 	>
 		<div

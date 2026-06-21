@@ -13,7 +13,7 @@
 </script>
 
 {#if open}
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" role="dialog" aria-modal="true">
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" role="dialog" aria-modal="true" tabindex="-1">
 	<div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
 		<h2 class="text-lg font-bold mb-1">Mulai Shift</h2>
 		<p class="text-sm text-slate-600 mb-4">Masukkan modal awal kas</p>

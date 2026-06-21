@@ -6,11 +6,11 @@
 	import type { Product, Member, CartItem, HeldTransaction, User, Transaction } from '$lib/types/domain';
 	import type { CheckoutResult } from '$lib/types/api';
 	import type { PaymentMethod as PaymentMethodFull } from '$lib/utils/payment';
-	import PrintPreview from '$lib/components/PrintPreview.svelte';
-	import ClosingShift from '$lib/components/ClosingShift.svelte';
-	import SettingsPanel from '$lib/components/SettingsPanel.svelte';
-	import ShortcutsHelp from '$lib/components/ShortcutsHelp.svelte';
-	import PaymentForm from '$lib/components/PaymentForm.svelte';
+	import PrintPreview from '$lib/components/shared/PrintPreview.svelte';
+	import ClosingShift from '$lib/components/kasir/Shift/ClosingShift.svelte';
+	import SettingsPanel from '$lib/components/shared/SettingsPanel.svelte';
+	import ShortcutsHelp from '$lib/components/shared/ShortcutsHelp.svelte';
+	import PaymentForm from '$lib/components/kasir/POS/PaymentForm.svelte';
 	import KasirRail from '$lib/components/kasir/KasirRail.svelte';
 	import KasirCommandBar from '$lib/components/kasir/KasirCommandBar.svelte';
 	import { loadSettings, printReceipt } from '$lib/utils/print';
@@ -1244,7 +1244,7 @@
 			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 			transition:fade={{ duration: 150 }}
 			role="dialog"
-			aria-modal="true"
+			aria-modal="true" tabindex="-1"
 			aria-labelledby="payment-title"
 		>
 			<div
@@ -1443,7 +1443,7 @@
 			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 			transition:fade={{ duration: 150 }}
 			role="dialog"
-			aria-modal="true"
+			aria-modal="true" tabindex="-1"
 			aria-labelledby="receipt-title"
 		>
 			<div
@@ -1510,7 +1510,7 @@
 			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 			transition:fade={{ duration: 150 }}
 			role="dialog"
-			aria-modal="true"
+			aria-modal="true" tabindex="-1"
 			aria-labelledby="hold-title"
 		>
 			<div
@@ -1586,7 +1586,7 @@
 			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 			transition:fade={{ duration: 150 }}
 			role="dialog"
-			aria-modal="true"
+			aria-modal="true" tabindex="-1"
 			aria-labelledby="discount-title"
 		>
 			<div
@@ -1669,7 +1669,7 @@
 			onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 			transition:fade={{ duration: 150 }}
 			role="dialog"
-			aria-modal="true"
+			aria-modal="true" tabindex="-1"
 			aria-labelledby="numpad-title"
 		>
 			<div
@@ -1732,7 +1732,7 @@
 		onclick={(e) => { if (e.target === e.currentTarget) { modal = 'none'; lastTriggerEl?.focus(); } }} onkeydown={(e) => { if (e.key === 'Escape') { modal = 'none'; lastTriggerEl?.focus(); } }}
 		transition:fade={{ duration: 150 }}
 		role="dialog"
-		aria-modal="true"
+		aria-modal="true" tabindex="-1"
 		aria-labelledby="member-title"
 		>
 			<div

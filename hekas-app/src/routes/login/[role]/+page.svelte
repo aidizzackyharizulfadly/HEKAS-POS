@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import LoginForm from '$lib/components/LoginForm.svelte';
+	import LoginForm from '$lib/components/shared/LoginForm.svelte';
 	import { ROLES, isValidRole } from '$lib/auth/roles';
 
 	const role = $derived(isValidRole(page.params.role) ? ROLES[page.params.role] : null);

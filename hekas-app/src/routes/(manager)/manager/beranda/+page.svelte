@@ -5,10 +5,10 @@
 	import { api } from '$lib/api';
 	import type { DashboardSummary, ClosingReport } from '$lib/types/api';
 	import type { Product, Member, User, Transaction } from '$lib/types/domain';
-	import PrintPreview from '$lib/components/PrintPreview.svelte';
-	import BackupRestore from '$lib/components/BackupRestore.svelte';
-	import MemberForm from '$lib/components/MemberForm.svelte';
-	import MemberDetail from '$lib/components/MemberDetail.svelte';
+	import PrintPreview from '$lib/components/shared/PrintPreview.svelte';
+	import BackupRestore from '$lib/components/manager/Pengaturan/BackupRestore.svelte';
+	import MemberForm from '$lib/components/manager/Pelanggan/MemberForm.svelte';
+	import MemberDetail from '$lib/components/manager/Pelanggan/MemberDetail.svelte';
 	import TierBadge from '$lib/components/kasir/Pelanggan/TierBadge.svelte';
 	import RoleShell from '$lib/components/shared/RoleShell.svelte';
 	import { exportTransactionsCSV, fmtIDR, printReport } from '$lib/utils/export';

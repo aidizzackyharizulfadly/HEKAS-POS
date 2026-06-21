@@ -6,7 +6,7 @@
 	import { api } from '$lib/api';
 	import type { Product } from '$lib/types/domain';
 	import type { ProductImageMeta } from '$lib/types/api';
-	import ImageUploader from '$lib/components/ImageUploader.svelte';
+	import ImageUploader from '$lib/components/gudang/Inventaris/ImageUploader.svelte';
 	import { getStorageQuota, formatBytes } from '$lib/utils/image';
 	import RoleShell from '$lib/components/shared/RoleShell.svelte';
 
@@ -557,7 +557,7 @@
 
 	<!-- ── Edit Modal ──────────────────────────────────────────────────────── -->
 	{#if editingId !== null}
-		<div class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)" onclick={(e) => { if (e.target === e.currentTarget) closeEdit(); }} onkeydown={(e) => { if (e.key === 'Escape') { /* TODO close */ } }} transition:fade={{ duration: 150 }} role="dialog" aria-modal="true">
+		<div class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)" onclick={(e) => { if (e.target === e.currentTarget) closeEdit(); }} onkeydown={(e) => { if (e.key === 'Escape') { /* TODO close */ } }} transition:fade={{ duration: 150 }} role="dialog" aria-modal="true" tabindex="-1">
 			<div class="rounded-3xl overflow-hidden shadow-2xl" style="background: #fff; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto" transition:scale={{ duration: 200, start: 0.92, easing: cubicOut }}>
 				<div class="flex items-center justify-between px-5 py-4" style="background: #1E3A5F">
 					<span style="color: #fff; font-size: 15; font-weight: 700">Edit Produk</span>
@@ -627,7 +627,7 @@
 
 	<!-- ── Create Modal ────────────────────────────────────────────────────── -->
 	{#if showCreate}
-		<div class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)" onclick={(e) => { if (e.target === e.currentTarget) closeCreate(); }} onkeydown={(e) => { if (e.key === 'Escape') { /* TODO close */ } }} transition:fade={{ duration: 150 }} role="dialog" aria-modal="true">
+		<div class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)" onclick={(e) => { if (e.target === e.currentTarget) closeCreate(); }} onkeydown={(e) => { if (e.key === 'Escape') { /* TODO close */ } }} transition:fade={{ duration: 150 }} role="dialog" aria-modal="true" tabindex="-1">
 			<div class="rounded-3xl overflow-hidden shadow-2xl" style="background: #fff; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto" transition:scale={{ duration: 200, start: 0.92, easing: cubicOut }}>
 				<div class="flex items-center justify-between px-5 py-4" style="background: #059669">
 					<span style="color: #fff; font-size: 15; font-weight: 700">Tambah Produk Baru</span>

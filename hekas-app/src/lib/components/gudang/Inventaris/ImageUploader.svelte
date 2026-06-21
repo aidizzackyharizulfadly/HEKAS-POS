@@ -176,7 +176,7 @@
   tabindex="-1"
   aria-label="Tutup uploader"
 >
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="uploader-title">
+  <div class="modal" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="uploader-title">
     <div class="header">
       <h2 id="uploader-title">🖼️ Upload Gambar Produk #{productId}</h2>
       <button class="close-btn" onclick={onclose} disabled={processing} aria-label="Tutup">✕</button>

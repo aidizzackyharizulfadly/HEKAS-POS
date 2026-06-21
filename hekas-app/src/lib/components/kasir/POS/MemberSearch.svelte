@@ -39,7 +39,7 @@
   style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)"
   onclick={(e) => { if (e.target === e.currentTarget) onClose(); }}
   role="dialog"
-  aria-modal="true"
+  aria-modal="true" tabindex="-1" tabindex="-1"
   aria-label={title}
   tabindex="-1"
 >

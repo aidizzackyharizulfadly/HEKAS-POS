@@ -19,7 +19,7 @@
 </script>
 
 {#if open}
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="void-title">
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="void-title">
 	<div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
 		<h2 id="void-title" class="text-lg font-bold text-red-600 mb-1">⚠️ Void Transaksi</h2>
 		<p class="text-sm text-slate-600 mb-4">Order: <span class="font-mono font-semibold">{orderLabel}</span></p>

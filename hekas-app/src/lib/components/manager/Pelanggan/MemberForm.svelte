@@ -124,7 +124,7 @@
   tabindex="-1"
   aria-label="Tutup form"
 >
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="form-title">
+  <div class="modal" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="form-title">
     <div class="header">
       <h2 id="form-title">{isEdit ? '✏️ Edit Member' : '➕ Tambah Member Baru'}</h2>
       <button class="close-btn" onclick={onclose} disabled={saving} aria-label="Tutup">✕</button>
