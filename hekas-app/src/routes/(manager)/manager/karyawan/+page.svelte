@@ -1,24 +1,30 @@
-<!-- Sub-route placeholder (R2 — FRONTEND_ARCHITECTURE.md §4) -->
-<!-- TODO R1: Extract content dari monolithic page ke sini -->
+<!-- /manager/karyawan — Employee management dashboard (orchestrator) -->
 <script lang="ts">
-  import { page } from '$app/state';
-  const role = 'manager';
-  const path = page.url.pathname;
+	import { onMount } from 'svelte';
+	import { api } from '$lib/api';
+	import RoleShell from '$lib/components/shared/RoleShell.svelte';
+	import KaryawanDashboard from '$lib/components/manager/Karyawan/KaryawanDashboard.svelte';
+
+	let user = $state<{ id: number; full_name: string; role: string } | null>(null);
+
+	onMount(async () => {
+		user = await api.auth.getCurrentUser();
+	});
 </script>
 
 <svelte:head>
-  <title>Karyawan · HEKAS POS</title>
+	<title>Karyawan · HEKAS POS</title>
 </svelte:head>
 
-<div class="flex items-center justify-center min-h-[60vh] p-8">
-  <div class="text-center max-w-md">
-    <div class="text-6xl mb-4">🚧</div>
-    <h1 class="text-2xl font-bold text-slate-900 mb-2">Karyawan</h1>
-    <p style="font-size: 14px; color: #64748B; margin-bottom: 16px">
-      Halaman ini belum diimplementasi. Lihat route <code>{path}</code> di role <strong>{role}</strong>.
-    </p>
-    <p style="font-size: 12px; color: #94A3B8">
-      Placeholder created by R2 refactor. Konten akan diekstrak dari monolithic page di fase berikutnya.
-    </p>
-  </div>
-</div>
+<RoleShell role="manager" title="Karyawan" subtitle="Manajemen SDM & Performa" {user}>
+	{#snippet actions()}
+		<button
+			onclick={() => location.reload()}
+			style="font-size: 12px; font-weight: 600; color: #475569; padding: 6px 12px; border-radius: 6px; border: 1px solid #E2E8F0; background: #fff"
+		>
+			Refresh
+		</button>
+	{/snippet}
+
+	<KaryawanDashboard />
+</RoleShell>
