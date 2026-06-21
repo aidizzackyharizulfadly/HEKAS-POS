@@ -9,7 +9,7 @@
  *   POST /api/proxy/transactions  → BE POST /transactions
  */
 import { json, error } from '@sveltejs/kit';
-import { httpFetch as httpFetchRaw, API_MODE } from '$lib/api/http';
+import { httpFetch as httpFetchRaw, API_MODE } from '$lib/api/client';
 import type { RequestHandler } from './$types';
 
 const RAW_BASE = import.meta.env.VITE_API_BASE as string | undefined;

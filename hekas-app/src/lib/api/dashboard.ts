@@ -8,7 +8,7 @@
  *
  * Each aggregates data dari shifts, transactions, inventory, employees, SJ.
  */
-import { httpFetch as http, API_MODE } from './http';
+import { httpFetch as http, API_MODE } from './client';
 import type { DashboardSummary } from '../types/domain';
 
 export interface ManagerDashboard {

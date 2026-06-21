@@ -24,7 +24,7 @@ import type { PaymentMethod, PaymentSplitSummary } from '../utils/payment.js';
 import {
   validatePaymentSplit, summarizePayments, PAYMENT_METHOD_NEEDS_TENDERED,
 } from '../utils/payment.js';
-import { API_MODE, httpFetch, unwrapList, unwrapOne } from './http.js';
+import { API_MODE, httpFetch, unwrapList, unwrapOne } from './client.js';
 
 // ─── BE Mappers ──────────────────────────────────────────────────────────
 interface BEOrderItem {

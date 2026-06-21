@@ -2,8 +2,8 @@
 <script lang="ts">
   import RoleShell from '$lib/components/shared/RoleShell.svelte';
   import SalesTable from '$lib/components/manager/Penjualan/SalesTable.svelte';
-  import BusinessInsights from '$lib/components/manager/Laporan/BusinessInsights.svelte';
-  import SJApproval from '$lib/components/manager/SuratJalan/SJApproval.svelte';
+  import BusinessAnalytics from '$lib/components/manager/Laporan/BusinessAnalytics.svelte';
+  import SJManagement from '$lib/components/manager/SuratJalan/SJManagement.svelte';
   import AIChat from '$lib/components/manager/AI/AIChat.svelte';
   import OperationalHours from '$lib/components/manager/Pengaturan/OperationalHours.svelte';
   import POList from '$lib/components/gudang/BarangMasuk/POList.svelte';
@@ -97,12 +97,12 @@
 
     <section>
       <h2 class="text-lg font-bold text-gray-800 mb-3">💡 Business Insights</h2>
-      <BusinessInsights {insights} {kpis} />
+      <BusinessAnalytics {insights} {kpis} />
     </section>
 
     <section>
       <h2 class="text-lg font-bold text-gray-800 mb-3">📋 Surat Jalan Approval</h2>
-      <SJApproval sj={sampleSJ} canApprove={true} onApprove={handleApprove} onReject={handleReject} />
+      <SJManagement sj={sampleSJ} canApprove={true} onApprove={handleApprove} onReject={handleReject} />
     </section>
 
     <section>

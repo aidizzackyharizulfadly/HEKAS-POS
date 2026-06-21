@@ -11,7 +11,7 @@
  * Mock fallback: localStorage keys 'hekas:attendance', 'hekas:leave_requests'.
  */
 import { browser } from '$app/environment';
-import { httpFetch as http, API_MODE, ApiError } from './http';
+import { httpFetch as http, API_MODE, ApiError } from './client';
 
 const ATTENDANCE_KEY = 'hekas:attendance';
 const LEAVE_KEY = 'hekas:leave_requests';

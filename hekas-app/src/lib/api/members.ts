@@ -7,7 +7,7 @@
 import type { Member, PointEntry, TierEntry } from '../types/api.js';
 import { TIER_CONFIG } from '../types/api.js';
 import { storage, seedIfEmpty } from '$lib/utils/storage.js';
-import { API_MODE } from './http.js';
+import { API_MODE } from './client.js';
 
 const delay = (ms = 15) => new Promise<void>((r) => setTimeout(r, ms));
 

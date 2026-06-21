@@ -11,7 +11,7 @@
  * Mock fallback: localStorage key 'hekas:surat_jalan'.
  */
 import { browser } from '$app/environment';
-import { httpFetch as http, API_MODE, ApiError } from './http';
+import { httpFetch as http, API_MODE, ApiError } from './client';
 
 const STORAGE_KEY = 'hekas:surat_jalan';
 

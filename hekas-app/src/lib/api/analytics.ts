@@ -10,7 +10,7 @@
 
 import type { DashboardSummary } from '../types/api.js';
 import { storage, seedIfEmpty } from '$lib/utils/storage.js';
-import { API_MODE, httpFetch, unwrapOne } from './http.js';
+import { API_MODE, httpFetch, unwrapOne } from './client.js';
 import { listTransactions } from './transactions.js';
 
 const delay = (ms = 25) => new Promise<void>((r) => setTimeout(r, ms));

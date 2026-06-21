@@ -14,7 +14,7 @@ import * as members from './members.js';
 import * as orders from './orders.js';
 import * as analytics from './analytics.js';
 import * as auth from './auth.js';
-import * as http from './http.js';
+import * as http from './client.js';
 import * as shifts from './shifts.js';
 import * as inventory from './inventory.js';
 import * as suratJalan from './surat-jalan.js';

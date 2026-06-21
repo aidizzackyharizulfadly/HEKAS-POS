@@ -7,7 +7,7 @@
 // Auto-detected via API_MODE dari ./http.
 
 import type { User, RoleId } from '../types/api.js';
-import { API_MODE, httpFetch, setTokens, getToken, clearTokens, unwrapOne } from './http.js';
+import { API_MODE, httpFetch, setTokens, getToken, clearTokens, unwrapOne } from './client.js';
 import { storage, seedIfEmpty } from '$lib/utils/storage.js';
 
 const delay = (ms = 30) => new Promise<void>((r) => setTimeout(r, ms));

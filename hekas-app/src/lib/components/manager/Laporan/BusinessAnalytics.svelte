@@ -1,5 +1,5 @@
 <!--
-  BusinessInsights — Auto-generated insight cards based on business KPIs.
+  BusinessAnalytics— Auto-generated insight cards based on business KPIs.
   Used by: Manager Laporan screen + Manager Penjualan/Keuangan/Inventaris sections.
 -->
 <script lang="ts">

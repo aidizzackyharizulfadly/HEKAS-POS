@@ -8,7 +8,7 @@
  *   GET /api/reports/employees?period=...   — performance per employee
  *   GET /api/reports/export?type=csv&...    — export file
  */
-import { httpFetch as http, API_MODE } from './http';
+import { httpFetch as http, API_MODE } from './client';
 
 export type ReportPeriod = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 

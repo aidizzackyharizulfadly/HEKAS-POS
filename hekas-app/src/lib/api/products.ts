@@ -9,7 +9,7 @@
 // IDs: UUID strings.
 
 import type { Product, ProductImageMeta } from '../types/api.js';
-import { API_MODE, httpFetch, unwrapPaginated, unwrapOne, type Paginated } from './http.js';
+import { API_MODE, httpFetch, unwrapPaginated, unwrapOne, type Paginated } from './client.js';
 import { storage, seedIfEmpty, nextProductId } from '$lib/utils/storage.js';
 
 const delay = (ms = 15) => new Promise<void>((r) => setTimeout(r, ms));

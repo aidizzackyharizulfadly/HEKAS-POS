@@ -1,5 +1,5 @@
 <!--
-  SJApproval — Full Surat Jalan approval view with 2-stage workflow.
+  SJManagement— Full Surat Jalan approval view with 2-stage workflow.
   Used by: Manager Surat Jalan screen.
 -->
 <script lang="ts">

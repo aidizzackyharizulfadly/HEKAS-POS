@@ -10,7 +10,7 @@
  *   PATCH /api/settings
  *   POST  /api/settings/reset
  */
-import { httpFetch as http, API_MODE } from './http';
+import { httpFetch as http, API_MODE } from './client';
 import { browser } from '$app/environment';
 
 const STORAGE_KEY = 'hekas:settings';

@@ -8,7 +8,7 @@
  *   GET  /api/ai/control        — toggle settings
  *   PATCH /api/ai/control       — update setting
  */
-import { httpFetch as http, API_MODE } from './http';
+import { httpFetch as http, API_MODE } from './client';
 
 export interface AIChatMessage {
 	id: string;
