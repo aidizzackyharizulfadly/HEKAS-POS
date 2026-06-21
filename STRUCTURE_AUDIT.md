@@ -92,7 +92,7 @@ Beberapa file tambahan yang melampaui target spec karena nilai praktisnya tinggi
 **Manager** (+4): `ShiftTimeline` (Beranda), `SalesTable` (Penjualan), `BusinessInsights` (Laporan, was), `BackupRestore` (Pengaturan)
 **Shared** (+6): `LoginForm`, `Receipt`, `RoleShell`, `SettingsPanel`, `ShortcutsHelp`, `PrintPreview`, `cards/StatCard`, `charts/{BarChart,LineChart}`
 **API** (+5): `http` → `client`, `index` facade, `transactions`, `members`, `analytics`
-**Utils** (+22): cart-totals, payment-helpers, gudang-helpers, manager-helpers, discount-helpers, status-helpers, string-helpers, array-helpers, search-filters, time-helpers, validation-helpers, shortcuts, theme, sound, backup, payment, storage, print, export, image, debounce, id
+**Utils** (+23): cart-totals, payment-helpers, gudang-helpers, manager-helpers, discount-helpers, status-helpers, status-classes, string-helpers, array-helpers, search-filters, time-helpers, validation-helpers, shortcuts, theme, sound, backup, payment, storage, print, export, image, debounce, id
 **Routes** (+5): `login/[role]/+page.svelte`, `manager/beranda-demo`, `manager/widgets-demo`, `manager/analytics-demo`, role-redirect files
 
 ## 📝 Catatan Deviasi (historical, sekarang resolved)
