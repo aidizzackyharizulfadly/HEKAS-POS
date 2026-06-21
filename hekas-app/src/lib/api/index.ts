@@ -15,9 +15,50 @@ import * as orders from './orders.js';
 import * as analytics from './analytics.js';
 import * as auth from './auth.js';
 import * as http from './http.js';
+import * as shifts from './shifts.js';
+import * as inventory from './inventory.js';
+import * as suratJalan from './surat-jalan.js';
+import * as employees from './employees.js';
+import * as reports from './reports.js';
+import * as dashboard from './dashboard.js';
+import * as ai from './ai.js';
+import * as telegram from './telegram.js';
+import * as settings from './settings.js';
 
-export { products, members, orders, analytics, auth, http };
-export const api = { products, members, orders, analytics, auth, http };
+export {
+	products,
+	members,
+	orders,
+	analytics,
+	auth,
+	http,
+	shifts,
+	inventory,
+	suratJalan,
+	employees,
+	reports,
+	dashboard,
+	ai,
+	telegram,
+	settings
+};
+export const api = {
+	products,
+	members,
+	orders,
+	analytics,
+	auth,
+	http,
+	shifts,
+	inventory,
+	suratJalan,
+	employees,
+	reports,
+	dashboard,
+	ai,
+	telegram,
+	settings
+};
 
 // Re-export types & constants
 export * from '../types/api.js';
