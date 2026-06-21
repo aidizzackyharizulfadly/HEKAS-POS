@@ -1101,16 +1101,225 @@ Semua components mengikuti pola sama dengan existing 21:
 
 ---
 
+## 🚀 Fase J — Manager Orchestrator Dashboards (Karyawan & Laporan)
+
+**Date:** 2026-06-22 | **Commit:** `9529781`
+
+Replace 2 manager placeholder pages dengan proper orchestrator dashboards. Pattern: thin 30-line page route (`+page.svelte`) → `RoleShell` + dedicated `*Dashboard.svelte` orchestrator yang fetch data & render child components.
+
+### Files created
+
+| File | Lines | Purpose |
+|---|---:|---|
+| `manager/Karyawan/KaryawanDashboard.svelte` | 134 | KPI strip + EmployeeList + AttendanceSummary + PerformanceChart + LeaveRequests |
+| `manager/Laporan/LaporanDashboard.svelte` | 120 | Period filter + KPI strip + BusinessAnalytics sections |
+| `routes/(manager)/manager/karyawan/+page.svelte` | 30 | Thin page (RoleShell + KaryawanDashboard) |
+| `routes/(manager)/manager/laporan/+page.svelte` | 30 | Thin page (RoleShell + LaporanDashboard) |
+
+### Data sources
+
+| Dashboard | API calls | Components used |
+|---|---|---|
+| Karyawan | `employees.listEmployees`, `getAttendance`, `listLeaveRequests` (×2), `reports.getEmployeePerformance` | EmployeeList, AttendanceSummary, LeaveRequests, PerformanceChart |
+| Laporan | `reports.getBusinessAnalytics(period)` | BusinessAnalytics (topProducts, growth) |
+
+### KPI strips
+
+- **Karyawan:** Total Karyawan · Aktif · Cuti Pending · Hadir Hari Ini
+- **Laporan:** Pendapatan · Transaksi · Rata-rata · Pertumbuhan (%)
+
+### Verification
+
+| Test | Result |
+|---|---|
+| svelte-check | 0 errors, 57 warnings |
+| Unit tests | 582/582 ✅ |
+| Component tests | 58/58 ✅ |
+| HTTP `/manager/karyawan` | 200 ✅ |
+| HTTP `/manager/laporan` | 200 ✅ |
+
+---
+
+## 🎨 Fase K — Kasir Orchestrator Dashboards (4 routes)
+
+**Date:** 2026-06-22 | **Commit:** `28f6cc8`
+
+Replace 4 kasir placeholder pages dengan proper orchestrator dashboards. Same pattern as Fase J: thin page → RoleShell + *Dashboard.
+
+### Files created
+
+| File | Lines | KPI strip |
+|---|---:|---|
+| `kasir/Pelanggan/PelangganDashboard.svelte` | 89 | Total Member · Gold · Platinum · Aktif |
+| `kasir/Shift/ShiftDashboard.svelte` | 79 | Shift Aktif · Hari Ini · Total · Total Penjualan |
+| `kasir/Laporan/KasirLaporanDashboard.svelte` | 122 | Pendapatan · Transaksi · Rata-rata · Pertumbuhan |
+| `kasir/Setting/SettingDashboard.svelte` | 88 | (no KPI — section-based: Profile + Printer + Devices) |
+
+### Sections per dashboard
+
+- **Pelanggan:** MemberList (with search & tier filter)
+- **Shift:** ShiftList (own shift history with status badges)
+- **Laporan:** Period filter (Hari/Minggu/Bulan/Kuartal/Tahun) + BestSellers + PaymentMethodChart + ExportButton. Reactive reload via `$effect`.
+- **Setting:** ProfileSection + PrinterConfig + ConnectedDevices (3 demo devices)
+
+### Data sources
+
+| Dashboard | API calls |
+|---|---|
+| Pelanggan | `api.members.listMembers()` |
+| Shift | `api.shifts.listShifts()` |
+| Laporan | `api.reports.getBusinessAnalytics(period)` |
+| Setting | `api.auth.getCurrentUser()` + static device list |
+
+### Kasir sidebar — final state
+
+| Route | Before | After |
+|---|---|---|
+| POS | 🟢 REAL (1993) | 🟢 REAL (1993) |
+| Order | 🟢 REAL (62) | 🟢 REAL (62) |
+| Produk | 🟢 REAL (104) | 🟢 REAL (104) |
+| Pelanggan | 🔴 PLACEHOLDER | ✅ DASHBOARD |
+| Shift | 🔴 PLACEHOLDER | ✅ DASHBOARD |
+| Laporan | 🔴 PLACEHOLDER | ✅ DASHBOARD |
+| Setting | 🔴 PLACEHOLDER | ✅ DASHBOARD |
+
+**7/7 kasir sidebar routes are now real implementations. Zero placeholders.**
+
+### Verification
+
+| Test | Result |
+|---|---|
+| svelte-check | 0 errors, 57 warnings |
+| Unit tests | 582/582 ✅ |
+| Component tests | 58/58 ✅ |
+| HTTP `/kasir/{pelanggan,shift,laporan,setting}` | 200 ✅ (all 4) |
+
+---
+
+## 📦 Fase L — Gudang Orchestrator Dashboards (3 routes)
+
+**Date:** 2026-06-22 | **Commit:** `449a58b`
+
+Replace 3 gudang placeholder pages. Same orchestrator pattern as Fase J/K.
+
+### Files created
+
+| File | Lines | KPI strip |
+|---|---:|---|
+| `gudang/BarangMasuk/BarangMasukDashboard.svelte` | 95 | Total PO · Menunggu Verifikasi · Terverifikasi · Ditolak |
+| `gudang/BarangKeluar/BarangKeluarDashboard.svelte` | 98 | Total Order · Pending · Siap Kirim · Terkirim |
+| `gudang/SuratJalan/SuratJalanDashboard.svelte` | 95 | Total SJ · Pending Review · Approved · Terkirim |
+
+### Sections per dashboard
+
+- **BarangMasuk:** POList (with filter tabs Semua/Menunggu/Selesai/Ditolak) + total PO value footer
+- **BarangKeluar:** OutgoingList (with search & status filter) + aggregate counts footer
+- **SuratJalan:** SJList (with status badges) + total items & draft count footer
+
+### Data sources (3 strategies)
+
+| Dashboard | Storage | Note |
+|---|---|---|
+| BarangMasuk | localStorage `hekas:purchase_orders` | No BE API yet (FE_HANDOFF §16) |
+| BarangKeluar | localStorage `hekas:outgoing_orders` | No BE API yet |
+| SuratJalan | `api.suratJalan.listSuratJalan()` | Has BE endpoint |
+
+### Outgoing type duplication note
+
+`OutgoingList.svelte` defines its `Outgoing` interface locally (not exported). To avoid LSP diagnostics error "no exported member 'Outgoing'", `BarangKeluarDashboard.svelte` declares a local `type Outgoing = {...}` matching the component's shape. This is acceptable for now — proper fix is to export the type from `OutgoingList.svelte` in a future refactor.
+
+### Gudang sidebar — final state
+
+| Route | Before | After |
+|---|---|---|
+| Beranda | 🟡 MONOLITHIC (750) | 🟡 MONOLITHIC (750) |
+| Inventaris | 🟢 REAL (75) | 🟢 REAL (75) |
+| Barang Masuk | 🔴 PLACEHOLDER | ✅ DASHBOARD |
+| Barang Keluar | 🔴 PLACEHOLDER | ✅ DASHBOARD |
+| Surat Jalan | 🔴 PLACEHOLDER | ✅ DASHBOARD |
+
+**5/5 gudang sidebar routes are now real implementations. Zero placeholders.**
+
+### Verification
+
+| Test | Result |
+|---|---|
+| svelte-check | 0 errors, 57 warnings |
+| Unit tests | 582/582 ✅ |
+| Component tests | 58/58 ✅ |
+| HTTP `/gudang/{barang-masuk,barang-keluar,surat-jalan}` | 200 ✅ (all 3) |
+
+---
+
+## 🧹 Fase M — Manager Menu Cleanup (remove AI & Surat Jalan)
+
+**Date:** 2026-06-22 | **Commit:** `dde79df`
+
+Per user request "hapus aja tabs ai dan surat jalan", 2 menu items removed dari `managerMenu` di `src/lib/auth/roles.ts`:
+
+- ❌ `{ label: '🤖 AI Assistant', path: '/manager/ai' }` — feature deferred
+- ❌ `{ label: '📋 Surat Jalan', path: '/manager/surat-jalan' }` — duplicate of `/gudang/surat-jalan`
+
+### Route files
+
+- Files `routes/(manager)/manager/ai/+page.svelte` & `routes/(manager)/manager/surat-jalan/+page.svelte` **remain on disk** (24-line placeholders) untuk future use
+- Tidak ada referensi dari menu/sidebar ke path ini
+- 0 references di seluruh codebase ke `/manager/ai` atau `/manager/surat-jalan` di menu-related code
+
+### Manager sidebar — final state
+
+| Route | Status |
+|---|---|
+| Beranda | ✅ |
+| Penjualan | ✅ |
+| Inventaris | ✅ |
+| Keuangan | ✅ |
+| Karyawan | ✅ (Fase J) |
+| Laporan | ✅ (Fase J) |
+| Pengaturan | 🔴 PLACEHOLDER (only one left) |
+
+**6/7 manager sidebar routes are real. Tinggal pengaturan (satu-satunya).**
+
+### Verification
+
+| Test | Result |
+|---|---|
+| svelte-check | 0 errors, 57 warnings |
+| Unit tests | 582/582 ✅ (auth-roles.test.ts still passes) |
+| `managerMenu` length | 7 (was 9) |
+
+---
+
+## 🧮 Cross-fase Impact Summary (J + K + L + M)
+
+| Metric | Before (Fase I end) | After (Fase M) | Δ |
+|---|---:|---:|---:|
+| Placeholder routes in sidebar | 8 | **1** | **-7** |
+| Orchestrator dashboards | 0 | **9** | +9 |
+| `.svelte` files in components/ | 154 | 163 | +9 |
+| Manager real routes | 4/7 | **6/7** | +2 |
+| Kasir real routes | 3/7 | **7/7** | +4 |
+| Gudang real routes | 2/5 | **5/5** | +3 |
+| **Total sidebar routes real** | 9/19 | **18/19** | +9 |
+
+### Remaining placeholder
+
+- `/manager/pengaturan` — only one. Component `BackupRestore` exists in `manager/Pengaturan/`. Implementasi bisa di Fase N (next).
+
+---
+
 
 
 
 | Metric | Value |
 |---|---:|
-| Total `.svelte` components | **154** (was 131 — +21 new ui/, +2 kasir root before) |
+| Total `.svelte` files (project-wide) | **192** (was 154 — +9 orchestrators, +29 from other changes) |
+| Total `.svelte` components (in `lib/components/`) | **163** (was 154 — +9 orchestrators) |
 | Helper modules | **28** (5 target + 23 extras) |
 | Unit tests | **582** (16 files) |
 | Component tests | **58** (9 files) |
 | ui/ components | **42** (was 21 — added 21 shadcn-svelte primitives) |
+| Orchestrator dashboards | **9** (was 0 — Fase J/K/L) |
 | E2E tests | **110** (5 files) |
 | **Total tests** | **750** (unit + component + e2e) |
 | API modules | 17 (12 named + 5 extras) |
@@ -1119,12 +1328,20 @@ Semua components mengikuti pola sama dengan existing 21:
 | Git hooks | **3** (pre-commit, commit-msg, pre-push) |
 | Lines of code (hekas-app/src) | ~17,500+ |
 | svelte-check errors | **0** |
-| svelte-check warnings | 51 (mostly pre-existing) |
+| svelte-check warnings | 57 (was 51, +6 a11y from new components) |
+| Placeholder routes in sidebar | **1** (was 8 — only `/manager/pengaturan` left) |
+| Sidebar routes real | **18/19** (was 9/19) |
 | Working tree | clean ✅ |
+| Branch | `main` synced with `origin/main` |
 
-## 📜 Total Commits Sesi Ini (33)
+## 📜 Total Commits Sesi Ini (47)
 
 ```
+2026-06-22:
+  dde79df  chore(manager): remove AI Assistant & Surat Jalan from manager sidebar
+  449a58b  feat(gudang): Fase L — implement 3 orchestrator dashboards
+  28f6cc8  feat(kasir): Fase K — implement 4 orchestrator dashboards
+  9529781  feat(manager): Fase J — implement Karyawan & Laporan orchestrator dashboards
 2026-06-21:
   4b507ab  refactor(structure): Fase I — fix 4 deviations (21 UI components + logo + cleanup)
   5628dc0  test(component): Fase H — 7 components, 48 tests
