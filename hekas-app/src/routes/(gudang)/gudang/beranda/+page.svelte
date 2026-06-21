@@ -11,7 +11,7 @@
 	import RoleShell from '$lib/components/shared/RoleShell.svelte';
 
 	// ─── Current user (untuk RoleShell TopBar) ────────────────────────────────
-	const currentUser = { name: 'Admin Gudang', role: 'gudang' as const };
+	const currentUser = { full_name: 'Admin Gudang', role: 'gudang' as const };
 	async function handleLogout() {
 		await api.auth.logout();
 		goto('/login');

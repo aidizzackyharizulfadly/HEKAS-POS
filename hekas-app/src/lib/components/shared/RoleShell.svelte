@@ -24,7 +24,7 @@
 	import { page } from '$app/state';
 
 	interface User {
-		name: string;
+		full_name: string;
 		role?: string;
 	}
 

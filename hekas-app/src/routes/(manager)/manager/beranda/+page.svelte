@@ -10,8 +10,32 @@
 	import MemberForm from '$lib/components/MemberForm.svelte';
 	import MemberDetail from '$lib/components/MemberDetail.svelte';
 	import TierBadge from '$lib/components/TierBadge.svelte';
+	import RoleShell from '$lib/components/shared/RoleShell.svelte';
 	import { exportTransactionsCSV, fmtIDR, printReport } from '$lib/utils/export';
 	import { isBackupStale } from '$lib/utils/backup';
+
+	// ─── Auth (resolve current manager) ────────────────────────────────────────
+	const STORAGE_USER_KEY = 'hekas:current_user';
+	let currentUser = $state<User | null>(null);
+	$effect(() => {
+		(async () => {
+			try {
+				const raw = localStorage.getItem(STORAGE_USER_KEY);
+				if (raw) {
+					currentUser = JSON.parse(raw);
+				} else {
+					const users = await api.auth.listUsers();
+					currentUser = users.find((u) => u.role === 'manager') ?? null;
+				}
+			} catch {
+				currentUser = null;
+			}
+		})();
+	});
+	async function handleLogout() {
+		try { await api.auth.logout(); } catch {}
+		await goto('/login');
+	}
 
 	// ─── State ──────────────────────────────────────────────────────────────────
 	type TabId = 'ringkasan' | 'outlet' | 'shift' | 'persetujuan' | 'telegram' | 'member';
@@ -341,114 +365,96 @@
 	}
 </script>
 
-<div
-	class="flex flex-col h-screen overflow-hidden"
-	style="font-family: 'Inter', sans-serif; background: #F0F4F8"
+<RoleShell
+	role="manager"
+	title="Dashboard Manager"
+	subtitle={`${dateStr(now)} • ${now.toLocaleTimeString('id-ID')} • ${users.length} akun • ${products.length} produk`}
+	user={currentUser}
+	onlogout={handleLogout}
 >
-	<!-- ── Header ────────────────────────────────────────────────────────── -->
-	<header
-		class="shrink-0 px-6 py-4 flex items-center justify-between border-b"
-		style="background: #fff; border-color: #E2E8F0"
-	>
-		<div>
-			<h1 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0">Dashboard Manager</h1>
-			<p style="font-size: 12px; color: #64748B; margin: 2px 0 0">
-				{dateStr(now)} • {now.toLocaleTimeString('id-ID')}
-				• <strong style="color: #059669">{users.length}</strong> akun • <strong style="color: #2563EB">{products.length}</strong> produk
-			</p>
+	{#snippet actions()}
+		<!-- Range selector -->
+		<div class="flex items-center rounded-xl overflow-hidden" style="border: 1px solid #E2E8F0">
+			{#each [['today', 'Hari ini'], ['7d', '7 hari'], ['30d', '30 hari'], ['custom', 'Custom']] as [val, label]}
+				<button
+					onclick={() => rangeMode = val as any}
+					class="px-3 py-1.5 transition-all"
+					style="
+						font-size: 12px;
+						font-weight: 600;
+						background: {rangeMode === val ? '#2563EB' : '#fff'};
+						color: {rangeMode === val ? '#fff' : '#475569'};
+					"
+				>{label}</button>
+			{/each}
 		</div>
-		<div class="flex items-center gap-2">
-			<!-- Range selector -->
-			<div class="flex items-center rounded-xl overflow-hidden" style="border: 1px solid #E2E8F0">
-				{#each [['today', 'Hari ini'], ['7d', '7 hari'], ['30d', '30 hari'], ['custom', 'Custom']] as [val, label]}
-					<button
-						onclick={() => rangeMode = val as any}
-						class="px-3 py-1.5 transition-all"
-						style="
-							font-size: 12px;
-							font-weight: 600;
-							background: {rangeMode === val ? '#2563EB' : '#fff'};
-							color: {rangeMode === val ? '#fff' : '#475569'};
-						"
-					>{label}</button>
-				{/each}
-			</div>
 
-			{#if rangeMode === 'custom'}
-				<input type="date" bind:value={customFrom} class="px-2 py-1.5 rounded-lg" style="font-size: 12px; border: 1px solid #E2E8F0" />
-				<input type="date" bind:value={customTo} class="px-2 py-1.5 rounded-lg" style="font-size: 12px; border: 1px solid #E2E8F0" />
+		{#if rangeMode === 'custom'}
+			<input type="date" bind:value={customFrom} class="px-2 py-1.5 rounded-lg" style="font-size: 12px; border: 1px solid #E2E8F0" />
+			<input type="date" bind:value={customTo} class="px-2 py-1.5 rounded-lg" style="font-size: 12px; border: 1px solid #E2E8F0" />
+		{/if}
+
+		<button
+			onclick={loadAll}
+			disabled={refreshing}
+			class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all"
+			style="font-size: 12px; font-weight: 600; background: #F1F5F9; color: #475569; opacity: {refreshing ? 0.6 : 1}"
+			aria-label="Refresh data"
+		>
+			<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: {refreshing ? 'spin 0.8s linear infinite' : 'none'}">
+				<path d="M3 12a9 9 0 0114.93-6.82M21 12a9 9 0 01-14.93 6.82" />
+				<polyline points="21 4 21 9 16 9" />
+				<polyline points="3 20 3 15 8 15" />
+			</svg>
+			Refresh
+		</button>
+
+		<button
+			onclick={handlePrintReport}
+			class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
+			style="font-size: 12px; font-weight: 600; background: #fff; color: #2563EB; border: 1px solid #2563EB"
+			aria-label="Cetak laporan (PDF)"
+		>
+			<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+				<polyline points="6 9 6 2 18 2 18 9" />
+				<path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+				<rect x="6" y="14" width="12" height="8" />
+			</svg>
+			Cetak
+		</button>
+
+		<button
+			onclick={handleExportCSV}
+			class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
+			style="font-size: 12px; font-weight: 600; background: #2563EB; color: #fff"
+			aria-label="Export transaksi ke CSV"
+		>
+			<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+				<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+			</svg>
+			Export CSV
+		</button>
+
+		<button
+			onclick={() => { showBackup = true; }}
+			class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg relative"
+			style="font-size: 12px; font-weight: 600; background: transparent; color: {backupStale ? '#DC2626' : '#6366F1'}; border: 1px solid {backupStale ? '#FCA5A5' : '#C7D2FE'}"
+			aria-label="Backup & Restore data"
+		>
+			<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+				<ellipse cx="12" cy="5" rx="9" ry="3" />
+				<path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+				<path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+			</svg>
+			Backup
+			{#if backupStale}
+				<span
+					style="position: absolute; top: -4px; right: -4px; background: #DC2626; color: white; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 8px; box-shadow: 0 0 0 2px white;"
+					title="Sudah lama tidak backup"
+				>!</span>
 			{/if}
-
-			<button
-				onclick={loadAll}
-				disabled={refreshing}
-				class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all"
-				style="font-size: 12px; font-weight: 600; background: #F1F5F9; color: #475569; opacity: {refreshing ? 0.6 : 1}"
-			>
-				<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: {refreshing ? 'spin 0.8s linear infinite' : 'none'}">
-					<path d="M3 12a9 9 0 0114.93-6.82M21 12a9 9 0 01-14.93 6.82" />
-					<polyline points="21 4 21 9 16 9" />
-					<polyline points="3 20 3 15 8 15" />
-				</svg>
-				Refresh
-			</button>
-
-			<button
-				onclick={handlePrintReport}
-				class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
-				style="font-size: 12px; font-weight: 600; background: #fff; color: #2563EB; border: 1px solid #2563EB"
-				aria-label="Cetak laporan (PDF)"
-			>
-				<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-					<polyline points="6 9 6 2 18 2 18 9" />
-					<path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
-					<rect x="6" y="14" width="12" height="8" />
-				</svg>
-				Cetak
-			</button>
-
-			<button
-				onclick={handleExportCSV}
-				class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
-				style="font-size: 12px; font-weight: 600; background: #2563EB; color: #fff"
-				aria-label="Export transaksi ke CSV"
-			>
-				<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-					<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-				</svg>
-				Export CSV
-			</button>
-
-			<button
-				onclick={() => { showBackup = true; }}
-				class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg relative"
-				style="font-size: 12px; font-weight: 600; background: transparent; color: {backupStale ? '#DC2626' : '#6366F1'}; border: 1px solid {backupStale ? '#FCA5A5' : '#C7D2FE'}"
-				aria-label="Backup & Restore data"
-			>
-				<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-					<ellipse cx="12" cy="5" rx="9" ry="3" />
-					<path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-					<path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-				</svg>
-				Backup
-				{#if backupStale}
-					<span
-						style="position: absolute; top: -4px; right: -4px; background: #DC2626; color: white; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 8px; box-shadow: 0 0 0 2px white;"
-						title="Sudah lama tidak backup"
-					>!</span>
-				{/if}
-			</button>
-
-			<button
-				onclick={() => goto('/login')}
-				class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
-				style="font-size: 12px; font-weight: 600; background: transparent; color: #64748B; border: 1px solid #E2E8F0"
-				aria-label="Logout"
-			>
-				Logout
-			</button>
-		</div>
-	</header>
+		</button>
+	{/snippet}
 
 	<!-- ── Tab navigation ───────────────────────────────────────────────── -->
 	<nav class="shrink-0 flex items-center gap-1 px-6" style="background: #fff; border-bottom: 1px solid #E2E8F0">
@@ -1138,7 +1144,7 @@
 			{memberToast.kind === 'success' ? '✓' : memberToast.kind === 'error' ? '✕' : 'ⓘ'} {memberToast.msg}
 		</div>
 	{/if}
-</div>
+</RoleShell>
 
 <style>
 	@keyframes spin {

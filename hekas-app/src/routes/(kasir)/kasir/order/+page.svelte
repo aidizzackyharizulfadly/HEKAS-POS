@@ -5,7 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { api } from '$lib/api';
 
-	const user = { name: 'Kasir Demo', role: 'kasir' };
+	const user = { full_name: 'Kasir Demo', role: 'kasir' };
 
 	function handleLogout() {
 		api.auth.logout();

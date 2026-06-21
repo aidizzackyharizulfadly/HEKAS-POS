@@ -20,7 +20,8 @@
 	 */
 	interface User {
 		id?: string | number;
-		name: string;
+		full_name?: string;
+		name?: string; // legacy fallback
 		role?: string;
 	}
 
@@ -35,6 +36,8 @@
 	}
 
 	let { title, subtitle, user = null, role, onlogout, children, actions }: Props = $props();
+
+	const displayName = $derived(user?.full_name ?? user?.name ?? 'User');
 </script>
 
 <header
@@ -68,10 +71,10 @@
 					style="background: #EFF6FF; color: #2563EB"
 					aria-hidden="true"
 				>
-					{user.name.charAt(0).toUpperCase()}
+					{displayName.charAt(0).toUpperCase()}
 				</div>
 				<div class="flex flex-col">
-					<span style="font-size: 13px; font-weight: 600; color: #0F172A">{user.name}</span>
+					<span style="font-size: 13px; font-weight: 600; color: #0F172A">{displayName}</span>
 					{#if role}
 						<span style="font-size: 10px; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px">
 							{role}
