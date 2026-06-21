@@ -725,6 +725,79 @@ Commit: `07d4c60`
 
 ---
 
+## 🪝 Fase F — Git Hooks Setup
+
+Pre-commit workflow enforcement via 3 git hooks. Setup pakai manual shell scripts (no `simple-git-hooks` runtime dep) untuk reproducibility di environment apapun.
+
+### Hooks
+
+| Hook | Trigger | Action | Bypass |
+|---|---|---|---|
+| `pre-commit` | setiap `git commit` | `lint-staged` (prettier warn-only) + `svelte-check --threshold error` | `SKIP_SIMPLE_GIT_HOOKS=1` |
+| `commit-msg` | setiap `git commit` | validate conventional commit format (`<type>(scope)?: subject`) | `SKIP_SIMPLE_GIT_HOOKS=1` |
+| `pre-push` | setiap `git push` | run full `vitest run` test suite | `SKIP_SIMPLE_GIT_HOOKS=1` |
+
+### Files added
+
+```
+scripts/hooks/
+├── install.sh          # one-liner setup: cp hooks to .git/hooks/
+├── pre-commit          # lint-staged + svelte-check
+├── commit-msg          # conventional commit enforcement
+└── pre-push            # full vitest run
+
+hekas-app/
+├── .prettierrc         # tabs/4, single quote, svelte plugin
+├── .prettierignore     # excludes *.md, *.sh, *.bash, .prettierignore
+└── package.json        # lint-staged config + hooks:install/hooks:uninstall scripts
+```
+
+### Conventional commit enforcement
+
+Allowed types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`, `style`, `perf`, `build`, `revert`.
+
+Examples:
+
+```
+feat(auth): add JWT refresh token rotation
+fix(pos): handle void transaction race condition
+docs: update PROGRESS.md with Q.27 status
+refactor(components): migrate 5 more to status helpers
+```
+
+### Strict mode
+
+Prettier check default **warn-only** (197 existing files perlu reformatting). Untuk enforce:
+
+```bash
+LINT_STRICT=1 git commit -m "feat: ..."
+```
+
+### Install / uninstall
+
+```bash
+# Auto-install (kalau hook files sudah ada di scripts/hooks/):
+npm run hooks:install
+
+# Manual install:
+bash scripts/hooks/install.sh
+
+# Uninstall:
+npm run hooks:uninstall
+```
+
+### Dependency additions
+
+| Package | Purpose | DevDep |
+|---|---|---|
+| `prettier@3.8.4` | code formatter | ✓ |
+| `prettier-plugin-svelte@4.1.1` | svelte file formatting | ✓ |
+| `lint-staged@17.0.8` | run tasks on staged files only | ✓ |
+
+Commits: `4d2fd72` (initial setup), `998f58c` (install script + pre-commit script source-of-truth)
+
+---
+
 
 ## 📊 Statistik Kumulatif Sesi
 
@@ -737,16 +810,21 @@ Commit: `07d4c60`
 | API modules | 17 (12 named + 5 extras) |
 | Server API routes | 4 |
 | GitHub Actions workflows | 4 |
+| Git hooks | **3** (pre-commit, commit-msg, pre-push) |
 | Lines of code (hekas-app/src) | ~17,500+ |
 | svelte-check errors | **0** |
 | svelte-check warnings | 51 (mostly pre-existing) |
 | Working tree | clean ✅ |
 
-## 📜 Total Commits Sesi Ini (28)
+## 📜 Total Commits Sesi Ini (32)
 
 ```
 2026-06-21:
-  07d4c60  refactor(components): Q.27 adopt status helpers batch 4 — 5 components
+  998f58c  chore: add hooks install script + pre-commit script
+  4d2fd72  chore: add pre-commit hooks setup
+  d34b8db  docs: STRUCTURE_AUDIT.md utils count update
+  a8a2ed0  docs: PROGRESS.md Q.24-Q.27 status helpers adoption
+  07d4c60  refactor(components): Q.27 adopt status helpers batch 4
   6edaba4  refactor(components): Q.26 adopt status helpers — 5 components
   dee80b2  refactor(components): Q.25 adopt status helpers — 6 components
   61debfe  refactor(components): Q.24 adopt status-classes helper
