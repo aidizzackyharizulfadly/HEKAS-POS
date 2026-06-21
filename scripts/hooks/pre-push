@@ -10,9 +10,9 @@ fi
 
 cd "$(git rev-parse --show-toplevel)"
 
-echo "🧪 [pre-push] running vitest..."
-cd hekas-app && npm run test --silent || {
-	echo "❌ [pre-push] vitest gagal. Push dibatalkan."
+echo "🧪 [pre-push] running unit tests + component tests..."
+cd hekas-app && (npm run test --silent && npm run test:component --silent) || {
+	echo "❌ [pre-push] tests gagal. Push dibatalkan."
 	exit 1
 }
 

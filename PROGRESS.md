@@ -725,7 +725,102 @@ Commit: `07d4c60`
 
 ---
 
-## 🪝 Fase F — Git Hooks Setup
+## 🧪 Fase G — Component Tests Setup
+
+Component testing framework dengan `@testing-library/svelte`-style API tapi tanpa `@testing-library/svelte` (yang konflik dengan vitest 2.1 + vite-plugin-svelte 7.1 + vite 8).
+
+### Problem & Solusi
+
+```
+Error: vite-plugin-svelte 7.1 + vitest 2.1 + vite 8 konflik
+  → Plugin `transform` hook calls `requestParser` yang di-init di `configResolved`
+  → vitest's vite-node context tidak trigger `configResolved` properly
+  → Generic "[object Object]" error
+```
+
+**Workaround**: Custom Vite plugin di `vitest-svelte.config.ts` yang pakai `svelte/compiler.compile()` langsung, skip vite-plugin-svelte entirely.
+
+### Files created
+
+```
+tests/component/
+├── setup.ts                     # jest-dom matchers + jsdom
+├── EmptyState.test.ts           # 4 tests (renders, default icon, custom icon, a11y)
+└── StatCard.test.ts             # 6 tests (label/value/unit/icon/hint/trend)
+
+hekas-app/vitest-svelte.config.ts  # Custom Svelte compile plugin + jsdom env
+hekas-app/package.json              # + test:component script
+```
+
+### Component test API
+
+Tanpa `@testing-library/svelte` (yang wrapper-scaffold.svelte bermasalah dengan vitest's transform pipeline), pakai Svelte 5 native API:
+
+```ts
+import { mount, unmount } from 'svelte';
+
+beforeEach(() => { host = document.createElement('div'); document.body.appendChild(host); });
+afterEach(() => { if (component) unmount(component); host.remove(); });
+
+it('renders title', () => {
+  component = mount(EmptyState, { target: host, props: { title: 'Kosong' } });
+  expect(host.textContent).toContain('Kosong');
+});
+```
+
+### Plugin strategy
+
+```ts
+function svelteCompilePlugin() {
+  return {
+    name: 'svelte-compile-for-vitest',
+    enforce: 'pre',
+    transform(code: string, id: string) {
+      if (!id.endsWith('.svelte')) return null;
+      const result = compile(code, {
+        generate: 'client', filename: id, css: 'injected', dev: true
+      });
+      return { code: result.js.code, map: result.js.map };
+    }
+  };
+}
+```
+
+Plus alias `svelte` → `node_modules/svelte/src/index-client.js` (skip server-only mount() stub).
+
+### Available scripts
+
+```bash
+npm run test             # 582 unit tests
+npm run test:component   # 10 component tests (Svelte compile)
+npm run test:all         # all 3 layers (unit + component + e2e)
+```
+
+### Pre-push hook upgrade
+
+Pre-push sekarang jalankan **unit + component tests** sebelum push:
+
+```bash
+cd hekas-app && (npm run test --silent && npm run test:component --silent)
+```
+
+### Dependencies added
+
+| Package | Purpose |
+|---|---|
+| `@testing-library/svelte@^5.4.0` | (installed but unused — replaced with native Svelte.mount) |
+| `@testing-library/jest-dom@^6.9.1` | jest-dom matchers untuk assertions |
+
+### Stats
+
+| Metric | Value |
+|---|---:|
+| Component test files | **2** |
+| Component tests | **10** |
+| Total tests (unit + component) | **592** |
+| svelte-check errors | **0** |
+
+---
 
 Pre-commit workflow enforcement via 3 git hooks. Setup pakai manual shell scripts (no `simple-git-hooks` runtime dep) untuk reproducibility di environment apapun.
 
@@ -806,7 +901,9 @@ Commits: `4d2fd72` (initial setup), `998f58c` (install script + pre-commit scrip
 | Total `.svelte` components | **131** |
 | Helper modules | **28** (5 target + 23 extras) |
 | Unit tests | **582** (16 files) |
+| Component tests | **10** (2 files) |
 | E2E tests | **110** (5 files) |
+| **Total tests** | **702** (unit + component + e2e) |
 | API modules | 17 (12 named + 5 extras) |
 | Server API routes | 4 |
 | GitHub Actions workflows | 4 |
