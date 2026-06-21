@@ -649,30 +649,112 @@ Refactor impact: `ProductCatalog.svelte` pakai `searchAndFilter`, `uniqueBy`, `s
 
 ---
 
+## 🎯 Fase Q.24-Q.27 — Status Helpers Adoption (4 batches)
+
+Status system DRY refactor — replace inline color/label/badge patterns dengan shared helpers `status-helpers` (meta) + `status-classes` (styling).
+
+### Helpers added
+
+| Helper | Type | Purpose |
+|---|---|---|
+| `status-classes.ts` | styling | 4 formatters: `statusClasses` (badge), `statusDotClass` (dot), `statusTextClass` (text), `statusRowClass` (row tint + left border) |
+| `statusRowClass` (Q.27) | styling | Row tint + `border-l-4 border-{color}-400` untuk inline list/table status highlight |
+| `purchaseOrderStatus` (Q.27) | meta | PO 3-status: menunggu/terverifikasi/ditolak → ID labels + colors |
+
+### Q.24 — Batch 1 (status-classes, 3 components)
+
+Created `status-classes.ts` (3 styling variants: badge/dot/text) + 17 tests. Refactored 3 components:
+- `OrderDetail.svelte` — payment status badge
+- `PODetail.svelte` — PO verification badge
+- `NotificationFeed.svelte` — notification dot
+
+Commit: `61debfe`
+
+### Q.25 — Batch 2 (status-helpers, 6 components)
+
+Refactored 6 components pakai `status-helpers` domain functions (shiftStatus, leaveStatus, suratJalanStatus, dll):
+- `ShiftList.svelte`, `SJManagement.svelte`, `OutgoingList.svelte`, `LeaveRequests.svelte`, `OutgoingDetail.svelte`, `SJList.svelte` (EN→ID labels)
+
+Commit: `dee80b2`
+
+### Q.26 — Batch 3 (5 components)
+
+Adopted status helpers ke 5 additional components:
+- `ProductCatalog.svelte` (kasir/Produk) — stock badge
+- `TodayTasks.svelte` (gudang/Beranda) — task priority
+- `StockMovementLog.svelte` (gudang/Inventaris) — movement type
+- `InventorySummary.svelte` (manager/Beranda) — health + turnover
+- `EmployeeList.svelte` (manager/Karyawan) — role + status badges
+
+Commit: `6edaba4`
+
+### Q.27 — Batch 4 (5 components + 1 new helper variant)
+
+5 components + 1 new status helper variant (`statusRowClass`) + 1 new status helper (`purchaseOrderStatus`):
+- `POList.svelte` (gudang/BarangMasuk) — PO 3-status pakai `purchaseOrderStatus`
+- `POVerification.svelte` — variance text + row highlight pakai `statusRowClass`
+- `SJReview.svelte` — SJ status pakai `suratJalanStatus` + `statusClasses` (was hardcoded amber)
+- `ApprovalQueue.svelte` — pending badge + urgent row highlight
+- `ShiftTimeline.svelte` — bar color + legend pakai `shiftStatus`
+
+Commit: `07d4c60`
+
+### Impact kumulatif Q.24-Q.27
+
+| Metric | Value |
+|---|---:|
+| Components migrated | **19 total** (3 + 6 + 5 + 5) |
+| Status helpers exports | **9 domain functions** (stock, payment, order, shift, attendance, suratJalan, leave, severityToColor, purchaseOrder) |
+| Status styling variants | **4** (badge / dot / text / row-tint+border) |
+| Inline color patterns eliminated | **~55** |
+| Hardcoded color class strings removed | **~70+** |
+| Tests added (Q.24-Q.27) | **+28** (17 status-classes + 7 purchaseOrder + 4 statusRowClass) |
+| Total tests | **582/582** (16 files) |
+| svelte-check errors | **0** |
+
+### Pattern adoption rate per layer
+
+| Layer | Total | Using Helpers | % |
+|---|---:|---:|---:|
+| `ui/` (shadcn primitives) | 21 | 0 | 0% (N/A) |
+| `shared/` | 15 | 1 | 7% |
+| `kasir/` | 33 | 4 | 12% |
+| `gudang/` | 22 | 9 | 41% ⭐ |
+| `manager/` | 28 | 9 | 32% ⭐ |
+| **TOTAL** | **131** | **19** | **~15%** |
+
+---
+
+
 ## 📊 Statistik Kumulatif Sesi
 
 | Metric | Value |
 |---|---:|
 | Total `.svelte` components | **131** |
-| Helper modules | **27** (5 target + 22 extras) |
-| Unit tests | **554** (15 files) |
+| Helper modules | **28** (5 target + 23 extras) |
+| Unit tests | **582** (16 files) |
 | E2E tests | **110** (5 files) |
 | API modules | 17 (12 named + 5 extras) |
 | Server API routes | 4 |
 | GitHub Actions workflows | 4 |
-| Lines of code (hekas-app/src) | ~17,000+ |
+| Lines of code (hekas-app/src) | ~17,500+ |
 | svelte-check errors | **0** |
 | svelte-check warnings | 51 (mostly pre-existing) |
 | Working tree | clean ✅ |
 
-## 📜 Total Commits Sesi Ini (24)
+## 📜 Total Commits Sesi Ini (28)
 
 ```
 2026-06-21:
+  07d4c60  refactor(components): Q.27 adopt status helpers batch 4 — 5 components
+  6edaba4  refactor(components): Q.26 adopt status helpers — 5 components
+  dee80b2  refactor(components): Q.25 adopt status helpers — 6 components
+  61debfe  refactor(components): Q.24 adopt status-classes helper
+  aa2c830  docs: PROGRESS.md + STRUCTURE_AUDIT.md Q.20-Q.23
   08414fe  feat(pages): Q.23 use SalesAnalytics on /manager/penjualan
   50053f4  feat(pages): Q.23 use InventoryAnalytics + FinanceAnalytics
   944c9c2  refactor: Q.22 align structure to target
-  169af29  feat(utils): Q.21 string/array/status helpers (210 new tests)
+  169af29  feat(utils): Q.21 string/array/status helpers
   6be9a1e  feat(utils): Q.20 search-filters + time-helpers + validation-helpers
   ae3f605  ci: Q.19 GitHub Actions setup
   202eb17  chore: expand .gitignore
