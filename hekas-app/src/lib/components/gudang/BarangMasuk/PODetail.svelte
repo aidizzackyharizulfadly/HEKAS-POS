@@ -3,6 +3,7 @@
 	 * PODetail (HEKAS POS — gudang/BarangMasuk)
 	 * Detail PO dengan receive progress + status flow actions.
 	 */
+	import { statusClasses } from '$lib/utils/status-classes';
 
 	interface POItem {
 		productId: number;
@@ -44,16 +45,28 @@
 	const partiallyReceived = $derived(totalReceived > 0 && !allReceived);
 
 	const statusBadge = $derived.by(() => {
+		// PO-specific status mapping (lebih granular dari orderStatus generic).
+		// 'partial' khusus PO domain — bisa datang dari server atau derived.
 		const s = po.status.toLowerCase();
-		if (s === 'completed' || s === 'received')
-			return { label: 'Received', cls: 'bg-emerald-100 text-emerald-800' };
-		if (s === 'partial' || partiallyReceived)
-			return { label: 'Partial', cls: 'bg-amber-100 text-amber-800' };
-		if (s === 'cancelled')
-			return { label: 'Cancelled', cls: 'bg-red-100 text-red-800' };
-		if (s === 'pending' || s === 'open')
-			return { label: 'Open', cls: 'bg-slate-100 text-slate-700' };
-		return { label: po.status, cls: 'bg-slate-100 text-slate-700' };
+		let label: string;
+		let colorKey: 'red' | 'yellow' | 'green' | 'gray' | 'blue';
+		if (s === 'completed' || s === 'received') {
+			label = 'Received';
+			colorKey = 'green';
+		} else if (s === 'partial' || partiallyReceived) {
+			label = 'Partial';
+			colorKey = 'yellow';
+		} else if (s === 'cancelled') {
+			label = 'Cancelled';
+			colorKey = 'red';
+		} else if (s === 'pending' || s === 'open') {
+			label = 'Open';
+			colorKey = 'gray';
+		} else {
+			label = po.status;
+			colorKey = 'gray';
+		}
+		return { label, cls: statusClasses({ label, color: colorKey, icon: '', severity: 'neutral' }) };
 	});
 
 	function rowClass(item: POItem): string {

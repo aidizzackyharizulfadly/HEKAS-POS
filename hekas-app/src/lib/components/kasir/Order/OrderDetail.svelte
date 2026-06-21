@@ -3,8 +3,14 @@
 	 * OrderDetail (HEKAS POS — kasir/Order)
 	 * Detail panel satu order — items, customer, payment, action buttons
 	 * dengan status badge dan refund eligibility check.
+	 *
+	 * Refactor: pakai orderStatus + statusClasses + formatDateTime + ageHours helpers.
 	 */
 	import type { Transaction } from '$lib/types/domain';
+	import { orderStatus } from '$lib/utils/status-helpers';
+	import { statusClasses } from '$lib/utils/status-classes';
+	import { formatDateTime, ageHours } from '$lib/utils/time-helpers';
+	import { formatCurrency } from '$lib/utils/format';
 
 	interface Props {
 		order: Transaction;
@@ -15,42 +21,19 @@
 
 	let { order, onclose, onvoid, onreprint }: Props = $props();
 
-	const fmt = (n: number) =>
-		n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
-
 	const orderId = $derived(order.id);
 
 	const statusBadge = $derived.by(() => {
-		const s = (order.status ?? '').toLowerCase();
-		if (s === 'completed')
-			return { label: 'Selesai', cls: 'bg-emerald-100 text-emerald-800' };
-		if (s === 'void') return { label: 'Void', cls: 'bg-red-100 text-red-800' };
-		if (s === 'held') return { label: 'Pending', cls: 'bg-amber-100 text-amber-800' };
-		return { label: order.status ?? '—', cls: 'bg-slate-100 text-slate-700' };
+		const meta = orderStatus(order.status ?? '');
+		return { label: meta.label, cls: statusClasses(meta) };
 	});
 
-	const orderDate = $derived.by(() => {
-		try {
-			return new Date(order.created_at).toLocaleString('id-ID', {
-				dateStyle: 'medium',
-				timeStyle: 'short'
-			});
-		} catch {
-			return String(order.created_at);
-		}
-	});
-
-	const ageHours = $derived.by(() => {
-		try {
-			const ms = Date.now() - new Date(order.created_at).getTime();
-			return ms / 3_600_000;
-		} catch {
-			return 0;
-		}
-	});
+	const orderDate = $derived(formatDateTime(order.created_at));
+	const hoursOld = $derived(ageHours(order.created_at));
+	const orderTotal = $derived((order as any).total ?? (order as any).grand_total ?? 0);
 
 	const canVoid = $derived(
-		!!onvoid && order.status === 'completed' && ageHours < 24
+		!!onvoid && order.status === 'completed' && hoursOld < 24
 	);
 	const canReprint = $derived(!!onreprint && order.status !== 'void');
 
@@ -58,7 +41,7 @@
 		if (!onvoid) return '';
 		if (order.status !== 'completed')
 			return `Order status "${order.status}" tidak bisa di-void.`;
-		if (ageHours >= 24) return 'Order > 24 jam. Hubungi manager untuk void.';
+		if (hoursOld >= 24) return 'Order > 24 jam. Hubungi manager untuk void.';
 		return '';
 	});
 
@@ -123,7 +106,7 @@
 							{item.product_name}
 							<span class="text-slate-500">× {item.qty}</span>
 						</span>
-						<span class="font-mono tabular-nums flex-shrink-0">{fmt(item.subtotal)}</span>
+						<span class="font-mono tabular-nums flex-shrink-0">{formatCurrency(item.subtotal)}</span>
 					</li>
 				{/each}
 			</ul>
@@ -133,26 +116,26 @@
 	<div class="border-t pt-3 space-y-1 text-sm">
 		<div class="flex justify-between">
 			<span>Subtotal</span>
-			<span class="font-mono tabular-nums">{fmt(order.subtotal)}</span>
+			<span class="font-mono tabular-nums">{formatCurrency(order.subtotal)}</span>
 		</div>
 		{#if order.discount_amt > 0}
 			<div class="flex justify-between text-red-600">
 				<span>Diskon</span>
-				<span class="font-mono tabular-nums">−{fmt(order.discount_amt)}</span>
+				<span class="font-mono tabular-nums">−{formatCurrency(order.discount_amt)}</span>
 			</div>
 		{/if}
 		<div class="flex justify-between text-lg font-bold pt-1 border-t border-slate-100">
 			<span>Total</span>
-			<span class="text-blue-600 font-mono tabular-nums">{fmt(order.total)}</span>
+			<span class="text-blue-600 font-mono tabular-nums">{formatCurrency(order.total)}</span>
 		</div>
 		<div class="flex justify-between text-emerald-600">
 			<span>Dibayar ({order.payment_method ?? '—'})</span>
-			<span class="font-mono tabular-nums">{fmt(order.paid)}</span>
+			<span class="font-mono tabular-nums">{formatCurrency(order.paid)}</span>
 		</div>
 		{#if order.change_amt > 0}
 			<div class="flex justify-between text-slate-500">
 				<span>Kembali</span>
-				<span class="font-mono tabular-nums">{fmt(order.change_amt)}</span>
+				<span class="font-mono tabular-nums">{formatCurrency(order.change_amt)}</span>
 			</div>
 		{/if}
 	</div>

@@ -8,6 +8,8 @@
    * @prop maxItems - berapa item yang ditampilkan (default 6, sisanya auto-collapse)
    * @prop onitemclick - callback saat user klik salah satu notifikasi
    */
+  import { statusDotClass } from '$lib/utils/status-classes';
+  import type { StatusMeta } from '$lib/utils/status-helpers';
   type Notification = {
     id: string | number;
     icon?: string;
@@ -35,17 +37,17 @@
   );
   const hidden = $derived(Math.max(0, messages.length - maxItems));
 
-  // Status dot color
-  function statusDot(s?: Notification['status']): string {
-    if (s === 'failed') return 'bg-red-500';
-    if (s === 'pending') return 'bg-yellow-500 animate-pulse';
-    return 'bg-green-500';
+  // Status dot color — pakai status-helpers via status-classes (konsisten dengan badge lain)
+  function statusMeta(s?: Notification['status']): StatusMeta {
+    if (s === 'failed') return { label: 'Gagal', color: 'red', icon: '✗', severity: 'error' };
+    if (s === 'pending') return { label: 'Pending', color: 'yellow', icon: '⏳', severity: 'warning' };
+    return { label: 'Terkirim', color: 'green', icon: '✓', severity: 'success' };
   }
-
+  function statusDot(s?: Notification['status']): string {
+    return statusDotClass(statusMeta(s)) + (s === 'pending' ? ' animate-pulse' : '');
+  }
   function statusLabel(s?: Notification['status']): string {
-    if (s === 'failed') return 'Gagal';
-    if (s === 'pending') return 'Pending';
-    return 'Terkirim';
+    return statusMeta(s).label;
   }
 
   function handleClick(n: Notification) {
