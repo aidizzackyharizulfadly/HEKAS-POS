@@ -28,3 +28,11 @@ npm-debug.log*
 .env
 .env.local
 .env.*.local
+
+# Markdown & dotfiles (tidak perlu diformat konsisten)
+*.md
+.prettierignore
+
+# Shell scripts (bash, zsh) — prettier no built-in parser
+*.sh
+*.bash

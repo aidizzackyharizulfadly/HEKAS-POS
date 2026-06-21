@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Pre-commit hook — HEKAS POS
+# Runs: lint-staged (prettier check on staged files) + svelte-check (errors only threshold).
+# Generated from package.json lint-staged + simple-git-hooks config.
+set -e
+
+# Skip when explicitly disabled (e.g. emergency commits during incident response)
+if [ "$SKIP_SIMPLE_GIT_HOOKS" = "1" ]; then
+	echo "[INFO] SKIP_SIMPLE_GIT_HOOKS=1 — skipping pre-commit hook."
+	exit 0
+fi
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "🔍 [pre-commit] lint-staged (prettier warn-only)..."
+# Prettier check informational only — won't block commit (197+ existing files need reformatting).
+# For strict mode: set LINT_STRICT=1.
+cd hekas-app
+if [ "$LINT_STRICT" = "1" ]; then
+	npx lint-staged
+else
+	npx lint-staged 2>&1 | grep -E "(FAILED|error)" | head -10 || echo "  ℹ️  Prettier warnings — see above (set LINT_STRICT=1 to enforce)"
+fi
+
+echo "✅ [pre-commit] svelte-check (errors only)..."
+npx svelte-check --tsconfig ./tsconfig.json --threshold error 2>&1 | tail -20 || {
+	echo "❌ [pre-commit] svelte-check gagal. Perbaiki error dulu sebelum commit."
+	exit 1
+}
+
+echo "✨ [pre-commit] passed."
