@@ -1,0 +1,51 @@
+name: Dependabot Auto-Merge
+
+# Auto-merge Dependabot PRs untuk patch/minor updates setelah CI pass.
+# Major updates perlu review manual.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Auto-merge Dependabot PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: |
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.state == 'open'
+    steps:
+      - name: Fetch metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-merge patch/minor updates
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on major updates
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: dependabot
+          message: |
+            ⚠️ **Major version update** — requires manual review.
+
+            Please check breaking changes in the changelog before merging.
+
+            - Package: `${{ steps.metadata.outputs.package-ecosystem }}`
+            - Update type: `${{ steps.metadata.outputs.update-type }}`
+            - Dependency: `${{ steps.metadata.outputs.dependency-name }}`

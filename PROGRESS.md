@@ -485,3 +485,70 @@ npx playwright install   # pertama kali (install browser)
 npx playwright test      # run all
 npx playwright test cashier-pos.spec.ts  # specific
 ```
+
+### Q.19 — CI/CD Setup dengan GitHub Actions
+
+**4 workflows** + Dependabot + Issue/PR templates + Repo governance docs.
+
+#### `.github/workflows/ci.yml` (4 jobs)
+- `lint` — svelte-check (type + a11y), upload JSON results
+- `unit-tests` — Vitest + coverage, upload ke Codecov
+- `build` — Production build verification
+- `all-pass` — Aggregate status check
+- Trigger: push ke main/develop, PR ke main/develop
+- Concurrency cancel untuk PR yang sama
+
+#### `.github/workflows/e2e.yml`
+- Playwright tests (chromium matrix)
+- Cache browser binaries
+- Start dev server di background, tunggu ready
+- Upload HTML report + test results sebagai artifacts
+- Trigger: push ke main, PR ke main, manual dispatch
+
+#### `.github/workflows/dependabot-auto-merge.yml`
+- Auto-merge Dependabot PRs untuk patch/minor
+- Comment on major version updates (perlu review manual)
+- Permission: contents + pull-requests
+
+#### `.github/workflows/release.yml`
+- Trigger: push tag `v*.*.*`
+- Extract changelog dari PROGRESS.md
+- Build + create GitHub Release dengan notes
+- Support prerelease detection (`-rc`, `-beta`)
+
+#### `.github/dependabot.yml`
+- NPM weekly updates (Senin 04:00 WIB)
+- GitHub Actions weekly updates (Selasa 04:00 WIB)
+- Group: dev-dependencies, framework, production-runtime
+- 10 PR limit untuk npm, 5 untuk actions
+
+#### `.github/ISSUE_TEMPLATE/`
+- `bug_report.md` — Steps to reproduce, env, screenshots
+- `feature_request.md` — Problem, solution, acceptance criteria, priority
+
+#### `.github/PULL_REQUEST_TEMPLATE.md`
+- Type of change checklist (9 types)
+- Testing checklist
+- Screenshots section untuk UI changes
+- Conventional Commits-friendly
+
+#### `.github/CODEOWNERS`
+- Auto-assign reviewers per path
+- frontend-team untuk components/utils/api
+- security-team untuk auth
+- qa-team untuk tests
+- devops-team untuk CI/CD
+- leadership untuk critical configs
+
+#### Repo governance docs
+- `.github/README.md` — Setup CI/CD instructions
+- `.github/CONTRIBUTING.md` — Workflow, branch naming, commit convention
+- `SECURITY.md` — Vulnerability disclosure policy
+- `LICENSE` — MIT License
+
+#### `package.json` updates
+- `version: 0.1.0` (was 0.0.1)
+- `engines.node: >=20.0.0`
+- `engines.npm: >=10.0.0`
+- `license: MIT`
+- New script: `test:all` (vitest + playwright)

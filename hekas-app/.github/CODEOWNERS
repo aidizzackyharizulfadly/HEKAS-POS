@@ -1,0 +1,33 @@
+# CODEOWNERS
+# Setiap perubahan akan otomatis request review dari owner sesuai path.
+
+# Default owners untuk semua file
+* @hekas-pos/maintainers
+
+# Frontend specific
+/src/lib/components/ @hekas-pos/frontend-team
+/src/lib/utils/ @hekas-pos/frontend-team
+/src/lib/api/ @hekas-pos/frontend-team
+/src/lib/auth/ @hekas-pos/security-team
+
+# Tests
+/tests/ @hekas-pos/qa-team
+
+# CI/CD
+/.github/ @hekas-pos/devops-team
+
+# Documentation
+*.md @hekas-pos/docs-team
+/PROGRESS.md @hekas-pos/leadership
+
+# Critical config
+/package.json @hekas-pos/leadership
+/svelte.config.js @hekas-pos/leadership
+/vite.config.ts @hekas-pos/devops-team
+/tsconfig.json @hekas-pos/leadership
+/playwright.config.ts @hekas-pos/qa-team
+/vitest.config.ts @hekas-pos/qa-team
+
+# Sensitive areas (extra review required)
+/src/lib/auth/ @hekas-pos/security-team
+/src/lib/api/auth.ts @hekas-pos/security-team
