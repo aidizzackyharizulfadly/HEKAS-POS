@@ -16,8 +16,8 @@
     pickBackupFile,
     isBackupStale,
     BACKUP_VERSION,
-  } from '$lib/backup';
-  import type { BackupPreview, BackupPreviewResult, ImportResult } from '$lib/backup';
+  } from '$lib/utils/backup';
+  import type { BackupPreview, BackupPreviewResult, ImportResult } from '$lib/utils/backup';
 
   let { open, onClose, showToast, onChanged }: {
     open: boolean;

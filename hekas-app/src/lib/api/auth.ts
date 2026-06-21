@@ -2,7 +2,7 @@
 // Untuk demo. Production: panggil backend, simpan JWT/session.
 
 import type { User } from './types.js';
-import { storage, seedIfEmpty } from './storage.js';
+import { storage, seedIfEmpty } from '$lib/utils/storage.js';
 
 const delay = (ms = 30) => new Promise<void>((r) => setTimeout(r, ms));
 const SESSION_KEY = 'session';

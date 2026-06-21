@@ -6,7 +6,7 @@
     onClose : () => void
 -->
 <script lang="ts">
-  import { SHORTCUTS, formatShortcut, type Shortcut } from '$lib/shortcuts';
+  import { SHORTCUTS, formatShortcut, type Shortcut } from '$lib/utils/shortcuts';
 
   let { open, onClose }: {
     open: boolean;

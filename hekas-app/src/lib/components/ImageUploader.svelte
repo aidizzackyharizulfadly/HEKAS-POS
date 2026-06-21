@@ -10,7 +10,7 @@
     - showToast: (kind, msg) => void
 -->
 <script lang="ts">
-  import { processImage, getStorageQuota, formatBytes, canAddImage, type ProcessedImage, type StorageQuota } from '$lib/image';
+  import { processImage, getStorageQuota, formatBytes, canAddImage, type ProcessedImage, type StorageQuota } from '$lib/utils/image';
   import type { ProductImageMeta } from '$lib/api';
 
   let {

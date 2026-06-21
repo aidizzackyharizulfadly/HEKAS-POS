@@ -10,14 +10,14 @@
     getStoredTheme,
     setTheme,
     type ThemeMode,
-  } from '$lib/theme';
+  } from '$lib/utils/theme';
   import {
     isSoundEnabled,
     setSoundEnabled,
     playSuccess,
     playClick,
     playScan,
-  } from '$lib/sound';
+  } from '$lib/utils/sound';
 
   let { open, onClose, showToast }: {
     open: boolean;

@@ -2,8 +2,8 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { initTheme } from '$lib/theme';
-	import { initSound } from '$lib/sound';
+	import { initTheme } from '$lib/utils/theme';
+	import { initSound } from '$lib/utils/sound';
 
 	let { children } = $props();
 

@@ -3,7 +3,7 @@
 // Nanti kalau ada backend beneran, ini tinggal pindah ke SQL GROUP BY.
 
 import type { DashboardSummary } from './types.js';
-import { storage, seedIfEmpty } from './storage.js';
+import { storage, seedIfEmpty } from '$lib/utils/storage.js';
 
 const delay = (ms = 25) => new Promise<void>((r) => setTimeout(r, ms));
 

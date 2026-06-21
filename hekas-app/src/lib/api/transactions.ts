@@ -8,7 +8,7 @@ import type {
   Transaction, TransactionItem, HeldTransaction,
 } from './types.js';
 import { TIER_CONFIG } from './types.js';
-import { storage, seedIfEmpty, genInvoiceNo, genHoldId } from './storage.js';
+import { storage, seedIfEmpty, genInvoiceNo, genHoldId } from '$lib/utils/storage.js';
 import { recordTransaction } from './members.js';
 import type { PaymentMethod, PaymentSplitSummary } from '../payment.js';
 import {

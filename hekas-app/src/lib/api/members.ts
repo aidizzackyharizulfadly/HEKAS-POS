@@ -2,7 +2,7 @@
 
 import type { Member, PointEntry, TierEntry } from './types.js';
 import { TIER_CONFIG } from './types.js';
-import { storage, seedIfEmpty } from './storage.js';
+import { storage, seedIfEmpty } from '$lib/utils/storage.js';
 
 const delay = (ms = 15) => new Promise<void>((r) => setTimeout(r, ms));
 

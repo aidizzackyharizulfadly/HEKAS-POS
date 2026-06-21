@@ -5,8 +5,8 @@
 	import {
 		printReceipt, connectThermal, disconnectThermal, isThermalConnected,
 		isThermalSupported, loadSettings, saveSettings, DEFAULT_STORE_SETTINGS,
-	} from '$lib/print';
-	import type { StoreSettings } from '$lib/print';
+	} from '$lib/utils/print';
+	import type { StoreSettings } from '$lib/utils/print';
 	import Receipt from './Receipt.svelte';
 
 	interface Props {

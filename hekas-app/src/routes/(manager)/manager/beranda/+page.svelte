@@ -12,8 +12,8 @@
 	import MemberForm from '$lib/components/MemberForm.svelte';
 	import MemberDetail from '$lib/components/MemberDetail.svelte';
 	import TierBadge from '$lib/components/TierBadge.svelte';
-	import { exportTransactionsCSV, fmtIDR, printReport } from '$lib/export';
-	import { isBackupStale } from '$lib/backup';
+	import { exportTransactionsCSV, fmtIDR, printReport } from '$lib/utils/export';
+	import { isBackupStale } from '$lib/utils/backup';
 
 	// ─── State ──────────────────────────────────────────────────────────────────
 	type TabId = 'ringkasan' | 'outlet' | 'shift' | 'persetujuan' | 'telegram' | 'member';

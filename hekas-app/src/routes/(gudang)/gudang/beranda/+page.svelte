@@ -6,7 +6,7 @@
 	import { api } from '$lib/api';
 	import type { Product, ProductImageMeta } from '$lib/api';
 	import ImageUploader from '$lib/components/ImageUploader.svelte';
-	import { getStorageQuota, formatBytes } from '$lib/image';
+	import { getStorageQuota, formatBytes } from '$lib/utils/image';
 
 	// ─── State ──────────────────────────────────────────────────────────────────
 	type TabId = 'inventaris' | 'mutasi';

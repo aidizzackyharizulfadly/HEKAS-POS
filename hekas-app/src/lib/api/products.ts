@@ -3,7 +3,7 @@
 // seperti beneran manggil HTTP request — gampang ditukar ke fetch() nanti.
 
 import type { Product } from './types.js';
-import { storage, seedIfEmpty, nextProductId } from './storage.js';
+import { storage, seedIfEmpty, nextProductId } from '$lib/utils/storage.js';
 
 /** Simulasi latency jaringan (biar terasa realistis) */
 const delay = (ms = 15) => new Promise<void>((r) => setTimeout(r, ms));

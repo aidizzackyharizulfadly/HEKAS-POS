@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Transaction } from '$lib/api';
-	import type { StoreSettings } from '$lib/print';
-	import { DEFAULT_STORE_SETTINGS } from '$lib/print';
-	import { PAYMENT_METHOD_LABEL } from '$lib/payment';
+	import type { StoreSettings } from '$lib/utils/print';
+	import { DEFAULT_STORE_SETTINGS } from '$lib/utils/print';
+	import { PAYMENT_METHOD_LABEL } from '$lib/utils/payment';
 
 	interface Props {
 		transaction: Transaction;

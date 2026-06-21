@@ -1,7 +1,7 @@
 // HEKAS POS — Theme system
 // Dark mode toggle dengan CSS class di <html>. Persisted ke localStorage.
 // Usage:
-//   import { initTheme, toggleTheme, getTheme, onThemeChange } from '$lib/theme';
+//   import { initTheme, toggleTheme, getTheme, onThemeChange } from '$lib/utils/theme';
 //   initTheme();          // call on app boot (in +layout.svelte)
 //   toggleTheme();       // switch theme
 //   theme: 'light' | 'dark' | 'auto'

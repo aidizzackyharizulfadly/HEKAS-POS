@@ -1,7 +1,7 @@
 // HEKAS POS — Keyboard shortcuts system
 // Global handler + declarative shortcut registration.
 // Usage:
-//   import { registerShortcut, formatShortcut, SHORTCUTS } from '$lib/shortcuts';
+//   import { registerShortcut, formatShortcut, SHORTCUTS } from '$lib/utils/shortcuts';
 //   registerShortcut('?', () => openHelp());
 //   formatShortcut({ key: 'Enter', ctrl: true }) // → "Ctrl + Enter"
 

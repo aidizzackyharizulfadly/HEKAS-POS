@@ -4,17 +4,17 @@
 	import { cubicOut } from 'svelte/easing';
 	import { api } from '$lib/api';
 	import type { Product, Member, CartItem, HeldTransaction, User, CheckoutResult, Transaction } from '$lib/api';
-	import type { PaymentMethod as PaymentMethodFull } from '$lib/payment';
+	import type { PaymentMethod as PaymentMethodFull } from '$lib/utils/payment';
 	import PrintPreview from '$lib/components/PrintPreview.svelte';
 	import ClosingShift from '$lib/components/ClosingShift.svelte';
 	import SettingsPanel from '$lib/components/SettingsPanel.svelte';
 	import ShortcutsHelp from '$lib/components/ShortcutsHelp.svelte';
 	import PaymentForm from '$lib/components/PaymentForm.svelte';
-	import { loadSettings, printReceipt } from '$lib/print';
+	import { loadSettings, printReceipt } from '$lib/utils/print';
 	import { onMount } from 'svelte';
-	import { registerShortcut, unregisterShortcut, startListening, stopListening } from '$lib/shortcuts';
-	import { toggleTheme } from '$lib/theme';
-	import { playScan, playSuccess, playError } from '$lib/sound';
+	import { registerShortcut, unregisterShortcut, startListening, stopListening } from '$lib/utils/shortcuts';
+	import { toggleTheme } from '$lib/utils/theme';
+	import { playScan, playSuccess, playError } from '$lib/utils/sound';
 
 	// ─── State ──────────────────────────────────────────────────────────────────
 	let activeCategory = $state('all');
