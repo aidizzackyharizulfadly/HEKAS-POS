@@ -1,24 +1,32 @@
-<!-- Sub-route placeholder (R2 — FRONTEND_ARCHITECTURE.md §4) -->
-<!-- TODO R1: Extract content dari monolithic page ke sini -->
+<!--
+  /kasir/laporan — Sales reports & analytics.
+  Per FRONTEND_ARCHITECTURE §4.2 (kasir routes).
+  Uses R3a orchestrator: KasirLaporanDashboard.
+-->
 <script lang="ts">
-  import { page } from '$app/state';
-  const role = 'kasir';
-  const path = page.url.pathname;
+	import { onMount } from 'svelte';
+	import RoleShell from '$lib/components/shared/RoleShell.svelte';
+	import KasirLaporanDashboard from '$lib/components/kasir/Laporan/KasirLaporanDashboard.svelte';
+	import { api } from '$lib/api';
+	import { logout } from '$lib/api/auth';
+
+	let user = $state<{ username: string; full_name: string; role: string } | null>(null);
+
+	onMount(async () => {
+		const u = await api.auth.getCurrentUser().catch(() => null);
+		if (u) user = { username: u.username, full_name: u.full_name, role: u.role };
+	});
+
+	async function handleLogout() {
+		await logout();
+		location.href = '/login';
+	}
 </script>
 
 <svelte:head>
-  <title>Laporan · HEKAS POS</title>
+	<title>Laporan · HEKAS POS</title>
 </svelte:head>
 
-<div class="flex items-center justify-center min-h-[60vh] p-8">
-  <div class="text-center max-w-md">
-    <div class="text-6xl mb-4">🚧</div>
-    <h1 class="text-2xl font-bold text-slate-900 mb-2">Laporan</h1>
-    <p style="font-size: 14px; color: #64748B; margin-bottom: 16px">
-      Halaman ini belum diimplementasi. Lihat route <code>{path}</code> di role <strong>{role}</strong>.
-    </p>
-    <p style="font-size: 12px; color: #94A3B8">
-      Placeholder created by R2 refactor. Konten akan diekstrak dari monolithic page di fase berikutnya.
-    </p>
-  </div>
-</div>
+<RoleShell role="kasir" title="Laporan" subtitle="Penjualan, produk terlaris, metode bayar" {user} onlogout={handleLogout}>
+	<KasirLaporanDashboard />
+</RoleShell>
