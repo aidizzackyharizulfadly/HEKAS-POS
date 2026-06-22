@@ -11,6 +11,7 @@
 	import SettingsPanel from '$lib/components/shared/SettingsPanel.svelte';
 	import ShortcutsHelp from '$lib/components/shared/ShortcutsHelp.svelte';
 	import PaymentForm from '$lib/components/kasir/POS/PaymentForm.svelte';
+	import PosProductCard from '$lib/components/kasir/POS/PosProductCard.svelte';
 	import KasirCommandBar from '$lib/components/kasir/KasirCommandBar.svelte';
 	import Sidebar from '$lib/components/shared/Sidebar.svelte';
 	import { getIcon } from '$lib/components/shared/icon-map';
@@ -711,134 +712,20 @@
 						</div>
 					{:else}
 					<div class="grid" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; column-gap: 8px; row-gap: 8px">
-						{#each filtered as product (product.id)}
-							{@const inCart = cart.find((c) => c.id === product.id)}
-							{@const lowStock = product.stock <= 10}
-							{@const outStock = product.stock === 0}
-							<button
-								onclick={(e) => { lastTriggerEl = e.currentTarget; if (!outStock) addProduct(product); }}
-								disabled={outStock || addingProductId === product.id}
-								aria-label={`Tambah ${product.name} ${fmt(product.price)} ke keranjang, stok ${product.stock}`}
-								class="product-tile group relative overflow-hidden text-left transition-all card-press rounded-xl"
-								style="
-									background: #fff;
-									border: {inCart ? '2px solid var(--color-hekas-blue)' : '1px solid #E2E8F0'};
-									box-shadow: {inCart ? '0 0 0 4px rgba(37,99,235,0.12), 0 4px 12px rgba(15,23,42,0.08)' : '0 1px 2px rgba(15,23,42,0.04)'};
-									cursor: {outStock ? 'not-allowed' : 'pointer'};
-									filter: {outStock ? 'grayscale(1)' : 'none'};
-								"
-							>
-								<!-- Loading overlay -->
-								{#if addingProductId === product.id}
-									<div class="absolute inset-0 z-20 flex items-center justify-center" style="background: rgba(37,99,235,0.18); backdrop-filter: blur(2px)">
-										<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-hekas-blue)" stroke-width="2.5" stroke-linecap="round" style="animation: spin 0.6s linear infinite">
-											<path d="M21 12a9 9 0 11-6.219-8.56" />
-										</svg>
-									</div>
-								{/if}
-
-								<!-- Image area (DOMINANT, 65% of card) -->
-								<div
-									class="relative flex items-center justify-center"
-									style="
-										height: 130;
-										background: linear-gradient(135deg, {(categoryColor[product.category] || categoryColor.default).from} 0%, {(categoryColor[product.category] || categoryColor.default).to} 100%);
-									"
-								>
-									<!-- Subtle pattern overlay -->
-									<div
-										class="absolute inset-0 opacity-30"
-										style="background-image: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.4) 0%, transparent 60%);"
-									></div>
-
-									<!-- Product image (real or emoji fallback) -->
-									{#if product.image_data}
-										<!-- svelte-ignore a11y_click_events_have_key_events -->
-										<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-										<div
-											class="absolute inset-0 w-full h-full"
-											style="background: transparent; cursor: zoom-in"
-											onclick={(e) => { e.stopPropagation(); lightboxImage = product.image_data ?? null; }}
-											role="button"
-											tabindex="-1"
-											aria-label={`Zoom gambar ${product.name}`}
-											title="Klik untuk zoom"
-										>
-											<img
-												src={product.image_data}
-												alt={product.name}
-												class="w-full h-full"
-												style="object-fit: cover; display: block"
-												loading="lazy"
+										{#each filtered as product (product.id)}
+											{@const inCartQty = cart.find((c) => c.id === product.id)?.qty ?? 0}
+											<PosProductCard
+												{product}
+												{inCartQty}
+												isLoading={addingProductId === product.id}
+												onadd={() => {
+													lastTriggerEl = document.activeElement as HTMLElement;
+													if (product.stock > 0) addProduct(product);
+												}}
+												onzoom={(img) => (lightboxImage = img)}
 											/>
-										</div>
-									{:else}
-										<span class="relative" style="font-size: 56px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', system-ui">
-											{product.image}
-										</span>
-									{/if}
-
-									<!-- Stok badge bottom-left (overlay on image) -->
-									<div
-										class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-md flex items-center gap-0.5 tabular-nums"
-										style="
-											background: rgba(15, 23, 42, 0.75);
-											color: #fff;
-											font-size: 10;
-											font-weight: 700;
-											backdrop-filter: blur(4px);
-										"
-									>
-										<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
-											<rect x="3" y="3" width="18" height="18" rx="2" />
-										</svg>
-										{outStock ? '0' : product.stock}
+										{/each}
 									</div>
-
-									<!-- Qty badge top-right (when in cart) -->
-									{#if inCart && !outStock}
-										<div
-											class="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center tabular-nums z-10"
-											style="background: var(--color-hekas-blue); color: #fff; font-size: 13; font-weight: 800; box-shadow: 0 2px 8px rgba(37,99,235,0.4), 0 0 0 2px #fff"
-										>
-											{inCart.qty}
-										</div>
-									{/if}
-
-									<!-- HABIS stamp top-right (out of stock) -->
-									{#if outStock}
-										<div
-											class="absolute top-2 right-2 px-2 py-0.5 rounded-md z-10"
-											style="background: var(--color-hekas-danger); color: #fff; font-size: 10; font-weight: 800; letter-spacing: 0.08em; box-shadow: 0 2px 8px rgba(220,38,38,0.4)"
-										>
-											HABIS
-										</div>
-									{/if}
-								</div>
-
-								<!-- Info area -->
-								<div class="p-2.5">
-									<div
-										class="line-clamp-2 leading-tight mb-1"
-										style="font-size: 13; font-weight: 600; color: {outStock ? 'var(--color-hekas-text-muted)' : '#0F172A'}; min-height: 32; letter-spacing: -0.005em; {outStock ? 'text-decoration: line-through; text-decoration-color: var(--color-hekas-danger); text-decoration-thickness: 1.5px' : ''}"
-									>
-										{product.name}
-									</div>
-									<div class="flex items-center justify-between">
-										<div class="tabular-nums" style="font-size: 10.5; color: #94A3B8; font-family: 'JetBrains Mono', ui-monospace, monospace; letter-spacing: 0.02em">
-											{product.sku}
-										</div>
-										<div
-											class="tabular-nums"
-											style="font-size: 14.5; font-weight: 800; color: {outStock ? 'var(--color-hekas-text-muted)' : 'var(--color-hekas-blue)'}; letter-spacing: -0.015em"
-										>
-											{fmt(product.price)}
-										</div>
-									</div>
-								</div>
-							</button>
-						{/each}
-					</div>
 
 					{#if filtered.length === 0}
 						<div class="flex flex-col items-center justify-center py-16 gap-2" style="color: #94A3B8">
