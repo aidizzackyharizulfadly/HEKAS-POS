@@ -12,6 +12,7 @@
 <script lang="ts">
   import { processImage, getStorageQuota, formatBytes, canAddImage, type ProcessedImage, type StorageQuota } from '$lib/utils/image';
   import type { ProductImageMeta } from '$lib/types/api';
+  import { showSuccess, showError, showInfo } from '$lib/utils/toast';
 
   let {
     productId,
@@ -19,7 +20,11 @@
     onsave,
     onremove,
     onclose,
-    showToast = (kind: string, msg: string) => console.log(`[${kind}]`, msg),
+    showToast = (kind: 'success' | 'error' | 'info', msg: string) => {
+      if (kind === 'success') showSuccess(msg);
+      else if (kind === 'error') showError(msg);
+      else showInfo(msg);
+    },
   }: {
     productId: number;
     currentImage?: string | null;

@@ -11,6 +11,7 @@
 	import POList, { type PO } from '$lib/components/gudang/BarangMasuk/POList.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
+	import { showInfo } from '$lib/utils/toast';
 
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -47,7 +48,7 @@
 		api.incomingGoods.rejectIncomingGood(String(po.id)).catch((e) => alert(`Gagal: ${e.message}`));
 	}
 	function handleView(po: PO) {
-		console.log('[BarangMasukDashboard] view PO', po.po_no);
+		showInfo(`Detail PO ${po.po_no} (akan diimplementasi)`);
 	}
 </script>
 

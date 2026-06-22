@@ -10,6 +10,7 @@
 	import MemberList from '$lib/components/kasir/Pelanggan/MemberList.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
+	import { showInfo } from '$lib/utils/toast';
 	import type { Member } from '$lib/types/domain';
 
 	let loading = $state(true);
@@ -43,7 +44,7 @@
 
 	function handleSelect(m: Member) {
 		// Future: open MemberDetail panel
-		console.log('[PelangganDashboard] selected member', m.id);
+		showInfo(`Detail member ${m.name} (akan diimplementasi)`);
 	}
 </script>
 

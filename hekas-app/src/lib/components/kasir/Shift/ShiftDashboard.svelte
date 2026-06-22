@@ -10,6 +10,7 @@
 	import ShiftList from '$lib/components/kasir/Shift/ShiftList.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
+	import { showInfo } from '$lib/utils/toast';
 	import type { Shift } from '$lib/api/shifts';
 
 	let loading = $state(true);
@@ -49,7 +50,7 @@
 	]);
 
 	function handleSelect(s: Shift) {
-		console.log('[ShiftDashboard] selected shift', s.id);
+		showInfo(`Detail shift #${s.id} (akan diimplementasi)`);
 	}
 </script>
 

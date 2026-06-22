@@ -11,13 +11,18 @@
   import { api, TIER_CONFIG } from '$lib/api';
   import type { Member } from '$lib/types/domain';
   import type { MemberStats } from '$lib/types/api';
+  import { showSuccess, showError, showInfo } from '$lib/utils/toast';
   import TierBadge from '$lib/components/kasir/Pelanggan/TierBadge.svelte';
 
   let {
     member,
     onclose,
     onedit,
-    showToast = (kind: string, msg: string) => console.log(`[${kind}]`, msg),
+    showToast = (kind: 'success' | 'error' | 'info', msg: string) => {
+      if (kind === 'success') showSuccess(msg);
+      else if (kind === 'error') showError(msg);
+      else showInfo(msg);
+    },
   }: {
     member: Member;
     onclose: () => void;

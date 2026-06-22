@@ -11,6 +11,7 @@
 	import ConnectedDevices from '$lib/components/kasir/Setting/ConnectedDevices.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
+	import { showInfo } from '$lib/utils/toast';
 	import type { RoleId } from '$lib/auth/roles';
 
 	let loading = $state(true);
@@ -42,13 +43,11 @@
 	]);
 
 	function handleSavePrinter(config: { paperSize: '58mm' | '80mm'; mode: 'browser' | 'thermal'; deviceName?: string }) {
-		console.log('[SettingDashboard] save printer config', config);
-		alert('Konfigurasi printer disimpan (demo)');
+		showInfo('Konfigurasi printer disimpan (demo)');
 	}
 
 	function handleDisconnect(id: string) {
-		console.log('[SettingDashboard] disconnect device', id);
-		alert(`Putuskan device ${id} (demo)`);
+		showInfo(`Putuskan device ${id} (demo)`);
 	}
 </script>
 

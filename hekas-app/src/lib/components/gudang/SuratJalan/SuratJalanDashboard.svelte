@@ -10,6 +10,7 @@
 	import SJList from '$lib/components/gudang/SuratJalan/SJList.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
+	import { showInfo } from '$lib/utils/toast';
 	import type { SuratJalan } from '$lib/api/surat-jalan';
 
 	let loading = $state(true);
@@ -40,8 +41,7 @@
 	]);
 
 	function handleSelect(sj: SuratJalan) {
-		console.log('[SuratJalanDashboard] selected SJ', sj.sjNumber);
-		alert(`Detail ${sj.sjNumber} (TODO: open SJDetail panel)`);
+		showInfo(`Detail ${sj.sjNumber} (TODO: open SJDetail panel)`);
 	}
 </script>
 

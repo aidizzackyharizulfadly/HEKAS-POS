@@ -10,12 +10,17 @@
   import { untrack } from 'svelte';
   import { api, TIER_CONFIG } from '$lib/api';
   import type { Member } from '$lib/types/domain';
+  import { showSuccess, showError, showInfo } from '$lib/utils/toast';
 
   let {
     member = null,
     onsave,
     onclose,
-    showToast = (kind: 'success' | 'error' | 'info', msg: string) => console.log(`[${kind}]`, msg),
+    showToast = (kind: 'success' | 'error' | 'info', msg: string) => {
+      if (kind === 'success') showSuccess(msg);
+      else if (kind === 'error') showError(msg);
+      else showInfo(msg);
+    },
   }: {
     member?: Member | null;
     onsave?: (m: Member) => void;

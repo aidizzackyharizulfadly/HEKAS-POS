@@ -12,6 +12,7 @@
 	import ExportButton from '$lib/components/kasir/Laporan/ExportButton.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
+	import { showInfo } from '$lib/utils/toast';
 	import type { BusinessAnalytics, ReportPeriod } from '$lib/api/reports';
 
 	let loading = $state(true);
@@ -84,8 +85,7 @@
 
 	function handleExport(format: 'csv' | 'pdf') {
 		if (format === 'csv') {
-			console.log('[KasirLaporanDashboard] export CSV');
-			alert('Export CSV — akan diimplementasi');
+			showInfo('Export CSV — akan diimplementasi');
 		} else {
 			window.print();
 		}

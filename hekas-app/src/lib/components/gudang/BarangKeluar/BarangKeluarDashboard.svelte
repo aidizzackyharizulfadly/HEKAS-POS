@@ -12,6 +12,7 @@
 	import OutgoingList from '$lib/components/gudang/BarangKeluar/OutgoingList.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
+	import { showInfo } from '$lib/utils/toast';
 
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -53,7 +54,7 @@
 	]);
 
 	function handleSelect(o: Outgoing) {
-		console.log('[BarangKeluarDashboard] selected outgoing', o.soNumber);
+		showInfo(`Detail outgoing ${o.soNumber} (akan diimplementasi)`);
 	}
 </script>
 
