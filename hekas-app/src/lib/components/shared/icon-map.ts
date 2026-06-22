@@ -26,6 +26,14 @@ import {
 	Bell,
 	ChevronDown,
 	CircleUserRound,
+	LayoutGrid,
+	GlassWater,
+	Cookie,
+	Wheat,
+	ShoppingBasket,
+	Snowflake,
+	Cigarette,
+	Plus,
 	type Icon as IconType
 } from '@lucide/svelte';
 
@@ -50,7 +58,15 @@ export const iconMap: Record<string, IconComponent> = {
 	Search,
 	Bell,
 	ChevronDown,
-	CircleUserRound
+	CircleUserRound,
+	LayoutGrid,
+	GlassWater,
+	Cookie,
+	Wheat,
+	ShoppingBasket,
+	Snowflake,
+	Cigarette,
+	Plus
 };
 
 export function getIcon(name: string): IconComponent | null {

@@ -82,15 +82,26 @@ const SEED_MEMBERS: Member[] = [
 ];
 
 const SEED_USERS: User[] = [
-  { id: 1, username: 'kasi01',    full_name: 'Kasir Demo 01',    role: 'kasir',   outlet_id: 1 },
-  { id: 2, username: 'manager01', full_name: 'Manager Demo 01',  role: 'manager', outlet_id: 1 },
-  { id: 3, username: 'gudang01',  full_name: 'Admin Gudang 01',  role: 'gudang',  outlet_id: 1 },
+  // Canonical accounts (per FE_HANDOFF v2.0.0 §3, matches DEMO_ACCOUNTS in auth/roles.ts)
+  { id: 1, username: 'kasir1',    full_name: 'Kasir Demo 01',    role: 'kasir',   outlet_id: 1 },
+  { id: 2, username: 'manager1',  full_name: 'Manager Demo 01',  role: 'manager', outlet_id: 1 },
+  { id: 3, username: 'gudang1',   full_name: 'Admin Gudang 01',  role: 'gudang',  outlet_id: 1 },
+  // Legacy accounts (typo, kept for backward compat with existing sessions)
+  { id: 4, username: 'kasi01',    full_name: 'Kasir Demo 01',    role: 'kasir',   outlet_id: 1 },
+  { id: 5, username: 'manager01', full_name: 'Manager Demo 01',  role: 'manager', outlet_id: 1 },
+  { id: 6, username: 'gudang01',  full_name: 'Admin Gudang 01',  role: 'gudang',  outlet_id: 1 }
 ];
 
 // ─── Seed runner ────────────────────────────────────────────────────────────
+// Bump SEED_VERSION kalau SEED_PRODUCTS / SEED_MEMBERS / SEED_USERS berubah
+// supaya existing localStorage di-re-seed dengan data baru.
+const SEED_VERSION = 2;
+const SEED_VERSION_KEY = 'hekas:seed_version';
+
 export function seedIfEmpty(): void {
   if (!isBrowser) return;
-  if (localStorage.getItem('hekas:seeded') === '1') return;
+  const currentVersion = Number(localStorage.getItem(SEED_VERSION_KEY) ?? '0');
+  if (currentVersion >= SEED_VERSION) return;
 
   storage.set('products', SEED_PRODUCTS);
   storage.set('members', SEED_MEMBERS);
@@ -98,9 +109,11 @@ export function seedIfEmpty(): void {
   storage.set('transactions', []);
   storage.set('held', []);
   storage.set('counters', { products: 21, transactions: 0 });
+  localStorage.setItem(SEED_VERSION_KEY, String(SEED_VERSION));
+  // Keep legacy flag set juga (backward compat dengan code lama)
   localStorage.setItem('hekas:seeded', '1');
 
-  console.log('🌱 [hekas api] Seed data loaded into localStorage');
+  console.log(`🌱 [hekas api] Seed data v${SEED_VERSION} loaded into localStorage`);
 }
 
 // ─── ID generators ──────────────────────────────────────────────────────────

@@ -13,6 +13,7 @@
 	import PaymentForm from '$lib/components/kasir/POS/PaymentForm.svelte';
 	import KasirCommandBar from '$lib/components/kasir/KasirCommandBar.svelte';
 	import Sidebar from '$lib/components/shared/Sidebar.svelte';
+	import { getIcon } from '$lib/components/shared/icon-map';
 	import { kasirMenu } from '$lib/auth/roles';
 	import { page } from '$app/state';
 	import { loadSettings, printReceipt } from '$lib/utils/print';
@@ -117,14 +118,15 @@
 	type ModalState = 'none' | 'payment' | 'hold' | 'receipt' | 'member' | 'discount' | 'numpad';
 
 	// ─── Data (loaded from $lib/api) ────────────────────────────────────────────
+	// Icon: lucide name (mapped via $lib/components/shared/icon-map.ts)
 	const CATEGORIES = [
-		{ id: 'all', label: 'Semua' },
-		{ id: 'minuman', label: 'Minuman' },
-		{ id: 'snack', label: 'Snack' },
-		{ id: 'sembako', label: 'Sembako' },
-		{ id: 'frozen', label: 'Frozen' },
-		{ id: 'rokok', label: 'Rokok' },
-		{ id: 'lainnya', label: 'Lainnya' },
+		{ id: 'all', label: 'Semua', icon: 'LayoutGrid' },
+		{ id: 'minuman', label: 'Minuman', icon: 'GlassWater' },
+		{ id: 'snack', label: 'Snack', icon: 'Cookie' },
+		{ id: 'sembako', label: 'Sembako', icon: 'Wheat' },
+		{ id: 'frozen', label: 'Frozen', icon: 'Snowflake' },
+		{ id: 'rokok', label: 'Rokok', icon: 'Cigarette' },
+		{ id: 'lainnya', label: 'Lainnya', icon: 'Package' }
 	];
 
 	// Reactive state — populated from API
@@ -183,7 +185,7 @@
 	onMount(() => {
 		// Async load data (fire & forget)
 		(async () => {
-			currentUser = (await api.auth.getCurrentUser()) ?? (await api.auth.login('kasi01', '123'));
+			currentUser = (await api.auth.getCurrentUser()) ?? (await api.auth.login('kasir1', 'password123'));
 			await Promise.all([refreshProducts(), refreshMembers()]);
 		})();
 
@@ -314,6 +316,7 @@
 	// ─── UI state (loading, focus refs) ────────────────────────────────────────
 	let addingProductId = $state<number | null>(null);
 	let searchInputEl: HTMLInputElement | null = $state(null);
+	let barcodeInputEl: HTMLInputElement | null = $state(null);
 	let lastTriggerEl: HTMLElement | null = null; // for focus restoration on modal close
 	let audioCtx: AudioContext | null = null;
 
@@ -648,6 +651,7 @@
 							<path d="M21 5v14" />
 						</svg>
 						<input
+							bind:this={barcodeInputEl}
 							bind:value={barcodeInput}
 							onkeydown={handleBarcodeKey}
 							placeholder="Scan barcode..."
@@ -659,13 +663,15 @@
 				</div>
 
 				<!-- Category tabs -->
-				<div class="flex items-center gap-1 px-3 py-2 overflow-x-auto shrink-0 scrollbar-thin" style="background: var(--color-hekas-surface); border-bottom: 1px solid var(--color-hekas-border)">
+				<div class="flex items-center gap-1.5 px-3 py-2 overflow-x-auto shrink-0 scrollbar-thin" style="background: var(--color-hekas-surface); border-bottom: 1px solid var(--color-hekas-border)">
 					{#each CATEGORIES as cat}
 						{@const isActive = activeCategory === cat.id}
+						{@const CatIcon = getIcon(cat.icon)}
+						{@const catCount = cat.id === 'all' ? products.length : products.filter(p => p.category === cat.id).length}
 						<button
 							onclick={() => activeCategory = cat.id}
 							aria-pressed={isActive}
-							class="category-tab px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all shrink-0"
+							class="category-tab flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap transition-all shrink-0"
 							style="
 								background: {isActive ? 'var(--color-hekas-blue)' : '#fff'};
 								color: {isActive ? '#fff' : 'var(--color-hekas-text-muted)'};
@@ -674,7 +680,30 @@
 								border: 1px solid {isActive ? 'var(--color-hekas-blue)' : 'var(--color-hekas-border)'};
 							"
 						>
-							{cat.label}
+							{#if CatIcon}
+								<CatIcon
+									size={14}
+									strokeWidth={isActive ? 2.25 : 1.75}
+									color={isActive ? '#fff' : 'var(--color-hekas-text-muted)'}
+									aria-hidden="true"
+								/>
+							{/if}
+							<span>{cat.label}</span>
+							{#if catCount > 0}
+								<span
+									class="rounded-full px-1.5 min-w-[18px] text-center"
+									style="
+										background: {isActive ? 'rgba(255,255,255,0.2)' : 'var(--color-hekas-blue-tint)'};
+										color: {isActive ? '#fff' : 'var(--color-hekas-blue)'};
+										font-size: 10;
+										font-weight: 700;
+										line-height: 1.4;
+									"
+									aria-label="{catCount} produk"
+								>
+									{catCount}
+								</span>
+							{/if}
 						</button>
 					{/each}
 				</div>
@@ -982,18 +1011,36 @@
 				<!-- Cart items -->
 				<div class="flex-1 overflow-y-auto px-2 py-1" role="region" aria-label="Daftar item di keranjang" aria-live="polite">
 					{#if cart.length === 0}
-						<div class="flex flex-col items-center justify-center h-full gap-2 px-4" style="color: #94A3B8">
-							<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.45">
-								<circle cx="9" cy="21" r="1" />
-								<circle cx="20" cy="21" r="1" />
-								<path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
-							</svg>
-							<span style="font-size: 14.5; font-weight: 700; color: var(--color-hekas-text); letter-spacing: -0.01em">Belum ada item</span>
-							<span style="font-size: 12; color: var(--color-hekas-text-muted); text-align: center; line-height: 1.5">Tap produk di sebelah kiri,<br/>atau scan barcode</span>
-							<div class="mt-1.5 px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5" style="background: var(--color-hekas-blue-tint); color: var(--color-hekas-blue-deep); font-size: 11; font-weight: 600; border: 1px solid var(--color-hekas-blue-pale)">
-								Tekan
-								<kbd style="background: #fff; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--color-hekas-blue-pale); font-family: 'JetBrains Mono', monospace; font-size: 11; font-weight: 700">/</kbd>
-								untuk cari produk
+						<div class="flex flex-col items-center justify-center h-full gap-3 px-4" style="color: #94A3B8">
+							<div class="w-16 h-16 rounded-2xl flex items-center justify-center" style="background: var(--color-hekas-blue-tint)">
+								<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-hekas-blue)" stroke-width="1.5" style="opacity: 0.7">
+									<circle cx="9" cy="21" r="1" />
+									<circle cx="20" cy="21" r="1" />
+									<path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+								</svg>
+							</div>
+							<div class="flex flex-col items-center gap-1">
+								<span style="font-size: 15; font-weight: 700; color: var(--color-hekas-text); letter-spacing: -0.01em">Belum ada item</span>
+								<span style="font-size: 12; color: var(--color-hekas-text-muted); text-align: center; line-height: 1.5; max-width: 240px">Tap produk di grid, atau scan barcode untuk menambah item ke keranjang</span>
+							</div>
+							<button
+								onclick={() => barcodeInputEl?.focus()}
+								class="mt-1 flex items-center gap-2 px-3.5 py-2 rounded-lg transition-all"
+								style="background: var(--color-hekas-blue); color: #fff; font-size: 12; font-weight: 600; box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2)"
+							>
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+									<path d="M3 5v14" />
+									<path d="M8 5v14" />
+									<path d="M12 5v14" />
+									<path d="M17 5v14" />
+									<path d="M21 5v14" />
+								</svg>
+								Scan Barcode
+								<kbd style="background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 10; font-weight: 700">B</kbd>
+							</button>
+							<div class="flex items-center gap-1.5 mt-0.5" style="font-size: 11; color: var(--color-hekas-text-muted)">
+								<kbd style="background: #fff; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--color-hekas-border); font-family: 'JetBrains Mono', monospace; font-size: 10; font-weight: 700">/</kbd>
+								<span>untuk cari produk</span>
 							</div>
 						</div>
 					{:else}
