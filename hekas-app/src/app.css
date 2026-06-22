@@ -1,7 +1,13 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @theme {
-	/* HEKAS brand colors */
+	/* ════════════════════════════════════════════════════════════════════════
+	 * HEKAS POS Design Tokens — Stitch Design v1.0
+	 * Referensi: design/default_shadcn_theme.css + stitch_hekas_pos_*
+	 * ════════════════════════════════════════════════════════════════════════ */
+
+	/* Brand */
 	--color-hekas-navy: #1E3A5F;
 	--color-hekas-navy-deep: #152A45;
 	--color-hekas-blue: #2563EB;
@@ -9,20 +15,48 @@
 	--color-hekas-blue-light: #93C5FD;
 	--color-hekas-blue-pale: #DBEAFE;
 	--color-hekas-blue-tint: #EFF6FF;
-	--color-hekas-surface: #F0F4F8;
-	--color-hekas-border: #E2EBF4;
+
+	/* Surfaces (sesuai mockup: #F8FAFC body, #FFFFFF card) */
+	--color-hekas-surface: #F8FAFC;
+	--color-hekas-surface-elevated: #FFFFFF;
+	--color-hekas-border: #E2E8F0;
+	--color-hekas-border-strong: #CBD5E1;
+
+	/* Text */
 	--color-hekas-text: #0F172A;
 	--color-hekas-text-muted: #64748B;
 	--color-hekas-text-subtle: #94A3B8;
+	--color-hekas-text-inverse: #FFFFFF;
+
+	/* Status */
 	--color-hekas-success: #10B981;
+	--color-hekas-success-soft: #D1FAE5;
 	--color-hekas-danger: #DC2626;
+	--color-hekas-danger-soft: #FEE2E2;
 	--color-hekas-warning: #F59E0B;
+	--color-hekas-warning-soft: #FEF3C7;
+	--color-hekas-info: #3B82F6;
+	--color-hekas-info-soft: #DBEAFE;
+
+	/* Role */
 	--color-hekas-role-kasir: #2563EB;
 	--color-hekas-role-manager: #059669;
 	--color-hekas-role-gudang: #7C3AED;
 
-	/* Fonts */
-	--font-family-sans: 'Inter', system-ui, sans-serif;
+	/* Typography */
+	--font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
+	--font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+	/* Shadows (subtle, modern) */
+	--shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+	--shadow-card-hover: 0 4px 6px rgba(15, 23, 42, 0.05), 0 2px 4px rgba(15, 23, 42, 0.06);
+	--shadow-elevated: 0 10px 15px rgba(15, 23, 42, 0.07), 0 4px 6px rgba(15, 23, 42, 0.05);
+
+	/* Radius */
+	--radius-sm: 6px;
+	--radius-md: 10px;
+	--radius-lg: 14px;
+	--radius-xl: 20px;
 }
 
 /* Base styles */

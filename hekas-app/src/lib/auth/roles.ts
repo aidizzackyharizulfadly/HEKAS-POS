@@ -52,40 +52,43 @@ export const ROLE_LIST: RoleConfig[] = [ROLES.kasir, ROLES.manager, ROLES.gudang
 // Untuk sekarang, role pages masih pakai inline sidebar — menu arrays ini
 // adalah single source of truth untuk navigation yang akan datang.
 
+// Icon name string — mapped to @lucide/svelte component in Sidebar.svelte
+// (Single source of truth for navigation; Sidebar handles icon rendering).
+// Lihat `src/lib/components/shared/icon-map.ts` untuk icon registry.
 export interface MenuItem {
 	label: string;
 	path: string;
-	icon: string;        // emoji (kasir/gudang/manager saat ini pakai emoji)
+	icon: string; // lucide icon name (PascalCase)
 }
 
 export const kasirMenu: MenuItem[] = [
-	{ label: 'POS',           path: '/kasir/pos',       icon: '🛒' },
-	{ label: 'Order',         path: '/kasir/order',     icon: '🧾' },
-	{ label: 'Produk',        path: '/kasir/produk',    icon: '📦' },
-	{ label: 'Pelanggan',     path: '/kasir/pelanggan', icon: '👥' },
-	{ label: 'Shift',         path: '/kasir/shift',     icon: '🕐' },
-	{ label: 'Laporan',       path: '/kasir/laporan',   icon: '📊' },
-	{ label: 'Setting',       path: '/kasir/setting',   icon: '⚙️' }
+	{ label: 'POS',       path: '/kasir/pos',       icon: 'ShoppingCart' },
+	{ label: 'Order',     path: '/kasir/order',     icon: 'Receipt' },
+	{ label: 'Produk',    path: '/kasir/produk',    icon: 'Package' },
+	{ label: 'Pelanggan', path: '/kasir/pelanggan', icon: 'Users' },
+	{ label: 'Shift',     path: '/kasir/shift',     icon: 'Clock' },
+	{ label: 'Laporan',   path: '/kasir/laporan',   icon: 'BarChart3' },
+	{ label: 'Setting',   path: '/kasir/setting',   icon: 'Settings' }
 ];
 
 export const gudangMenu: MenuItem[] = [
-	{ label: 'Beranda',         path: '/gudang/beranda',         icon: '🏠' },
-	{ label: 'Inventaris',      path: '/gudang/inventaris',      icon: '📦' },
-	{ label: 'Barang Masuk',    path: '/gudang/barang-masuk',    icon: '🚚' },
-	{ label: 'Barang Keluar',   path: '/gudang/barang-keluar',   icon: '📤' },
-	{ label: 'Surat Jalan',     path: '/gudang/surat-jalan',     icon: '📄' }
+	{ label: 'Beranda',       path: '/gudang/beranda',        icon: 'Home' },
+	{ label: 'Inventaris',    path: '/gudang/inventaris',     icon: 'Package' },
+	{ label: 'Barang Masuk',  path: '/gudang/barang-masuk',   icon: 'Truck' },
+	{ label: 'Barang Keluar', path: '/gudang/barang-keluar',  icon: 'PackageOpen' },
+	{ label: 'Surat Jalan',   path: '/gudang/surat-jalan',    icon: 'FileText' }
 ];
 
 export const managerMenu: MenuItem[] = [
-	{ label: 'Beranda',         path: '/manager/beranda',    icon: '🏠' },
-	{ label: 'Penjualan',       path: '/manager/penjualan',  icon: '📈' },
-	{ label: 'Inventaris',      path: '/manager/inventaris', icon: '📦' },
-	{ label: 'Keuangan',        path: '/manager/keuangan',   icon: '💰' },
-	{ label: 'Surat Jalan',     path: '/manager/surat-jalan', icon: '📄' },
-	{ label: 'Karyawan',        path: '/manager/karyawan',   icon: '👥' },
-	{ label: 'AI Assistant',    path: '/manager/ai',         icon: '🤖' },
-	{ label: 'Laporan',         path: '/manager/laporan',    icon: '📊' },
-	{ label: 'Pengaturan',      path: '/manager/pengaturan', icon: '⚙️' }
+	{ label: 'Beranda',      path: '/manager/beranda',    icon: 'Home' },
+	{ label: 'Penjualan',    path: '/manager/penjualan',  icon: 'TrendingUp' },
+	{ label: 'Inventaris',   path: '/manager/inventaris', icon: 'Package' },
+	{ label: 'Keuangan',     path: '/manager/keuangan',   icon: 'Wallet' },
+	{ label: 'Surat Jalan',  path: '/manager/surat-jalan', icon: 'FileText' },
+	{ label: 'Karyawan',     path: '/manager/karyawan',   icon: 'Users' },
+	{ label: 'AI Assistant', path: '/manager/ai',         icon: 'Sparkles' },
+	{ label: 'Laporan',      path: '/manager/laporan',    icon: 'BarChart3' },
+	{ label: 'Pengaturan',   path: '/manager/pengaturan', icon: 'Settings' }
 ];
 
 // ─── Demo accounts (mock auth) ──────────────────────────────────────────────
