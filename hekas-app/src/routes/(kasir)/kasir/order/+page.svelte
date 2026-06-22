@@ -9,6 +9,7 @@
 	import type { Transaction } from '$lib/types/domain';
 	import { listTransactions } from '$lib/api/transactions';
 	import { getCurrentUser, logout } from '$lib/api/auth';
+	import { showInfo } from '$lib/utils/toast';
 
 	let user = $state<any>(null);
 	let orders = $state<Transaction[]>([]);
@@ -31,17 +32,17 @@
 	}
 
 	function handleSelect(t: Transaction) {
-		console.log('Selected:', t.invoice_no);
+		showInfo(`Order ${t.invoice_no} dipilih`);
 	}
 
 	function handleVoid(t: Transaction) {
 		if (confirm(`Void order ${t.invoice_no}?`)) {
-			console.log('Void:', t.invoice_no);
+			showInfo(`Order ${t.invoice_no} di-void`);
 		}
 	}
 
 	function handlePrint(t: Transaction) {
-		console.log('Print:', t.invoice_no);
+		showInfo(`Mencetak ${t.invoice_no}`);
 		window.print();
 	}
 </script>

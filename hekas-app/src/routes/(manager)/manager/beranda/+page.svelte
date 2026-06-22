@@ -13,6 +13,7 @@
 	import RoleShell from '$lib/components/shared/RoleShell.svelte';
 	import { exportTransactionsCSV, fmtIDR, printReport } from '$lib/utils/export';
 	import { isBackupStale } from '$lib/utils/backup';
+	import { showSuccess, showError, showInfo } from '$lib/utils/toast';
 
 	// ─── Auth (resolve current manager) ────────────────────────────────────────
 	const STORAGE_USER_KEY = 'hekas:current_user';
@@ -203,9 +204,10 @@
 	}
 
 	function showToast(kind: 'success' | 'error' | 'info', text: string) {
-		// Minimal toast — bisa di-extend nanti dengan state proper
-		console.log(`[toast ${kind}]`, text);
-		alert(text);
+		// Delegated to svelte-sonner via toast helpers
+		if (kind === 'success') showSuccess(text);
+		else if (kind === 'error') showError(text);
+		else showInfo(text);
 	}
 
 	// Reload when range changes
