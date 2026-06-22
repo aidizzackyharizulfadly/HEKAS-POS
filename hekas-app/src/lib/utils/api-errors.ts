@@ -119,16 +119,22 @@ export function formatError(err: unknown): string {
 }
 
 /**
- * Show error to user via console + alert (default handler).
- * For better UX, replace with toast/banner system.
+ * Show error to user via Sonner toast (replaces old alert() default).
+ * Plus console.error for debugging, plus redirect on auth errors.
  */
 export function showError(err: unknown, prefix = 'Error'): void {
 	const msg = formatError(err);
 	const meta = translateError(err);
 	// eslint-disable-next-line no-console
 	console.error(`[${prefix}]`, err);
+	// Use Sonner toast dynamically (avoid circular import — api-errors is imported by toast consumers)
 	if (typeof window !== 'undefined') {
-		alert(`⚠️ ${msg}`);
+		import('svelte-sonner').then(({ toast }) => {
+			toast.error(`⚠️ ${msg}`, {
+				description: prefix !== 'Error' ? prefix : undefined,
+				duration: 5000
+			});
+		});
 	}
 	if (meta.redirectToLogin && typeof window !== 'undefined') {
 		window.location.href = '/login';
