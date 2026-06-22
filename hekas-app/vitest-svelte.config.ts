@@ -28,6 +28,14 @@ function svelteCompilePlugin() {
 	return {
 		name: 'svelte-compile-for-vitest',
 		enforce: 'pre' as const,
+		resolveId(id: string, importer?: string) {
+			// Resolve `.svelte` imports inside node_modules (e.g. bits-ui components).
+			// Project-local files are handled by the $lib alias + default resolution.
+			if (id.endsWith('.svelte') && !id.startsWith('/') && !id.startsWith('.')) {
+				return { id, external: false };
+			}
+			return null;
+		},
 		transform(code: string, id: string) {
 			if (!id.endsWith('.svelte')) return null;
 			try {
@@ -61,7 +69,7 @@ export default defineConfig({
 		server: {
 			// Disable SSR mode untuk svelte modules
 			deps: {
-				inline: [/svelte/]
+				inline: [/svelte/, /bits-ui/, /^lucide-svelte/]
 			}
 		}
 	},

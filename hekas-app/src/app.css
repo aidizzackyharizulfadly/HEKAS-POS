@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @theme {
@@ -57,6 +58,50 @@
 	--radius-md: 10px;
 	--radius-lg: 14px;
 	--radius-xl: 20px;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+ * shadcn-svelte tokens (mapped to HEKAS brand)
+ * Tailwind v4 @theme inline — references vars from @theme above
+ * ════════════════════════════════════════════════════════════════════════ */
+@theme inline {
+	--color-background: var(--color-hekas-surface);
+	--color-foreground: var(--color-hekas-text);
+
+	--color-card: var(--color-hekas-surface-elevated);
+	--color-card-foreground: var(--color-hekas-text);
+
+	--color-popover: var(--color-hekas-surface-elevated);
+	--color-popover-foreground: var(--color-hekas-text);
+
+	--color-primary: var(--color-hekas-blue);
+	--color-primary-foreground: var(--color-hekas-text-inverse);
+
+	--color-secondary: var(--color-hekas-surface);
+	--color-secondary-foreground: var(--color-hekas-text);
+
+	--color-muted: #F1F5F9;
+	--color-muted-foreground: var(--color-hekas-text-muted);
+
+	--color-accent: var(--color-hekas-blue-tint);
+	--color-accent-foreground: var(--color-hekas-blue-deep);
+
+	--color-destructive: var(--color-hekas-danger);
+	--color-destructive-foreground: var(--color-hekas-text-inverse);
+
+	--color-border: var(--color-hekas-border);
+	--color-input: var(--color-hekas-border);
+	--color-ring: var(--color-hekas-blue);
+
+	/* Radius — match Stitch */
+	--radius: var(--radius-md);
+
+	/* Charts — extend later */
+	--color-chart-1: var(--color-hekas-blue);
+	--color-chart-2: var(--color-hekas-success);
+	--color-chart-3: var(--color-hekas-warning);
+	--color-chart-4: var(--color-hekas-info);
+	--color-chart-5: var(--color-hekas-role-gudang);
 }
 
 /* Base styles */
@@ -139,6 +184,22 @@ html.hekas-dark {
 	--color-hekas-blue-tint: #1E293B;
 	--color-hekas-navy: #1E40AF;
 	--color-hekas-navy-deep: #1E3A8A;
+
+	/* shadcn dark overrides */
+	--color-background: #0F172A;
+	--color-foreground: #F1F5F9;
+	--color-card: #1E293B;
+	--color-card-foreground: #F1F5F9;
+	--color-popover: #1E293B;
+	--color-popover-foreground: #F1F5F9;
+	--color-secondary: #1E293B;
+	--color-secondary-foreground: #F1F5F9;
+	--color-muted: #1E293B;
+	--color-muted-foreground: #94A3B8;
+	--color-accent: #1E3A8A;
+	--color-accent-foreground: #93C5FD;
+	--color-border: #334155;
+	--color-input: #334155;
 }
 
 html.hekas-dark body {

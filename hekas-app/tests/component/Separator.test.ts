@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import Separator from '../../src/lib/components/ui/separator.svelte';
+import Separator from '../../src/lib/components/ui/separator/separator.svelte';
 import { mountComponent, unmountComponent, type MountHandle } from './helpers/mount';
 
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import Badge from '../../src/lib/components/ui/badge.svelte';
+import Badge from '../../src/lib/components/ui/badge/badge.svelte';
 import { mountComponent, unmountComponent, type MountHandle } from './helpers/mount';
 
 
