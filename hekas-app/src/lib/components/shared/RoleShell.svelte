@@ -13,9 +13,12 @@
   Props:
     role   — 'kasir' | 'manager' | 'gudang'
     title  — page title (TopBar)
+    subtitle  — page subtitle (TopBar)
     user   — current user { name, role }
     onlogout — callback for logout button
+    customHeader — snippet rendered below TopBar (untuk POS KasirCommandBar, dll)
     children — page content (default slot)
+    actions — TopBar actions snippet
 -->
 <script lang="ts">
 	import Sidebar from './Sidebar.svelte';
@@ -36,9 +39,10 @@
 		onlogout?: () => void;
 		children?: import('svelte').Snippet;
 		actions?: import('svelte').Snippet;
+		customHeader?: import('svelte').Snippet;
 	}
 
-	let { role, title, subtitle, user = null, onlogout, children, actions }: Props = $props();
+	let { role, title, subtitle, user = null, onlogout, children, actions, customHeader }: Props = $props();
 
 	const menuByRole: Record<string, MenuItem[]> = {
 		kasir: kasirMenu,
@@ -54,6 +58,9 @@
 	<Sidebar {menu} {activePath} />
 	<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 		<TopBar {title} {subtitle} {user} {role} {onlogout} {actions} />
+		{#if customHeader}
+			{@render customHeader()}
+		{/if}
 		<main class="flex-1 overflow-y-auto">
 			{#if children}{@render children()}{/if}
 		</main>

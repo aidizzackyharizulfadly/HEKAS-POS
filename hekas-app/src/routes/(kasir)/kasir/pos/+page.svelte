@@ -12,6 +12,9 @@
 	import ShortcutsHelp from '$lib/components/shared/ShortcutsHelp.svelte';
 	import PaymentForm from '$lib/components/kasir/POS/PaymentForm.svelte';
 	import KasirCommandBar from '$lib/components/kasir/KasirCommandBar.svelte';
+	import Sidebar from '$lib/components/shared/Sidebar.svelte';
+	import { kasirMenu } from '$lib/auth/roles';
+	import { page } from '$app/state';
 	import { loadSettings, printReceipt } from '$lib/utils/print';
 	import { onMount } from 'svelte';
 	import { registerShortcut, unregisterShortcut, startListening, stopListening } from '$lib/utils/shortcuts';
@@ -545,13 +548,15 @@
 	});
 
 	// ─── Nav items ──────────────────────────────────────────────────────────────
-	// Pindah ke <KasirRail> (di (kasir)/+layout.svelte). Tidak dipake di sini lagi.
+	// Sidebar (shared library) di-render di root flex container bawah. Nav item
+	// ada di kasirMenu (lib/auth/roles.ts).
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <!--
-  Catatan: <KasirRail> di-render oleh (kasir)/+layout.svelte.
-  Pos page cuma render konten utama. Layout sudah handle flex container.
+  Pos punya custom full-screen layout (POS kiosk mode), jadi tidak mount
+  <RoleShell> seperti page kasir lain. <Sidebar> di-mount manual di sini
+  (sama shared library) untuk konsistensi visual dengan role lain.
 -->
 <div
 	id="main-content"
@@ -560,6 +565,8 @@
 	onkeydown={onKeydown}
 	role="application"
 >
+	<Sidebar menu={kasirMenu} activePath={page.url.pathname} />
+
 	<!-- Skip-to-content link for keyboard accessibility -->
 	<a
 		href="#main-content"

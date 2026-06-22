@@ -1,22 +1,31 @@
 <!--
   /kasir/setting — Profile, printer, devices.
-  Per FRONTEND_ARCHITECTURE §4.2 (kasir routes).
-  Uses R3a orchestrator: SettingDashboard.
-
-  Catatan (Fase R3 / 2026-06-22): <KasirRail> di-render oleh (kasir)/+layout.svelte.
+  Mount <RoleShell>.
 -->
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import RoleShell from '$lib/components/shared/RoleShell.svelte';
 	import SettingDashboard from '$lib/components/kasir/Setting/SettingDashboard.svelte';
+	import { api } from '$lib/api';
+	import { logout } from '$lib/api/auth';
+
+	let user = $state<{ full_name: string; role: string } | null>(null);
+
+	onMount(async () => {
+		const u = await api.auth.getCurrentUser().catch(() => null);
+		if (u) user = { full_name: u.full_name, role: u.role };
+	});
+
+	async function handleLogout() {
+		await logout();
+		location.href = '/login';
+	}
 </script>
 
 <svelte:head>
 	<title>Setting · HEKAS POS</title>
 </svelte:head>
 
-<div class="kasir-setting" style="padding: 20px 24px">
-	<header style="margin-bottom: 16px">
-		<h1 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0">Setting</h1>
-		<p style="font-size: 12px; color: #64748B; margin: 4px 0 0">Profil, printer, dan perangkat</p>
-	</header>
+<RoleShell role="kasir" title="Setting" subtitle="Profil, printer, dan perangkat" {user} onlogout={handleLogout}>
 	<SettingDashboard />
-</div>
+</RoleShell>
