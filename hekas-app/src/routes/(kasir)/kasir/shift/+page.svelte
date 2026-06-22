@@ -2,31 +2,21 @@
   /kasir/shift — Shift history & status.
   Per FRONTEND_ARCHITECTURE §4.2 (kasir routes).
   Uses R3a orchestrator: ShiftDashboard.
+
+  Catatan (Fase R3 / 2026-06-22): <KasirRail> di-render oleh (kasir)/+layout.svelte.
 -->
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import RoleShell from '$lib/components/shared/RoleShell.svelte';
 	import ShiftDashboard from '$lib/components/kasir/Shift/ShiftDashboard.svelte';
-	import { api } from '$lib/api';
-	import { logout } from '$lib/api/auth';
-
-	let user = $state<{ username: string; full_name: string; role: string } | null>(null);
-
-	onMount(async () => {
-		const u = await api.auth.getCurrentUser().catch(() => null);
-		if (u) user = { username: u.username, full_name: u.full_name, role: u.role };
-	});
-
-	async function handleLogout() {
-		await logout();
-		location.href = '/login';
-	}
 </script>
 
 <svelte:head>
 	<title>Shift · HEKAS POS</title>
 </svelte:head>
 
-<RoleShell role="kasir" title="Shift" subtitle="Riwayat shift & status kasir" {user} onlogout={handleLogout}>
+<div class="kasir-shift" style="padding: 20px 24px">
+	<header style="margin-bottom: 16px">
+		<h1 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0">Shift</h1>
+		<p style="font-size: 12px; color: #64748B; margin: 4px 0 0">Riwayat shift & status kasir</p>
+	</header>
 	<ShiftDashboard />
-</RoleShell>
+</div>

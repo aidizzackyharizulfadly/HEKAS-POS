@@ -4,14 +4,13 @@
   Layout:
   - 60px wide, dark theme (#0F172A background)
   - Brand monogram di top + live status dot (pulsing)
-  - Vertical nav (8 items: POS, Order, Produk, Pelanggan, Shift, Laporan, Lainnya, Setting)
+  - Vertical nav (8 items: POS, Order, Produk, Pelanggan, Shift, Laporan, Setting)
   - Held badge (jika ada)
   - Spacer + Logout button at bottom
 
   Props:
     - heldCount: number — jumlah transaksi ditahan (untuk badge)
     - onholdclick: () => void — handler saat held badge diklik
-    - onSettingClick: () => void — handler untuk Setting button
     - onlogout: () => void — handler logout
     - userName: string — inisial user untuk tooltip logout
 
@@ -19,32 +18,45 @@
     <KasirRail
       heldCount={held.length}
       onholdclick={openHoldModal}
-      onSettingClick={openSettings}
       onlogout={handleLogout}
       userName={currentUser?.full_name ?? 'Kasir'}
     />
 -->
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+
 	interface Props {
 		heldCount: number;
 		onholdclick: () => void;
-		onSettingClick: () => void;
 		onlogout: () => void;
 		userName: string;
 	}
 
-	let { heldCount, onholdclick, onSettingClick, onlogout, userName }: Props = $props();
+	let { heldCount, onholdclick, onlogout, userName }: Props = $props();
 
-	const navItems = [
-		{ label: 'POS', active: true },
-		{ label: 'Order', active: false },
-		{ label: 'Produk', active: false },
-		{ label: 'Pelanggan', active: false },
-		{ label: 'Shift', active: false },
-		{ label: 'Laporan', active: false },
-		{ label: 'Lainnya', active: false },
-		{ label: 'Setting', active: false },
+	const navItems: { label: string; path: string }[] = [
+		{ label: 'POS',       path: '/kasir/pos' },
+		{ label: 'Order',     path: '/kasir/order' },
+		{ label: 'Produk',    path: '/kasir/produk' },
+		{ label: 'Pelanggan', path: '/kasir/pelanggan' },
+		{ label: 'Shift',     path: '/kasir/shift' },
+		{ label: 'Laporan',   path: '/kasir/laporan' },
+		{ label: 'Setting',   path: '/kasir/setting' }
 	];
+
+	const activePath = $derived(page.url.pathname);
+	function checkActive(itemPath: string): boolean {
+		return activePath === itemPath || activePath.startsWith(itemPath + '/');
+	}
+
+	async function navTo(path: string) {
+		try {
+			await goto(path);
+		} catch (e) {
+			console.error('[KasirRail] nav failed:', e);
+		}
+	}
 </script>
 
 <aside
@@ -67,13 +79,15 @@
 	<!-- Section divider -->
 	<div class="w-7 h-px mb-2" style="background: rgba(255,255,255,0.08)"></div>
 
-	<!-- Nav: 8 items with tooltip reveal on hover -->
+	<!-- Nav: 7 items with tooltip reveal on hover -->
 	<nav class="flex flex-col items-center w-full px-1.5 gap-0.5" aria-label="Menu utama">
 		{#each navItems as item}
-			{@const isActive = item.active}
+			{@const isActive = checkActive(item.path)}
 			<button
+				onclick={() => navTo(item.path)}
 				aria-label={item.label}
 				aria-current={isActive ? 'page' : undefined}
+				title={item.label}
 				class="rail-item relative w-10 h-10 rounded-md flex items-center justify-center transition-all"
 				style="
 					background: {isActive ? 'rgba(37, 99, 235, 0.2)' : 'transparent'};

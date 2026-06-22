@@ -11,7 +11,6 @@
 	import SettingsPanel from '$lib/components/shared/SettingsPanel.svelte';
 	import ShortcutsHelp from '$lib/components/shared/ShortcutsHelp.svelte';
 	import PaymentForm from '$lib/components/kasir/POS/PaymentForm.svelte';
-	import KasirRail from '$lib/components/kasir/KasirRail.svelte';
 	import KasirCommandBar from '$lib/components/kasir/KasirCommandBar.svelte';
 	import { loadSettings, printReceipt } from '$lib/utils/print';
 	import { onMount } from 'svelte';
@@ -185,6 +184,10 @@
 			await Promise.all([refreshProducts(), refreshMembers()]);
 		})();
 
+		// Listen for "open hold modal" event from <KasirRail> (via layout)
+		const onOpenHold = () => { modal = 'hold'; };
+		window.addEventListener('hekas:open-hold-modal', onOpenHold);
+
 		// Register keyboard shortcuts
 		registerShortcut('?', () => { showShortcuts = true; });
 		registerShortcut('/', () => { document.querySelector<HTMLInputElement>('.search-input')?.focus(); });
@@ -201,6 +204,7 @@
 
 		return () => {
 			stopListening();
+			window.removeEventListener('hekas:open-hold-modal', onOpenHold);
 			unregisterShortcut('?');
 			unregisterShortcut('/');
 			unregisterShortcut('d');
@@ -310,11 +314,9 @@
 	let lastTriggerEl: HTMLElement | null = null; // for focus restoration on modal close
 	let audioCtx: AudioContext | null = null;
 
-	// ─── Handlers for KasirRail / KasirCommandBar (extracted components) ───────
-	function openHoldModal(_e?: Event) {
-		// lastTriggerEl not set in extracted component (focus management stays local)
-		modal = 'hold';
-	}
+	// ─── Handlers for KasirCommandBar (extracted component) ────────────────────
+	// openHoldModal: di-handle via window event 'hekas:open-hold-modal' (dispatched
+	// dari <KasirRail> lewat (kasir)/+layout.svelte). Lihat onMount listener.
 	function openShortcutsModal() {
 		showShortcuts = true;
 	}
@@ -543,20 +545,16 @@
 	});
 
 	// ─── Nav items ──────────────────────────────────────────────────────────────
-	const navItems = [
-		{ label: 'POS', active: true },
-		{ label: 'Order', active: false },
-		{ label: 'Produk', active: false },
-		{ label: 'Pelanggan', active: false },
-		{ label: 'Shift', active: false },
-		{ label: 'Laporan', active: false },
-		{ label: 'Lainnya', active: false },
-		{ label: 'Setting', active: false },
-	];
+	// Pindah ke <KasirRail> (di (kasir)/+layout.svelte). Tidak dipake di sini lagi.
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+<!--
+  Catatan: <KasirRail> di-render oleh (kasir)/+layout.svelte.
+  Pos page cuma render konten utama. Layout sudah handle flex container.
+-->
 <div
+	id="main-content"
 	class="flex h-screen overflow-hidden"
 	style="font-family: 'Inter', sans-serif; background: #F0F4F8"
 	onkeydown={onKeydown}
@@ -569,19 +567,10 @@
 	>
 		Loncat ke konten utama
 	</a>
-	<!-- ── Left Rail (extracted to <KasirRail>) ──────────────────────────────────── -->
-		<KasirRail
-			heldCount={held.length}
-			onholdclick={openHoldModal}
-			onSettingClick={() => (showSettings = true)}
-			onlogout={handleLogout}
-			userName={currentUser?.full_name ?? 'Kasir'}
-		/>
 
-	<!-- ── Main workspace ───────────────────────────────────────────────── -->
-	<div id="main-content" class="flex flex-col flex-1 min-w-0 overflow-hidden" style="background: linear-gradient(180deg, #F8FAFC 0%, #EFF1F5 100%)">
-		<!-- ── Command Bar (extracted to <KasirCommandBar>) ──────────────────────── -->
-		<KasirCommandBar
+	<!-- ── Main workspace (id="main-content" di root div bawah) ──────────────── -->
+	<!-- ── Command Bar (extracted to <KasirCommandBar>) ──────────────────────── -->
+	<KasirCommandBar
 			cashierName={currentUser?.full_name ?? 'Kasir'}
 			outletName="Duamart Panjen"
 			shiftNo="#12345"
@@ -1842,7 +1831,6 @@
 								open={showShortcuts}
 								onClose={() => { showShortcuts = false; }}
 							/>
-							</div>
 
 							<!-- Fase F: Lightbox modal (zoom product image) -->
 							{#if lightboxImage}
