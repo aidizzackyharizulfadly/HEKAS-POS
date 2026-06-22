@@ -1,18 +1,17 @@
 /**
  * Shift management API.
  *
- * Endpoints (BE — Wafiq ElysiaJS, FE_HANDOFF v2.0.0):
- *   GET    /api/shifts                 — list shifts
- *   GET    /api/shifts/active          — active shift for current user
- *   GET    /api/shifts/:id             — detail
- *   POST   /api/shifts                 — start shift
- *   PATCH  /api/shifts/:id/end         — end shift
- *   GET    /api/shifts/:id/summary     — X/Z report
+ * Endpoints (FE_HANDOFF v2.0.0 §9.6):
+ *   GET    /api/shifts/             — list
+ *   GET    /api/shifts/current      — current active shift
+ *   GET    /api/shifts/:id          — detail
+ *   POST   /api/shifts/start        — start shift (cashier)
+ *   POST   /api/shifts/:id/end      — end shift (with cash count)
  *
  * Mock fallback: localStorage key 'hekas:shifts'.
  */
 import { browser } from '$app/environment';
-import { httpFetch as http, API_MODE, ApiError } from './client';
+import { httpFetch as http, API_MODE, ApiError, unwrapList, unwrapOne } from './client';
 
 const STORAGE_KEY = 'hekas:shifts';
 
@@ -72,18 +71,35 @@ function saveAll(shifts: Shift[]): void {
 }
 
 export async function listShifts(): Promise<Shift[]> {
-	if (API_MODE === 'http') return http<Shift[]>('/api/shifts');
+	if (API_MODE === 'http') return unwrapList<Shift>(await http('/api/shifts/'));
 	return loadAll().sort((a, b) => b.openedAt - a.openedAt);
 }
 
 export async function getShift(id: string): Promise<Shift | null> {
-	if (API_MODE === 'http') return http<Shift>(`/api/shifts/${id}`);
+	if (API_MODE === 'http') {
+		try {
+			return unwrapOne<Shift>(await http(`/api/shifts/${id}`));
+		} catch (e: any) {
+			if (e?.status === 404) return null;
+			throw e;
+		}
+	}
 	return loadAll().find((s) => s.id === id) ?? null;
 }
 
-export async function getActiveShift(userId: string): Promise<Shift | null> {
-	if (API_MODE === 'http') return http<Shift>(`/api/shifts/active?userId=${userId}`);
-	return loadAll().find((s) => s.userId === userId && s.status === 'open') ?? null;
+export async function getActiveShift(_userId?: string): Promise<Shift | null> {
+	// _userId param kept for backward-compat with old mock signature.
+	// BE determines active shift from JWT (outletId auto-scope).
+	void _userId;
+	if (API_MODE === 'http') {
+		try {
+			return unwrapOne<Shift>(await http('/api/shifts/current'));
+		} catch (e: any) {
+			if (e?.status === 404) return null;
+			throw e;
+		}
+	}
+	return loadAll().find((s) => s.status === 'open') ?? null;
 }
 
 export async function startShift(input: StartShiftInput): Promise<Shift> {
@@ -99,7 +115,11 @@ export async function startShift(input: StartShiftInput): Promise<Shift> {
 		totalVoid: 0,
 		status: 'open'
 	};
-	if (API_MODE === 'http') return http<Shift>('/api/shifts', { method: 'POST', body: JSON.stringify(shift) });
+	if (API_MODE === 'http')
+		return unwrapOne<Shift>(await http('/api/shifts/start', {
+			method: 'POST',
+			body: JSON.stringify({ openingCash: input.openingCash, outletId: input.outletId })
+		}));
 	const all = loadAll();
 	const existing = all.find((s) => s.userId === input.userId && s.status === 'open');
 	if (existing) throw new ApiError(409, 'SHIFT_EXISTS', 'User sudah punya shift aktif');
@@ -110,10 +130,10 @@ export async function startShift(input: StartShiftInput): Promise<Shift> {
 
 export async function endShift(input: EndShiftInput): Promise<Shift> {
 	if (API_MODE === 'http')
-		return http<Shift>(`/api/shifts/${input.id}/end`, {
-			method: 'PATCH',
+		return unwrapOne<Shift>(await http(`/api/shifts/${input.id}/end`, {
+			method: 'POST',
 			body: JSON.stringify({ closingCash: input.closingCash, notes: input.notes })
-		});
+		}));
 	const all = loadAll();
 	const idx = all.findIndex((s) => s.id === input.id);
 	if (idx < 0) throw new ApiError(404, 'NOT_FOUND', 'Shift tidak ditemukan');
@@ -130,7 +150,15 @@ export async function endShift(input: EndShiftInput): Promise<Shift> {
 }
 
 export async function getShiftSummary(id: string): Promise<ShiftSummary | null> {
-	if (API_MODE === 'http') return http<ShiftSummary>(`/api/shifts/${id}/summary`);
+	// FE_HANDOFF doesn't expose /api/shifts/:id/summary — mock fallback only
+	if (API_MODE === 'http') {
+		// BE may not have this endpoint; try with best-effort
+		try {
+			return unwrapOne<ShiftSummary>(await http(`/api/shifts/${id}/summary`));
+		} catch {
+			return null;
+		}
+	}
 	const shift = await getShift(id);
 	if (!shift) return null;
 	// Aggregate dari transactions (mock fallback)

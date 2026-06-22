@@ -1,46 +1,31 @@
 <!--
   BarangKeluarDashboard (HEKAS POS — gudang/BarangKeluar)
   Orchestrator: KPI strip + OutgoingList with search/filter.
-  Outgoing storage: localStorage key 'hekas:outgoing_orders' (no BE API yet).
+  Data source: api.outgoingGoods (FE_HANDOFF §9.12) — auto-fallback to localStorage in mock mode.
   Used by: /gudang/barang-keluar page.
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
+	import { api } from '$lib/api';
+	import type { Outgoing } from '$lib/api/outgoing-goods';
 	import KpiStrip, { type Kpi } from '$lib/components/manager/Beranda/KpiStrip.svelte';
 	import OutgoingList from '$lib/components/gudang/BarangKeluar/OutgoingList.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 
-	// Outgoing type (matches OutgoingList component's local interface)
-	type Outgoing = {
-		id: string;
-		soNumber: string;
-		destination: string;
-		itemCount: number;
-		status: 'pending' | 'picking' | 'ready' | 'shipped';
-		createdAt: number;
-	};
-
-	const STORAGE_KEY = 'hekas:outgoing_orders';
-
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let items = $state<Outgoing[]>([]);
 
-	function loadOutgoing(): Outgoing[] {
-		if (!browser) return [];
-		try {
-			const raw = localStorage.getItem(STORAGE_KEY);
-			return raw ? (JSON.parse(raw) as Outgoing[]) : [];
-		} catch {
-			return [];
-		}
-	}
+	// Outlet ID — TODO: ambil dari auth context. Default to current user's outlet.
+	// FE_HANDOFF §9.12: /api/outgoing-goods/ requires explicit outletId
+	const CURRENT_OUTLET_ID = 'd3d1143e-984f-4185-b182-50b5dd3a3c8c'; // dev outlet
 
-	onMount(() => {
+	onMount(async () => {
 		try {
-			items = loadOutgoing();
+			items = await api.outgoingGoods
+				.listOutgoingGoods({ outletId: CURRENT_OUTLET_ID })
+				.catch(() => [] as Outgoing[]);
 		} catch (err) {
 			error = (err as Error).message;
 		} finally {
@@ -63,7 +48,6 @@
 
 	function handleSelect(o: Outgoing) {
 		console.log('[BarangKeluarDashboard] selected outgoing', o.soNumber);
-		alert(`Detail ${o.soNumber} (TODO: open OutgoingDetail panel)`);
 	}
 </script>
 

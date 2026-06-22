@@ -1,36 +1,24 @@
 <!--
   BarangMasukDashboard (HEKAS POS — gudang/BarangMasuk)
   Orchestrator: KPI strip + POList with filter tabs.
-  PO storage: localStorage key 'hekas:purchase_orders' (no BE API yet).
+  Data source: api.incomingGoods (FE_HANDOFF §9.11) — auto-fallback to localStorage in mock mode.
   Used by: /gudang/barang-masuk page.
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
+	import { api } from '$lib/api';
 	import KpiStrip, { type Kpi } from '$lib/components/manager/Beranda/KpiStrip.svelte';
 	import POList, { type PO } from '$lib/components/gudang/BarangMasuk/POList.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 
-	const STORAGE_KEY = 'hekas:purchase_orders';
-
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let pos = $state<PO[]>([]);
 
-	function loadPO(): PO[] {
-		if (!browser) return [];
+	onMount(async () => {
 		try {
-			const raw = localStorage.getItem(STORAGE_KEY);
-			return raw ? (JSON.parse(raw) as PO[]) : [];
-		} catch {
-			return [];
-		}
-	}
-
-	onMount(() => {
-		try {
-			pos = loadPO();
+			pos = await api.incomingGoods.listIncomingGoods().catch(() => [] as PO[]);
 		} catch (err) {
 			error = (err as Error).message;
 		} finally {
@@ -52,14 +40,14 @@
 		{ label: 'Ditolak', value: rejected.length, tone: 'danger', icon: '❌' }
 	]);
 
-	function handleVerify(_po: PO) {
-		alert('Verifikasi PO (TODO: open verifikasi dialog)');
+	function handleVerify(po: PO) {
+		api.incomingGoods.verifyIncomingGood(String(po.id)).catch((e) => alert(`Gagal: ${e.message}`));
 	}
-	function handleReject(_po: PO) {
-		alert('Tolak PO (TODO: open rejection dialog)');
+	function handleReject(po: PO) {
+		api.incomingGoods.rejectIncomingGood(String(po.id)).catch((e) => alert(`Gagal: ${e.message}`));
 	}
-	function handleView(_po: PO) {
-		alert('Detail PO (TODO: open PODetail panel)');
+	function handleView(po: PO) {
+		console.log('[BarangMasukDashboard] view PO', po.po_no);
 	}
 </script>
 

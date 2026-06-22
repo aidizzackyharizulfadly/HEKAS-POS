@@ -87,7 +87,7 @@ export const managerMenu: MenuItem[] = [
 ];
 
 // ─── Demo accounts (mock auth) ──────────────────────────────────────────────
-// Ganti dengan API call ke backend saat production
+// Per FE_HANDOFF v2.0.0 §3 — default credentials for DEV (matches Wafiq BE).
 // Password disimpan plain text HANYA untuk demo — JANGAN pakai pattern ini di production
 export interface DemoAccount {
 	username: string;
@@ -96,9 +96,9 @@ export interface DemoAccount {
 }
 
 export const DEMO_ACCOUNTS: DemoAccount[] = [
-	{ username: 'kasi01',    password: '123', role: 'kasir'   },
-	{ username: 'manager01', password: '123', role: 'manager' },
-	{ username: 'gudang01',  password: '123', role: 'gudang'  }
+	{ username: 'kasir1',   password: 'password123', role: 'kasir'   },
+	{ username: 'manager1', password: 'password123', role: 'manager' },
+	{ username: 'gudang1',  password: 'password123', role: 'gudang'  }
 ];
 
 export function authenticate(username: string, password: string): RoleId | null {

@@ -1,17 +1,20 @@
 /**
  * Surat Jalan (delivery order) API.
  *
- * Endpoints (FE_HANDOFF v2.0.0):
- *   GET    /api/surat-jalan            — list all SJ
- *   GET    /api/surat-jalan/:id        — detail
- *   POST   /api/surat-jalan            — create (from PO)
- *   PATCH  /api/surat-jalan/:id/review — manager review
- *   PATCH  /api/surat-jalan/:id/print  — mark printed
+ * Endpoints (FE_HANDOFF v2.0.0 §9.13):
+ *   GET    /api/surat-jalan/            — list
+ *   POST   /api/surat-jalan/            — create
+ *   GET    /api/surat-jalan/:id         — detail
+ *   POST   /api/surat-jalan/:id/review-gudang — gudang review
+ *   POST   /api/surat-jalan/:id/approve       — manager approve
+ *   POST   /api/surat-jalan/:id/reject        — reject
+ *   POST   /api/surat-jalan/:id/mark-sent     — mark sent
+ *   GET    /api/surat-jalan/:id/pdf           — download PDF
  *
  * Mock fallback: localStorage key 'hekas:surat_jalan'.
  */
 import { browser } from '$app/environment';
-import { httpFetch as http, API_MODE, ApiError } from './client';
+import { httpFetch as http, API_MODE, ApiError, unwrapList, unwrapOne } from './client';
 
 const STORAGE_KEY = 'hekas:surat_jalan';
 
@@ -61,20 +64,27 @@ function saveAll(items: SuratJalan[]): void {
 export async function listSuratJalan(filter?: { status?: SJStatus }): Promise<SuratJalan[]> {
 	if (API_MODE === 'http') {
 		const q = filter?.status ? `?status=${filter.status}` : '';
-		return http<SuratJalan[]>(`/api/surat-jalan${q}`);
+		return unwrapList<SuratJalan>(await http(`/api/surat-jalan/${q}`));
 	}
 	const all = loadAll();
 	return filter?.status ? all.filter((s) => s.status === filter.status) : all;
 }
 
 export async function getSuratJalan(id: string): Promise<SuratJalan | null> {
-	if (API_MODE === 'http') return http<SuratJalan>(`/api/surat-jalan/${id}`);
+	if (API_MODE === 'http') {
+		try {
+			return unwrapOne<SuratJalan>(await http(`/api/surat-jalan/${id}`));
+		} catch (e: any) {
+			if (e?.status === 404) return null;
+			throw e;
+		}
+	}
 	return loadAll().find((s) => s.id === id) ?? null;
 }
 
 export async function createSuratJalan(input: Omit<SuratJalan, 'id' | 'sjNumber' | 'createdAt' | 'status'>): Promise<SuratJalan> {
 	if (API_MODE === 'http')
-		return http<SuratJalan>('/api/surat-jalan', { method: 'POST', body: JSON.stringify(input) });
+		return unwrapOne<SuratJalan>(await http('/api/surat-jalan/', { method: 'POST', body: JSON.stringify(input) }));
 	const all = loadAll();
 	const today = new Date();
 	const yyyymmdd = today.toISOString().slice(0, 10).replace(/-/g, '');
@@ -97,11 +107,14 @@ export async function reviewSuratJalan(
 	reviewer: string,
 	notes?: string
 ): Promise<SuratJalan> {
-	if (API_MODE === 'http')
-		return http<SuratJalan>(`/api/surat-jalan/${id}/review`, {
-			method: 'PATCH',
-			body: JSON.stringify({ decision, notes })
-		});
+	if (API_MODE === 'http') {
+		// BE has separate /approve and /reject endpoints (§9.13)
+		const action = decision === 'approved' ? 'approve' : 'reject';
+		return unwrapOne<SuratJalan>(await http(`/api/surat-jalan/${id}/${action}`, {
+			method: 'POST',
+			body: JSON.stringify({ notes, reviewer })
+		}));
+	}
 	const all = loadAll();
 	const idx = all.findIndex((s) => s.id === id);
 	if (idx < 0) throw new ApiError(404, 'NOT_FOUND', 'SJ tidak ditemukan');

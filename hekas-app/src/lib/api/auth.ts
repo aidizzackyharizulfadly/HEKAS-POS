@@ -35,14 +35,14 @@ export async function login(username: string, password: string): Promise<User> {
 		return res.user;
 	}
 
-	// Mock mode (fallback)
+	// Mock mode (fallback) — credentials per FE_HANDOFF v2.0.0 §3
 	seedIfEmpty();
 	await delay();
 	const u = username.toLowerCase().trim();
 	const users = storage.get<User[]>('users', []);
 	const found = users.find((x) => x.username === u);
 	if (!found) throw new Error('Username tidak ditemukan');
-	if (password !== '123') throw new Error('Password salah');
+	if (password !== 'password123') throw new Error('Password salah');
 	storage.set(SESSION_KEY, found);
 	return found;
 }

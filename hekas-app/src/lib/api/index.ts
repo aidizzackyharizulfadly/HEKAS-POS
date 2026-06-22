@@ -17,6 +17,8 @@ import * as auth from './auth.js';
 import * as http from './client.js';
 import * as shifts from './shifts.js';
 import * as inventory from './inventory.js';
+import * as incomingGoods from './incoming-goods.js';
+import * as outgoingGoods from './outgoing-goods.js';
 import * as suratJalan from './surat-jalan.js';
 import * as employees from './employees.js';
 import * as reports from './reports.js';
@@ -34,6 +36,8 @@ export {
 	http,
 	shifts,
 	inventory,
+	incomingGoods,
+	outgoingGoods,
 	suratJalan,
 	employees,
 	reports,
@@ -51,6 +55,8 @@ export const api = {
 	http,
 	shifts,
 	inventory,
+	incomingGoods,
+	outgoingGoods,
 	suratJalan,
 	employees,
 	reports,

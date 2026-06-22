@@ -2,19 +2,24 @@
 	/**
 	 * OutgoingList (HEKAS POS — gudang/BarangKeluar)
 	 * List outgoing orders — pakai searchAndFilter + relativeAge + statusClasses helpers.
+	 *
+	 * Status type mirrors api/outgoing-goods OutgoingStatus (FE_HANDOFF §9.12).
 	 */
 	import { searchAndFilter } from '$lib/utils/search-filters';
 	import { relativeAge } from '$lib/utils/time-helpers';
 	import { statusClasses } from '$lib/utils/status-classes';
 	import type { StatusMeta } from '$lib/utils/status-helpers';
 
-	interface Outgoing {
+	export type OutgoingStatus = 'pending' | 'picking' | 'ready' | 'shipped' | 'cancelled';
+
+	export interface Outgoing {
 		id: string;
 		soNumber: string;
 		destination: string;
 		itemCount: number;
-		status: 'pending' | 'picking' | 'ready' | 'shipped';
+		status: OutgoingStatus;
 		createdAt: number;
+		outletId?: string;
 	}
 
 	interface Props {
@@ -26,15 +31,16 @@
 	let { items, onselect, loading = false }: Props = $props();
 
 	let search = $state('');
-	let statusFilter = $state<'all' | Outgoing['status']>('all');
+	let statusFilter = $state<'all' | OutgoingStatus>('all');
 
 	// Status mapping untuk outgoing workflow — pakai StatusMeta shape + statusClasses.
-	// pending (initial), picking (in progress), ready (siap kirim), shipped (selesai).
+	// pending (initial), picking (in progress), ready (siap kirim), shipped (selesai), cancelled (dibatalkan).
 	const STATUS_META: Record<Outgoing['status'], StatusMeta> = {
 		pending: { label: 'Pending', color: 'gray', icon: '○', severity: 'neutral' },
 		picking: { label: 'Picking', color: 'yellow', icon: '◐', severity: 'warning' },
 		ready: { label: 'Ready', color: 'blue', icon: '◉', severity: 'info' },
-		shipped: { label: 'Shipped', color: 'green', icon: '✓', severity: 'success' }
+		shipped: { label: 'Shipped', color: 'green', icon: '✓', severity: 'success' },
+		cancelled: { label: 'Cancelled', color: 'red', icon: '✕', severity: 'error' }
 	};
 	const statusBadge = (s: Outgoing['status']) => {
 		const meta = STATUS_META[s];
