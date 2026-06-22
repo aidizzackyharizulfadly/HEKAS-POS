@@ -575,6 +575,12 @@
 		Loncat ke konten utama
 	</a>
 
+	<!-- Main column wrapper — flex-col agar KasirCommandBar + content row
+	     stack vertical (CommandBar atas, content row bawah). Tanpa wrapper
+	     ini, KasirCommandBar (shrink-0) ambil semua remaining horizontal
+	     space di root flex-row dan push content-row off-screen. -->
+	<div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+
 	<!-- ── Main workspace (id="main-content" di root div bawah) ──────────────── -->
 	<!-- ── Command Bar (extracted to <KasirCommandBar>) ──────────────────────── -->
 	<KasirCommandBar
@@ -1855,9 +1861,10 @@
 									style="max-width: 90vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); cursor: default"
 								/>
 							</div>
-							{/if}
+						{/if}
+</div>
 
-						<style>
+<style>
 									/* ── Card press: active state ─────────────────────────────────────────── */
 									.card-press:not(:disabled):active {
 							transform: scale(0.97);
