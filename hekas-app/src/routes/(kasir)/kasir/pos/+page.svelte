@@ -22,7 +22,9 @@
 	import { toggleTheme } from '$lib/utils/theme';
 	import { playScan, playSuccess, playError } from '$lib/utils/sound';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import Input from '$lib/components/ui/input/input.svelte';
 	import { cn } from '$lib/utils';
+	import { Search, X, Barcode } from '@lucide/svelte';
 
 	// ─── State ──────────────────────────────────────────────────────────────────
 	let activeCategory = $state('all');
@@ -608,61 +610,45 @@
 			<!-- ── LEFT: product area ──────────────────────────────────────── -->
 			<div class="flex flex-col flex-1 min-w-0 overflow-hidden">
 				<!-- Search + Barcode row (Enterprise 2026) -->
-				<div class="flex items-center gap-2 px-3 py-2.5 shrink-0" style="background: #fff; border-bottom: 1px solid var(--color-hekas-border)">
-					<!-- Product search -->
-					<div class="relative flex-1 group">
-						<svg class="absolute left-3 top-1/2 -translate-y-1/2 transition-colors" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none">
-							<circle cx="11" cy="11" r="8" />
-							<line x1="21" y1="21" x2="16.65" y2="16.65" />
-						</svg>
-						<input
-							bind:this={searchInputEl}
-							bind:value={search}
-							placeholder="Cari produk atau SKU...  (tekan / untuk fokus)"
-							aria-label="Cari produk berdasarkan nama atau SKU, tekan / untuk fokus"
-							class="search-input w-full pl-9 pr-20 py-2 rounded-lg border outline-none transition-all"
-							style="background: var(--color-hekas-surface); border-color: var(--color-hekas-border); font-size: 13; color: var(--color-hekas-text)"
-						/>
-						<!-- Keyboard hint -->
-						<kbd
-							class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline-flex items-center justify-center px-1.5 h-5 rounded font-mono"
-							style="background: #fff; color: var(--color-hekas-text-muted); font-size: 10.5; font-weight: 600; border: 1px solid var(--color-hekas-border); line-height: 1"
-						>/</kbd>
-						{#if search}
-							<button
-								onclick={() => (search = '')}
-								aria-label="Bersihkan pencarian"
-								class="search-clear absolute right-9 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center transition-all"
-								style="background: #CBD5E1; color: #fff"
-							>
-								<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
-									<line x1="18" y1="6" x2="6" y2="18" />
-									<line x1="6" y1="6" x2="18" y2="18" />
-								</svg>
-							</button>
-						{/if}
-					</div>
+							<div class="bg-background flex shrink-0 items-center gap-2 border-b px-3 py-2.5">
+								<!-- Product search -->
+								<div class="group relative flex-1">
+									<Search class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 transition-colors" />
+									<Input
+										bind:ref={searchInputEl}
+										bind:value={search}
+										placeholder="Cari produk atau SKU...  (tekan / untuk fokus)"
+										aria-label="Cari produk berdasarkan nama atau SKU, tekan / untuk fokus"
+										class="h-9 pl-9 pr-20 text-[13px]"
+									/>
+									<!-- Keyboard hint -->
+									<kbd
+										class="bg-background text-muted-foreground absolute top-1/2 right-3 hidden h-5 -translate-y-1/2 items-center justify-center rounded border px-1.5 font-mono text-[10.5px] font-semibold leading-none md:inline-flex"
+									>/</kbd>
+									{#if search}
+										<button
+											onclick={() => (search = '')}
+											aria-label="Bersihkan pencarian"
+											class="bg-muted-foreground text-background absolute top-1/2 right-9 flex size-5 -translate-y-1/2 items-center justify-center rounded-full transition-all hover:opacity-80"
+										>
+											<X class="size-2.5" strokeWidth={3} />
+										</button>
+									{/if}
+								</div>
 
-					<!-- Barcode input -->
-					<div class="relative">
-						<svg class="absolute left-3 top-1/2 -translate-y-1/2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-hekas-blue)" stroke-width="2.2" stroke-linecap="round" style="pointer-events: none" aria-hidden="true">
-							<path d="M3 5v14" />
-							<path d="M8 5v14" />
-							<path d="M12 5v14" />
-							<path d="M17 5v14" />
-							<path d="M21 5v14" />
-						</svg>
-						<input
-							bind:this={barcodeInputEl}
-							bind:value={barcodeInput}
-							onkeydown={handleBarcodeKey}
-							placeholder="Scan barcode..."
-							aria-label="Scan barcode produk"
-							class="pl-9 pr-3 py-2 rounded-lg border outline-none w-44 transition-all"
-							style="background: var(--color-hekas-blue-tint); border-color: var(--color-hekas-blue-pale); font-size: 13; caret-color: var(--color-hekas-blue); color: var(--color-hekas-text)"
-						/>
-					</div>
-				</div>
+								<!-- Barcode input -->
+								<div class="relative">
+									<Barcode class="text-primary pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2" strokeWidth={2.2} />
+									<Input
+										bind:ref={barcodeInputEl}
+										bind:value={barcodeInput}
+										onkeydown={handleBarcodeKey}
+										placeholder="Scan barcode..."
+										aria-label="Scan barcode produk"
+										class="caret-primary h-9 w-44 pl-9 text-[13px]"
+									/>
+								</div>
+							</div>
 
 				<!-- Category tabs -->
 							<div class="bg-background flex shrink-0 items-center gap-1.5 overflow-x-auto px-3 py-2">
