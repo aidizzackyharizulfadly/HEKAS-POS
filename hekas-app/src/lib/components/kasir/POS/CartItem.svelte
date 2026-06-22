@@ -3,8 +3,13 @@
 	 * CartItem (HEKAS POS — kasir/POS)
 	 * Single row di cart — show product, qty stepper, subtotal, remove.
 	 * Tambah diskon per-item, max-stock guard, dan keyboard shortcut.
+	 *
+	 * v2.0 — refactored ke shadcn-svelte (Button + Badge + lucide icons)
 	 */
 	import type { CartItem } from '$lib/types/domain';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import Badge from '$lib/components/ui/badge/badge.svelte';
+	import { Minus, Plus, Trash2, AlertTriangle } from '@lucide/svelte';
 
 	interface Props {
 		item: CartItem;
@@ -52,60 +57,70 @@
 </script>
 
 <div
-	class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+	class="hover:bg-muted/50 flex items-center gap-3 rounded-lg bg-muted/30 p-3 transition-colors"
 	role="group"
 	aria-label={`Item ${item.name}`}
 	onkeydown={handleKey}
 	tabindex="0"
 >
-	<div class="flex-1 min-w-0">
-		<div class="font-semibold text-sm text-slate-800 truncate">{item.name}</div>
-		<div class="text-xs text-slate-500">{formatIDR(item.price)} / item</div>
+	<div class="min-w-0 flex-1">
+		<div class="truncate text-sm font-semibold text-foreground">{item.name}</div>
+		<div class="text-muted-foreground text-xs tabular-nums">{formatIDR(item.price)} / item</div>
 		{#if atMaxStock}
-			<div class="text-[10px] text-amber-700 font-semibold mt-0.5">⚠️ Stok maksimal</div>
+			<Badge variant="warning" class="mt-1 gap-1 text-[10px]">
+				<AlertTriangle class="size-2.5" />
+				Stok maksimal
+			</Badge>
 		{/if}
 	</div>
 
 	<div class="flex items-center gap-1">
-		<button
-			type="button"
+		<Button
+			variant="outline"
+			size="icon"
 			onclick={dec}
 			disabled={!canDecrease}
 			aria-label={`Kurangi jumlah ${item.name}`}
-			class="w-7 h-7 rounded bg-white border border-slate-300 text-sm font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+			class="size-7"
 		>
-			−
-		</button>
+			<Minus class="size-3" />
+		</Button>
 		<span class="w-8 text-center text-sm font-semibold tabular-nums" aria-live="polite">
 			{item.qty}
 		</span>
-		<button
-			type="button"
+		<Button
+			variant="outline"
+			size="icon"
 			onclick={inc}
 			disabled={atMaxStock}
 			aria-label={`Tambah jumlah ${item.name}`}
-			class="w-7 h-7 rounded bg-white border border-slate-300 text-sm font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+			class="size-7"
 		>
-			+
-		</button>
+			<Plus class="size-3" />
+		</Button>
 	</div>
 
 	<div class="w-24 text-right">
 		{#if itemDiscountPct > 0}
-			<div class="text-[10px] text-slate-400 line-through">{formatIDR(subtotal)}</div>
-			<div class="text-sm font-bold text-amber-700">{formatIDR(finalSubtotal)}</div>
+			<div class="text-muted-foreground text-[10px] line-through tabular-nums">
+				{formatIDR(subtotal)}
+			</div>
+			<div class="text-sm font-bold text-amber-600 tabular-nums">
+				{formatIDR(finalSubtotal)}
+			</div>
 		{:else}
-			<div class="text-sm font-bold text-slate-800">{formatIDR(subtotal)}</div>
+			<div class="text-sm font-bold text-foreground tabular-nums">{formatIDR(subtotal)}</div>
 		{/if}
 	</div>
 
-	<button
-		type="button"
+	<Button
+		variant="ghost"
+		size="icon"
 		onclick={remove}
 		aria-label={`Hapus ${item.name} dari keranjang`}
 		title="Hapus"
-		class="text-red-500 hover:text-red-700 hover:bg-red-50 w-7 h-7 rounded text-lg leading-none"
+		class="text-destructive hover:bg-destructive/10 hover:text-destructive size-7"
 	>
-		✕
-	</button>
+		<Trash2 class="size-3.5" />
+	</Button>
 </div>
