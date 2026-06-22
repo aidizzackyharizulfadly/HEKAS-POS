@@ -21,6 +21,8 @@
 	import { registerShortcut, unregisterShortcut, startListening, stopListening } from '$lib/utils/shortcuts';
 	import { toggleTheme } from '$lib/utils/theme';
 	import { playScan, playSuccess, playError } from '$lib/utils/sound';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import { cn } from '$lib/utils';
 
 	// ─── State ──────────────────────────────────────────────────────────────────
 	let activeCategory = $state('all');
@@ -663,50 +665,36 @@
 				</div>
 
 				<!-- Category tabs -->
-				<div class="flex items-center gap-1.5 px-3 py-2 overflow-x-auto shrink-0 scrollbar-thin" style="background: var(--color-hekas-surface); border-bottom: 1px solid var(--color-hekas-border)">
-					{#each CATEGORIES as cat}
-						{@const isActive = activeCategory === cat.id}
-						{@const CatIcon = getIcon(cat.icon)}
-						{@const catCount = cat.id === 'all' ? products.length : products.filter(p => p.category === cat.id).length}
-						<button
-							onclick={() => activeCategory = cat.id}
-							aria-pressed={isActive}
-							class="category-tab flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap transition-all shrink-0"
-							style="
-								background: {isActive ? 'var(--color-hekas-blue)' : '#fff'};
-								color: {isActive ? '#fff' : 'var(--color-hekas-text-muted)'};
-								font-size: 12.5;
-								font-weight: {isActive ? 600 : 500};
-								border: 1px solid {isActive ? 'var(--color-hekas-blue)' : 'var(--color-hekas-border)'};
-							"
-						>
-							{#if CatIcon}
-								<CatIcon
-									size={14}
-									strokeWidth={isActive ? 2.25 : 1.75}
-									color={isActive ? '#fff' : 'var(--color-hekas-text-muted)'}
-									aria-hidden="true"
-								/>
-							{/if}
-							<span>{cat.label}</span>
-							{#if catCount > 0}
-								<span
-									class="rounded-full px-1.5 min-w-[18px] text-center"
-									style="
-										background: {isActive ? 'rgba(255,255,255,0.2)' : 'var(--color-hekas-blue-tint)'};
-										color: {isActive ? '#fff' : 'var(--color-hekas-blue)'};
-										font-size: 10;
-										font-weight: 700;
-										line-height: 1.4;
-									"
-									aria-label="{catCount} produk"
-								>
-									{catCount}
-								</span>
-							{/if}
-						</button>
-					{/each}
-				</div>
+							<div class="bg-background flex shrink-0 items-center gap-1.5 overflow-x-auto px-3 py-2">
+								{#each CATEGORIES as cat}
+									{@const isActive = activeCategory === cat.id}
+									{@const CatIcon = getIcon(cat.icon)}
+									{@const catCount = cat.id === 'all' ? products.length : products.filter(p => p.category === cat.id).length}
+									<Button
+										onclick={() => (activeCategory = cat.id)}
+										variant={isActive ? 'default' : 'outline'}
+										size="sm"
+										aria-pressed={isActive}
+										class="rounded-full"
+									>
+										{#if CatIcon}
+											<CatIcon size={14} strokeWidth={isActive ? 2.25 : 1.75} aria-hidden="true" />
+										{/if}
+										<span>{cat.label}</span>
+										{#if catCount > 0}
+											<span
+												class={cn(
+													'rounded-full px-1.5 text-center min-w-[18px] text-[10px] font-bold tabular-nums',
+													isActive ? 'bg-white/20 text-primary-foreground' : 'bg-accent text-accent-foreground'
+												)}
+												aria-label="{catCount} produk"
+											>
+												{catCount}
+											</span>
+										{/if}
+									</Button>
+								{/each}
+							</div>
 
 				<!-- Product grid — 4 columns -->
 				<div class="flex-1 overflow-y-auto p-3">
