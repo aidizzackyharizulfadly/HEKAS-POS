@@ -11,9 +11,12 @@
  *
  * ⚠️ /api/outgoing-goods/ requires explicit `outletId` query param (different from JWT auto-scope).
  * Replaces previous localStorage 'hekas:outgoing_orders' implementation.
+ *
+ * Outlet ID should be sourced from current user session (read via api.auth.getCurrentUser).
  */
 import { browser } from '$app/environment';
 import { httpFetch as http, API_MODE, ApiError, unwrapList, unwrapOne } from './client';
+import { parseId } from '$lib/utils/format';
 
 const STORAGE_KEY = 'hekas:outgoing_orders';
 
@@ -69,7 +72,7 @@ export async function listOutgoingGoods(filter: { outletId: string; status?: Out
 export async function getOutgoingGood(id: string): Promise<Outgoing | null> {
 	if (API_MODE === 'http') {
 		try {
-			return unwrapOne<Outgoing>(await http(`/api/outgoing-goods/${id}`));
+			return unwrapOne<Outgoing>(await http(`/api/outgoing-goods/${parseId(id)}`));
 		} catch (e: any) {
 			if (e?.status === 404) return null;
 			throw e;
@@ -105,19 +108,19 @@ export async function createOutgoingGood(input: CreateOutgoingInput): Promise<Ou
 
 export async function pickOutgoingGood(id: string): Promise<Outgoing> {
 	if (API_MODE === 'http')
-		return unwrapOne<Outgoing>(await http(`/api/outgoing-goods/${id}/pick`, { method: 'POST' }));
+		return unwrapOne<Outgoing>(await http(`/api/outgoing-goods/${parseId(id)}/pick`, { method: 'POST' }));
 	return updateStatus(id, 'picking');
 }
 
 export async function markSentOutgoingGood(id: string): Promise<Outgoing> {
 	if (API_MODE === 'http')
-		return unwrapOne<Outgoing>(await http(`/api/outgoing-goods/${id}/mark-sent`, { method: 'POST' }));
+		return unwrapOne<Outgoing>(await http(`/api/outgoing-goods/${parseId(id)}/mark-sent`, { method: 'POST' }));
 	return updateStatus(id, 'shipped');
 }
 
 export async function cancelOutgoingGood(id: string, reason?: string): Promise<Outgoing> {
 	if (API_MODE === 'http')
-		return unwrapOne<Outgoing>(await http(`/api/outgoing-goods/${id}/cancel`, {
+		return unwrapOne<Outgoing>(await http(`/api/outgoing-goods/${parseId(id)}/cancel`, {
 			method: 'POST',
 			body: JSON.stringify({ reason })
 		}));

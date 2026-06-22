@@ -14,6 +14,7 @@
 // Client ini TIDAK assume satu shape — caller pakai helper per endpoint.
 
 import { browser } from '$app/environment';
+import { goto } from '$app/navigation';
 
 const RAW_BASE = import.meta.env.VITE_API_BASE as string | undefined;
 export const API_MODE: 'http' | 'mock' = RAW_BASE ? 'http' : 'mock';
@@ -40,6 +41,12 @@ export function clearTokens(): void {
 	localStorage.removeItem(TOKEN_KEY);
 	localStorage.removeItem(REFRESH_KEY);
 	localStorage.removeItem(USER_KEY);
+	// Also clear session
+	try {
+		localStorage.removeItem('hekas:auth');
+	} catch {
+		/* ignore */
+	}
 }
 
 // ─── Error class ──────────────────────────────────────────────────────────
@@ -63,13 +70,15 @@ export interface FetchOpts extends RequestInit {
 	responseType?: 'json' | 'blob' | 'text';
 	/** Timeout in ms (default 15s) */
 	timeout?: number;
+	/** Skip 401 auto-redirect (untuk endpoints yang memang return 401 expected) */
+	skipAuthRedirect?: boolean;
 }
 
 export async function httpFetch<T = unknown>(
 	path: string,
 	opts: FetchOpts = {}
 ): Promise<T> {
-	const { noAuth, responseType, timeout = 15_000, ...init } = opts;
+	const { noAuth, responseType, timeout = 15_000, skipAuthRedirect, ...init } = opts;
 	const headers = new Headers(init.headers);
 
 	if (!headers.has('Content-Type') && init.body && !(init.body instanceof FormData)) {
@@ -97,9 +106,16 @@ export async function httpFetch<T = unknown>(
 	}
 	clearTimeout(timer);
 
-	// 401 → auto-clear tokens (caller handles redirect)
+	// 401 → auto-clear tokens + redirect to /login (unless skipped)
 	if (res.status === 401) {
 		clearTokens();
+		if (!skipAuthRedirect && browser) {
+			// Use SvelteKit goto for SPA-style redirect (no full reload)
+			goto('/login').catch(() => {
+				// Fallback to hard redirect if SPA nav fails
+				window.location.href = '/login';
+			});
+		}
 	}
 
 	// Binary response (Excel/PDF)

@@ -16,15 +16,21 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let items = $state<Outgoing[]>([]);
+	let outletId = $state<string | null>(null);
 
-	// Outlet ID — TODO: ambil dari auth context. Default to current user's outlet.
-	// FE_HANDOFF §9.12: /api/outgoing-goods/ requires explicit outletId
-	const CURRENT_OUTLET_ID = 'd3d1143e-984f-4185-b182-50b5dd3a3c8c'; // dev outlet
-
+	// Get outletId from current user session (FE_HANDOFF §6.4 — JWT-driven)
 	onMount(async () => {
 		try {
+			const user = await api.auth.getCurrentUser();
+			outletId = (user as any)?.outletId ?? null;
+
+			if (!outletId) {
+				// Fallback for mock mode: use dev outlet
+				outletId = 'd3d1143e-984f-4185-b182-50b5dd3a3c8c';
+			}
+
 			items = await api.outgoingGoods
-				.listOutgoingGoods({ outletId: CURRENT_OUTLET_ID })
+				.listOutgoingGoods({ outletId })
 				.catch(() => [] as Outgoing[]);
 		} catch (err) {
 			error = (err as Error).message;

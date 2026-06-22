@@ -9,9 +9,13 @@
  *   POST   /api/incoming-goods/:id/reject       — manager reject
  *
  * Replaces previous localStorage 'hekas:purchase_orders' implementation.
+ *
+ * Money fields (per FE_HANDOFF §6.1): BE returns strings (PostgreSQL numeric).
+ * Apply parseMoney() at boundary when reading from BE.
  */
 import { browser } from '$app/environment';
 import { httpFetch as http, API_MODE, ApiError, unwrapList, unwrapOne } from './client';
+import { parseMoney, parseId } from '$lib/utils/format';
 
 const STORAGE_KEY = 'hekas:purchase_orders';
 
@@ -31,7 +35,7 @@ export interface PO {
 
 export interface CreatePOInput {
 	supplier_name: string;
-	items: Array<{ productId: string; productName: string; qty: number; unitPrice: string }>;
+	items: Array<{ productId: string; productName: string; qty: number; unitPrice: string | number }>;
 	notes?: string;
 }
 
@@ -72,11 +76,15 @@ export async function getIncomingGood(id: string): Promise<PO | null> {
 }
 
 export async function createIncomingGood(input: CreatePOInput): Promise<PO> {
-	if (API_MODE === 'http')
-		return unwrapOne<PO>(await http('/api/incoming-goods/', {
-			method: 'POST',
-			body: JSON.stringify(input)
-		}));
+	// Normalize money fields to strings (BE expects strings per §6.1)
+	const body = {
+		...input,
+		items: input.items.map((it) => ({
+			...it,
+			unitPrice: String(parseMoney(it.unitPrice))
+		}))
+	};
+	if (API_MODE === 'http') return unwrapOne<PO>(await http('/api/incoming-goods/', { method: 'POST', body: JSON.stringify(body) }));
 	const all = loadAll();
 	const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 	const todayCount = all.filter((p) => p.po_no.includes(today)).length + 1;
@@ -87,7 +95,7 @@ export async function createIncomingGood(input: CreatePOInput): Promise<PO> {
 		status: 'MENUNGGU_VERIFIKASI',
 		received_at: new Date().toISOString(),
 		total_items: input.items.reduce((s, it) => s + it.qty, 0),
-		total_value: input.items.reduce((s, it) => s + it.qty * Number(it.unitPrice), 0),
+		total_value: input.items.reduce((s, it) => s + it.qty * parseMoney(it.unitPrice), 0),
 		notes: input.notes
 	};
 	all.push(po);
@@ -97,7 +105,7 @@ export async function createIncomingGood(input: CreatePOInput): Promise<PO> {
 
 export async function verifyIncomingGood(id: string, notes?: string): Promise<PO> {
 	if (API_MODE === 'http')
-		return unwrapOne<PO>(await http(`/api/incoming-goods/${id}/verify`, {
+		return unwrapOne<PO>(await http(`/api/incoming-goods/${parseId(id)}/verify`, {
 			method: 'POST',
 			body: JSON.stringify({ notes })
 		}));
@@ -106,7 +114,7 @@ export async function verifyIncomingGood(id: string, notes?: string): Promise<PO
 
 export async function rejectIncomingGood(id: string, notes?: string): Promise<PO> {
 	if (API_MODE === 'http')
-		return unwrapOne<PO>(await http(`/api/incoming-goods/${id}/reject`, {
+		return unwrapOne<PO>(await http(`/api/incoming-goods/${parseId(id)}/reject`, {
 			method: 'POST',
 			body: JSON.stringify({ notes })
 		}));

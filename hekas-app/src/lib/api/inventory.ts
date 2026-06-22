@@ -100,7 +100,6 @@ export async function restock(input: RestockInput): Promise<StockMovement> {
 	saveAll(all);
 	return mv;
 }
-
 export async function bulkRestock(items: RestockInput[]): Promise<StockMovement[]> {
 	if (API_MODE === 'http')
 		return unwrapList<StockMovement>(await http('/api/inventory/restock-bulk', {
