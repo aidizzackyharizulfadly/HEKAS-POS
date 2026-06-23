@@ -1,44 +1,109 @@
 <!--
-  ClosingShift.svelte — X/Z Report modal
-  Dipakai di kasir sebelum logout: kasih ringkasan penjualan shift + opsi cetak.
-  Args:
-    open        : boolean — kontrol modal visibility
-    onClose     : () => void
-    showToast   : (msg: string, kind?: 'success'|'error'|'info') => void
+  ClosingShift.svelte — X/Z Report modal (Fase 10: shadcn-svelte)
+
+  Ringkasan penjualan shift + opsi cetak. Dipakai kasir sebelum logout.
+
+  Props:
+    open          : boolean  — kontrol modal visibility
+    onClose       : () => void
+    showToast     : (msg, kind?) => void
+    initialReport : ClosingReport | null
+                    — kalau di-pass, skip fetch + pakai data ini (untuk tests)
+                    — kalau tidak, fetch via api.orders.getClosingReport
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api } from '$lib/api';
   import type { ClosingReport } from '$lib/types/api';
   import { fmtIDR, printReport } from '$lib/utils/export';
+  import { cn } from '$lib/utils/cn';
 
-  let { open, onClose, showToast }: {
+  // shadcn-svelte primitives
+  import { Button } from '$lib/components/ui/button';
+  import { Input } from '$lib/components/ui/input';
+  import Label from '$lib/components/ui/label.svelte';
+  import { Badge } from '$lib/components/ui/badge';
+  import Skeleton from '$lib/components/ui/skeleton.svelte';
+  import {
+    Table,
+    TableHeader,
+    TableBody,
+    TableRow,
+    TableHead,
+    TableCell,
+  } from '$lib/components/ui/table';
+
+  // lucide-svelte icons
+  import ChartBarIcon from '@lucide/svelte/icons/chart-bar';
+  import XIcon from '@lucide/svelte/icons/x';
+  import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
+  import PrinterIcon from '@lucide/svelte/icons/printer';
+  import CheckIcon from '@lucide/svelte/icons/check';
+  import FileTextIcon from '@lucide/svelte/icons/file-text';
+
+  // ─── Props ──────────────────────────────────────────────────────────────
+  let {
+    open,
+    onClose,
+    showToast,
+    initialReport = null,
+  }: {
     open: boolean;
     onClose: () => void;
     showToast?: (msg: string, kind?: 'success' | 'error' | 'info') => void;
+    initialReport?: ClosingReport | null;
   } = $props();
 
-  let loading = $state(true);
-  let report = $state<ClosingReport | null>(null);
+  // ─── State ──────────────────────────────────────────────────────────────
+  let loading = $state(!initialReport); // skip loading kalau initialReport di-pass
+  let report = $state<ClosingReport | null>(initialReport);
   let rangeMode = $state<'today' | 'shift'>('today');
-  let shiftStart = $state<string>('');     // HH:MM (jam buka shift)
-  let now = $state(new Date());
+  let shiftStart = $state<string>(''); // HH:MM (jam buka shift)
 
+  // Default shift start: 8 jam yang lalu
   onMount(() => {
-    // Default shift start: 8 jam yang lalu
-    const d = new Date();
-    d.setHours(d.getHours() - 8);
-    shiftStart = d.toTimeString().slice(0, 5);
-  });
-
-  // Reload tiap dibuka
-  $effect(() => {
-    if (open) {
-      load();
+    if (!shiftStart) {
+      const d = new Date();
+      d.setHours(d.getHours() - 8);
+      shiftStart = d.toTimeString().slice(0, 5);
     }
   });
 
+  // Reload tiap dibuka (skip kalau initialReport)
+  $effect(() => {
+    if (open && !initialReport) {
+      load();
+    } else if (open && initialReport) {
+      report = initialReport;
+      loading = false;
+    }
+  });
+
+  // Body scroll lock + Esc key saat modal terbuka
+  $effect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    function onKeydown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    }
+    window.addEventListener('keydown', onKeydown);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKeydown);
+    };
+  });
+
+  // ─── Data loading ───────────────────────────────────────────────────────
   async function load() {
+    if (initialReport) {
+      report = initialReport;
+      loading = false;
+      return;
+    }
     loading = true;
     try {
       let from: string | undefined;
@@ -59,47 +124,14 @@
       }
 
       report = await api.orders.getClosingReport({ from, to });
-    } catch (e: any) {
-      showToast?.(e?.message ?? 'Gagal memuat laporan', 'error');
+    } catch (e: unknown) {
+      showToast?.(e instanceof Error ? e.message : 'Gagal memuat laporan', 'error');
     } finally {
       loading = false;
     }
   }
 
-  function handleClose() {
-    onClose();
-  }
-
-  function handlePrint() {
-    if (!report) return;
-    printReport({
-      title: 'LAPORAN PENUTUPAN SHIFT',
-      subtitle: `${report.cashier_name} • ${formatRangeLabel()}`,
-      rows: [
-        { label: 'Kasir', value: report.cashier_name },
-        { label: 'Periode', value: formatRangeLabel() },
-        { label: 'Jumlah Transaksi', value: String(report.tx_count), bold: true },
-        { label: 'Transaksi Void', value: String(report.void_count) },
-        { label: 'Subtotal', value: fmtIDR(report.subtotal) },
-        { label: 'Total Diskon', value: `− ${fmtIDR(report.discount_amt)}` },
-        { label: 'TOTAL PENJUALAN', value: fmtIDR(report.total), bold: true },
-        { label: 'Total Tunai Diterima', value: fmtIDR(report.paid_total) },
-      ],
-      table: report.by_payment.length
-        ? {
-            headers: ['Metode Pembayaran', 'Jumlah', 'Total'],
-            rows: report.by_payment.map((p: { method: string; count: number; total: number }) => [
-              capitalize(p.method),
-              p.count,
-              fmtIDR(p.total),
-            ]),
-          }
-        : undefined,
-      footer: `Tanda tangan kasir: ____________________   Tanda tangan manager: ____________________`,
-    });
-    showToast?.('Membuka dialog cetak laporan…', 'info');
-  }
-
+  // ─── Helpers ────────────────────────────────────────────────────────────
   function capitalize(s: string) {
     if (!s) return s;
     return s.charAt(0).toUpperCase() + s.slice(1);
@@ -119,161 +151,214 @@
     return `${fmt(f)} — ${fmt(t)}`;
   }
 
+  // Map method name → Badge variant
+  function methodBadgeVariant(method: string): 'success' | 'info' | 'default' {
+    if (method === 'tunai') return 'success';
+    if (method === 'qris' || method === 'ewallet') return 'info';
+    return 'default';
+  }
+
+  // ─── Actions ────────────────────────────────────────────────────────────
+  function handlePrint() {
+    if (!report) return;
+    printReport({
+      title: 'LAPORAN PENUTUPAN SHIFT',
+      subtitle: `${report.cashier_name} • ${formatRangeLabel()}`,
+      rows: [
+        { label: 'Kasir', value: report.cashier_name },
+        { label: 'Periode', value: formatRangeLabel() },
+        { label: 'Jumlah Transaksi', value: String(report.tx_count), bold: true },
+        { label: 'Transaksi Void', value: String(report.void_count) },
+        { label: 'Subtotal', value: fmtIDR(report.subtotal) },
+        { label: 'Total Diskon', value: `− ${fmtIDR(report.discount_amt)}` },
+        { label: 'TOTAL PENJUALAN', value: fmtIDR(report.total), bold: true },
+        { label: 'Total Tunai Diterima', value: fmtIDR(report.paid_total) },
+      ],
+      table: report.by_payment.length
+        ? {
+            headers: ['Metode Pembayaran', 'Jumlah', 'Total'],
+            rows: report.by_payment.map((p) => [
+              capitalize(p.method),
+              p.count,
+              fmtIDR(p.total),
+            ]),
+          }
+        : undefined,
+      footer: `Tanda tangan kasir: ____________________   Tanda tangan manager: ____________________`,
+    });
+    showToast?.('Membuka dialog cetak laporan…', 'info');
+  }
+
   function handleConfirm() {
-    showToast?.('Shift ditutup. Sampai jumpa! 👋', 'success');
-    handleClose();
+    showToast?.('Shift ditutup. Sampai jumpa!', 'success');
+    onClose();
   }
 </script>
 
 {#if open}
   <!-- Backdrop -->
-  <div
-    role="button"
-    tabindex="-1"
+  <button
+    type="button"
     aria-label="Tutup modal"
-    onclick={handleClose}
-    onkeydown={(e) => e.key === 'Escape' && handleClose()}
-    style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); z-index: 200; backdrop-filter: blur(2px);"
-  ></div>
+    onclick={onClose}
+    class="fixed inset-0 z-40 cursor-default bg-slate-900/55 backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
+  ></button>
 
-  <!-- Modal -->
+  <!-- Modal shell (centered, pointer-events passthrough) -->
   <div
     role="dialog"
-    aria-modal="true" tabindex="-1"
+    aria-modal="true"
     aria-labelledby="closing-title"
-    style="position: fixed; inset: 0; z-index: 201; display: flex; align-items: center; justify-content: center; padding: 16px; pointer-events: none;"
+    tabindex="-1"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
   >
     <div
-      style="background: white; border-radius: 16px; max-width: 640px; width: 100%; max-height: 92vh; overflow: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); pointer-events: auto; animation: slide-in 0.18s ease-out;"
+      class="bg-popover text-popover-foreground ring-foreground/10 grid w-full max-w-2xl gap-0 overflow-auto rounded-2xl shadow-2xl ring-1 outline-none max-h-[92vh] pointer-events-auto animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200"
     >
-      <!-- Header -->
-      <div
-        style="background: linear-gradient(135deg, #2563EB, #1E40AF); color: white; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; border-radius: 16px 16px 0 0;"
+      <!-- Header (gradient blue matching original brand) -->
+      <header
+        class="flex items-center justify-between gap-2 rounded-t-2xl bg-gradient-to-br from-blue-600 to-blue-800 px-5 py-4 text-white"
       >
         <div>
-          <h2 id="closing-title" style="margin: 0; font-size: 18px; font-weight: 700;">
-            📊 Penutupan Shift
+          <h2 id="closing-title" class="flex items-center gap-2 text-lg font-bold">
+            <ChartBarIcon class="size-5" aria-hidden="true" />
+            Penutupan Shift
           </h2>
-          <div style="font-size: 12px; opacity: 0.85; margin-top: 2px;">
-            Ringkasan penjualan kasir
-          </div>
+          <p class="mt-0.5 text-xs opacity-90">Ringkasan penjualan kasir</p>
         </div>
-        <button
+        <Button
           type="button"
-          onclick={handleClose}
-          aria-label="Tutup"
-          style="background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px;"
+          variant="ghost"
+          size="icon-sm"
+          onclick={onClose}
+          aria-label="Tutup dialog penutupan shift"
+          class="text-white/80 hover:bg-white/20 hover:text-white"
         >
-          ✕
-        </button>
-      </div>
+          <XIcon />
+        </Button>
+      </header>
 
-      <!-- Range filter -->
+      <!-- Range filter bar -->
       <div
-        style="padding: 16px 22px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;"
+        class="flex flex-wrap items-center gap-2.5 border-b border-slate-200 px-5 py-3.5"
       >
-        <div style="display: flex; gap: 6px;">
-          <button
+        <div class="flex gap-1.5">
+          <Button
             type="button"
-            onclick={() => { rangeMode = 'today'; load(); }}
-            style="padding: 6px 12px; border-radius: 8px; border: 1px solid {rangeMode === 'today' ? '#2563EB' : '#cbd5e1'}; background: {rangeMode === 'today' ? '#2563EB' : 'white'}; color: {rangeMode === 'today' ? 'white' : '#475569'}; font-size: 12px; font-weight: 600; cursor: pointer;"
+            size="sm"
+            variant={rangeMode === 'today' ? 'default' : 'outline'}
+            onclick={() => {
+              rangeMode = 'today';
+              load();
+            }}
+            disabled={loading}
+            aria-pressed={rangeMode === 'today'}
           >
             Hari Ini
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            onclick={() => { rangeMode = 'shift'; load(); }}
-            style="padding: 6px 12px; border-radius: 8px; border: 1px solid {rangeMode === 'shift' ? '#2563EB' : '#cbd5e1'}; background: {rangeMode === 'shift' ? '#2563EB' : 'white'}; color: {rangeMode === 'shift' ? 'white' : '#475569'}; font-size: 12px; font-weight: 600; cursor: pointer;"
+            size="sm"
+            variant={rangeMode === 'shift' ? 'default' : 'outline'}
+            onclick={() => {
+              rangeMode = 'shift';
+              load();
+            }}
+            disabled={loading}
+            aria-pressed={rangeMode === 'shift'}
           >
             Shift Ini
-          </button>
+          </Button>
         </div>
+
         {#if rangeMode === 'shift'}
-          <label style="display: flex; gap: 6px; align-items: center; font-size: 12px; color: #475569;">
+          <Label class="flex items-center gap-1.5 text-xs font-normal text-slate-600">
             Mulai:
-            <input
+            <Input
               type="time"
               bind:value={shiftStart}
               onchange={load}
-              style="padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px;"
+              class="h-7 w-auto px-2 text-xs"
             />
-          </label>
+          </Label>
         {/if}
-        <button
+
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onclick={load}
-          aria-label="Refresh"
-          style="margin-left: auto; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; color: #475569; font-size: 12px; cursor: pointer;"
+          disabled={loading}
+          aria-label="Refresh laporan"
+          class="ml-auto"
         >
-          🔄 Refresh
-        </button>
+          <RefreshCwIcon class={cn('size-3.5', loading && 'animate-spin')} />
+          Refresh
+        </Button>
       </div>
 
       <!-- Body -->
-      <div style="padding: 18px 22px;">
+      <div class="px-5 py-4">
         {#if loading}
-          <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div class="flex flex-col gap-2.5">
             {#each Array(6) as _, i (i)}
-              <div
-                style="height: 28px; background: linear-gradient(90deg, #f1f5f9, #e2e8f0, #f1f5f9); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px;"
-              ></div>
+              <Skeleton class="h-7 w-full" />
             {/each}
           </div>
         {:else if !report}
-          <div style="text-align: center; padding: 32px; color: #94a3b8;">
-            Tidak ada data
+          <div
+            class="rounded-lg border border-slate-200 bg-slate-50 px-6 py-8 text-center text-slate-400"
+          >
+            <FileTextIcon class="mx-auto size-8 opacity-50" aria-hidden="true" />
+            <p class="mt-2 text-sm">Tidak ada data</p>
           </div>
         {:else}
           <!-- Summary KPIs -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+          <div class="mb-4 grid grid-cols-2 gap-2.5">
             <div
-              style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); padding: 14px; border-radius: 10px; border: 1px solid #BFDBFE;"
+              class="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-3.5"
             >
-              <div style="font-size: 11px; color: #1E40AF; font-weight: 600; text-transform: uppercase;">
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-blue-800">
                 Total Penjualan
               </div>
-              <div style="font-size: 20px; font-weight: 800; color: #1E3A8A; margin-top: 4px;">
+              <div class="mt-1 text-xl font-extrabold text-blue-900 tabular-nums">
                 {fmtIDR(report.total)}
               </div>
-              <div style="font-size: 11px; color: #3B82F6; margin-top: 2px;">
+              <div class="mt-0.5 text-[11px] text-blue-600">
                 {report.tx_count} transaksi
               </div>
             </div>
             <div
-              style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); padding: 14px; border-radius: 10px; border: 1px solid #BBF7D0;"
+              class="rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 p-3.5"
             >
-              <div style="font-size: 11px; color: #166534; font-weight: 600; text-transform: uppercase;">
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
                 Tunai Diterima
               </div>
-              <div style="font-size: 20px; font-weight: 800; color: #14532D; margin-top: 4px;">
+              <div class="mt-1 text-xl font-extrabold text-emerald-900 tabular-nums">
                 {fmtIDR(report.paid_total)}
               </div>
-              <div style="font-size: 11px; color: #16A34A; margin-top: 2px;">
+              <div class="mt-0.5 text-[11px] text-emerald-600">
                 {report.void_count} void
               </div>
             </div>
           </div>
 
-          <!-- By payment -->
+          <!-- By payment method -->
           {#if report.by_payment.length}
-            <div style="margin-bottom: 16px;">
-              <div style="font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 8px;">
-                Metode Pembayaran
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div class="mb-4">
+              <h3 class="mb-2 text-xs font-bold text-slate-700">Metode Pembayaran</h3>
+              <div class="flex flex-col gap-1.5">
                 {#each report.by_payment as p (p.method)}
                   <div
-                    style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 8px;"
+                    class="flex items-center justify-between rounded-md bg-slate-50 px-3 py-2"
                   >
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <span
-                        style="display: inline-block; padding: 2px 8px; background: {p.method === 'tunai' ? '#FEF3C7' : p.method === 'qris' ? '#DBEAFE' : '#E0E7FF'}; color: {p.method === 'tunai' ? '#92400E' : p.method === 'qris' ? '#1E40AF' : '#3730A3'}; border-radius: 4px; font-size: 11px; font-weight: 600;"
-                      >
+                    <div class="flex items-center gap-2">
+                      <Badge variant={methodBadgeVariant(p.method)}>
                         {capitalize(p.method)}
-                      </span>
-                      <span style="font-size: 12px; color: #64748b;">{p.count}×</span>
+                      </Badge>
+                      <span class="text-xs text-slate-500">{p.count}×</span>
                     </div>
-                    <span style="font-weight: 700; color: #0f172a; font-size: 13px;">
+                    <span class="text-[13px] font-bold text-slate-900 tabular-nums">
                       {fmtIDR(p.total)}
                     </span>
                   </div>
@@ -284,38 +369,36 @@
 
           <!-- Top products -->
           {#if report.top_products.length}
-            <div style="margin-bottom: 16px;">
-              <div style="font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 8px;">
-                Top 5 Produk
-              </div>
-              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <thead>
-                  <tr style="background: #f1f5f9;">
-                    <th style="text-align: left; padding: 6px 8px; color: #475569;">#</th>
-                    <th style="text-align: left; padding: 6px 8px; color: #475569;">Produk</th>
-                    <th style="text-align: right; padding: 6px 8px; color: #475569;">Qty</th>
-                    <th style="text-align: right; padding: 6px 8px; color: #475569;">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
+            <div class="mb-4">
+              <h3 class="mb-2 text-xs font-bold text-slate-700">Top 5 Produk</h3>
+              <Table class="text-xs">
+                <TableHeader>
+                  <TableRow class="bg-slate-100">
+                    <TableHead class="text-slate-600">#</TableHead>
+                    <TableHead class="text-slate-600">Produk</TableHead>
+                    <TableHead class="text-right text-slate-600">Qty</TableHead>
+                    <TableHead class="text-right text-slate-600">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {#each report.top_products.slice(0, 5) as p, i (p.name)}
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                      <td style="padding: 6px 8px; color: #94a3b8;">{i + 1}</td>
-                      <td style="padding: 6px 8px; color: #0f172a;">{p.name}</td>
-                      <td style="padding: 6px 8px; text-align: right; color: #475569;">{p.qty}</td>
-                      <td style="padding: 6px 8px; text-align: right; font-weight: 600; color: #0f172a;">
+                    <TableRow>
+                      <TableCell class="text-slate-400">{i + 1}</TableCell>
+                      <TableCell class="text-slate-900">{p.name}</TableCell>
+                      <TableCell class="text-right text-slate-600 tabular-nums">{p.qty}</TableCell>
+                      <TableCell class="text-right font-semibold text-slate-900 tabular-nums">
                         {fmtIDR(p.total)}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   {/each}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           {/if}
 
           {#if report.tx_count === 0}
             <div
-              style="text-align: center; padding: 24px; color: #94a3b8; background: #f8fafc; border-radius: 8px; font-size: 13px;"
+              class="rounded-lg bg-slate-50 px-4 py-6 text-center text-sm text-slate-400"
             >
               Tidak ada transaksi dalam periode ini.
             </div>
@@ -324,54 +407,32 @@
       </div>
 
       <!-- Footer -->
-      <div
-        style="padding: 14px 22px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; justify-content: flex-end; background: #f8fafc; border-radius: 0 0 16px 16px;"
+      <footer
+        class="flex justify-end gap-2.5 rounded-b-2xl border-t border-slate-200 bg-slate-50 px-5 py-3.5"
       >
-        <button
-          type="button"
-          onclick={handleClose}
-          style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; color: #475569; font-size: 13px; font-weight: 600; cursor: pointer;"
-        >
+        <Button type="button" variant="outline" onclick={onClose} disabled={loading}>
           Batal
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="default"
           onclick={handlePrint}
           disabled={loading || !report?.tx_count}
-          style="padding: 10px 18px; border-radius: 8px; border: none; background: #2563EB; color: white; font-size: 13px; font-weight: 600; cursor: pointer; opacity: {loading || !report?.tx_count ? 0.5 : 1};"
+          class="bg-blue-600 hover:bg-blue-700"
         >
-          🖨️ Cetak
-        </button>
-        <button
+          <PrinterIcon class="size-3.5" />
+          Cetak
+        </Button>
+        <Button
           type="button"
           onclick={handleConfirm}
           disabled={loading}
-          style="padding: 10px 18px; border-radius: 8px; border: none; background: #059669; color: white; font-size: 13px; font-weight: 600; cursor: pointer; opacity: {loading ? 0.5 : 1};"
+          class="bg-emerald-600 hover:bg-emerald-700"
         >
-          ✓ Tutup Shift
-        </button>
-      </div>
+          <CheckIcon class="size-3.5" />
+          Tutup Shift
+        </Button>
+      </footer>
     </div>
   </div>
 {/if}
-
-<style>
-  @keyframes slide-in {
-    from {
-      transform: translateY(8px) scale(0.98);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0) scale(1);
-      opacity: 1;
-    }
-  }
-  @keyframes shimmer {
-    0% {
-      background-position: 200% 0;
-    }
-    100% {
-      background-position: -200% 0;
-    }
-  }
-</style>
