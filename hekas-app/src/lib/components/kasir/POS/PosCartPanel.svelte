@@ -2,12 +2,13 @@
 	/**
 	 * PosCartPanel (HEKAS POS — kasir/POS)
 	 * Right-side cart "cockpit" panel — sticky total hero, member search,
-	 * items list, dark checkout lane (QRIS/Tunai/Kartu, Bayar hero, Hold/Batal).
+	 * items list, summary breakdown, Bayar hero button.
 	 *
-	 * v1.0 — extracted dari pos/+page.svelte (lines 743-1141) di Fase 6.
+	 * Payment method selection happens inside <PaymentForm> (opened on Bayar click),
+	 * tidak ada method selector di sini.
 	 *
-	 * Visual design 100% preserved — gradient hero, inline hex, lucide-style
-	 * inline svgs. Logika & state tetap di parent (single source of truth).
+	 * v1.1 — Fase 8: Hapus QRIS/Tunai/Kartu selector (PaymentForm handles method).
+	 * Visual design 100% preserved.
 	 */
 	import type { Member, Product } from '$lib/types/domain';
 
@@ -23,7 +24,6 @@
 		member: Member | null;
 		memberSearch: string;
 		memberResults: Member[];
-		payMethod: PaymentMethod;
 		globalDisc: number;
 		subtotal: number;
 		discAmt: number;
@@ -33,7 +33,6 @@
 		totalQty: number;
 		cartDrawerOpen: boolean;
 		tierColor: Record<Member['tier'], { bg: string; fg: string }>;
-		// ── Refs (passed-through) ─────────────────────────────────────────────
 		barcodeInputEl: HTMLInputElement | null;
 		// ── Helpers ───────────────────────────────────────────────────────────
 		fmt: (n: number) => string;
@@ -41,7 +40,6 @@
 		onSetQty: (id: number, qty: number) => void;
 		onOpenNumpad: (id: number, qty: number) => void;
 		onRemoveItem: (id: number) => void;
-		onPayMethodChange: (m: PaymentMethod) => void;
 		onDiscountClick: (e: MouseEvent) => void;
 		onPaymentClick: (e: MouseEvent) => void;
 		onHoldClick: (e: MouseEvent) => void;
@@ -58,7 +56,6 @@
 		member = $bindable(),
 		memberSearch = $bindable(''),
 		memberResults,
-		payMethod,
 		globalDisc,
 		subtotal,
 		discAmt,
@@ -73,7 +70,6 @@
 		onSetQty,
 		onOpenNumpad,
 		onRemoveItem,
-		onPayMethodChange,
 		onDiscountClick,
 		onPaymentClick,
 		onHoldClick,
@@ -84,11 +80,6 @@
 		onAddMember,
 		onMemberSearch
 	}: Props = $props();
-
-	// Derived: payment method active flags (for aria-pressed + styling)
-	const qrisActive = $derived(payMethod === 'qris');
-	const tunaiActive = $derived(payMethod === 'tunai');
-	const kartuActive = $derived(payMethod === 'debit');
 </script>
 
 <aside
@@ -539,143 +530,14 @@
 			{/each}
 		{/if}
 	</div>
-
-	<!-- ═══ CHECKOUT LANE (Payment + Summary + Action) ═══════════════ -->
+	<!-- ═══ CHECKOUT LANE (Summary + Action) ══════════════════════════ -->
 	{#if cart.length > 0}
 		<div class="shrink-0" style="background: #0F172A; color: #fff">
-			<!-- Payment Method: QRIS primary full-width, others compact -->
-			<div class="px-3 pt-3 pb-2.5">
-				<div class="flex items-center justify-between mb-2">
-					<span
-						style="font-size: 10; font-weight: 800; letter-spacing: 0.12em; color: rgba(226,235,248,0.6); text-transform: uppercase"
-						>Metode Pembayaran</span
-					>
-					<span
-						class="tabular-nums"
-						style="font-size: 10; color: rgba(226,235,248,0.4); font-weight: 600"
-						>F4</span
-					>
-				</div>
-				<div class="flex gap-1.5">
-					<!-- QRIS primary: 60% width -->
-					<button
-						onclick={() => onPayMethodChange('qris')}
-						aria-label="Metode bayar QRIS{qrisActive ? ' (aktif)' : ''}"
-						aria-pressed={qrisActive}
-						class="method-primary relative overflow-hidden flex-1 flex items-center gap-2.5 py-2.5 px-3 rounded-lg transition-all"
-						style="
-							background: {qrisActive
-							? 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)'
-							: 'rgba(255,255,255,0.06)'};
-							border: 1.5px solid {qrisActive ? '#60A5FA' : 'rgba(255,255,255,0.1)'};
-							box-shadow: {qrisActive
-							? '0 4px 16px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
-							: 'none'};
-						"
-					>
-						<!-- QRIS mini-grid icon -->
-						<div
-							class="w-8 h-8 rounded flex items-center justify-center shrink-0"
-							style="background: {qrisActive
-								? 'rgba(255,255,255,0.2)'
-								: 'rgba(255,255,255,0.08)'}"
-						>
-							<svg
-								width="18"
-								height="18"
-								viewBox="0 0 24 24"
-								fill="white"
-								aria-hidden="true"
-							>
-								<rect x="2" y="2" width="8" height="8" rx="1.5" />
-								<rect x="14" y="2" width="8" height="8" rx="1.5" />
-								<rect x="2" y="14" width="8" height="8" rx="1.5" />
-								<rect x="15" y="15" width="3" height="3" />
-								<rect x="19" y="19" width="3" height="3" />
-								<rect x="15" y="19" width="3" height="3" />
-							</svg>
-						</div>
-						<div class="flex flex-col items-start">
-							<span
-								style="font-size: 13.5; font-weight: 800; color: #fff; letter-spacing: -0.01em; line-height: 1"
-								>QRIS</span
-							>
-							<span
-								style="font-size: 9.5; color: {qrisActive
-									? 'rgba(255,255,255,0.7)'
-									: 'rgba(255,255,255,0.4)'}; font-weight: 600; letter-spacing: 0.04em"
-								>ALL E-WALLET</span
-							>
-						</div>
-					</button>
-
-					<!-- Tunai + Kartu: 40% split -->
-					<div class="flex gap-1.5" style="flex: 0 0 auto">
-						<button
-							onclick={() => onPayMethodChange('tunai')}
-							aria-label="Metode bayar Tunai{tunaiActive ? ' (aktif)' : ''}"
-							aria-pressed={tunaiActive}
-							class="method-secondary w-16 flex flex-col items-center justify-center gap-0.5 py-2.5 rounded-lg transition-all"
-							style="
-								background: {tunaiActive ? 'rgba(37,99,235,0.3)' : 'rgba(255,255,255,0.06)'};
-								border: 1.5px solid {tunaiActive ? '#60A5FA' : 'rgba(255,255,255,0.1)'};
-							"
-						>
-							<svg
-								width="18"
-								height="18"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="#fff"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								aria-hidden="true"
-							>
-								<rect x="2" y="6" width="20" height="12" rx="1" />
-								<circle cx="12" cy="12" r="2.5" />
-								<path d="M6 12h.01M18 12h.01" />
-							</svg>
-							<span
-								style="font-size: 9.5; font-weight: 700; color: #fff; letter-spacing: 0.04em"
-								>TUNAI</span
-							>
-						</button>
-						<button
-							onclick={() => onPayMethodChange('debit')}
-							aria-label="Metode bayar Kartu{kartuActive ? ' (aktif)' : ''}"
-							aria-pressed={kartuActive}
-							class="method-secondary w-16 flex flex-col items-center justify-center gap-0.5 py-2.5 rounded-lg transition-all"
-							style="
-								background: {kartuActive ? 'rgba(37,99,235,0.3)' : 'rgba(255,255,255,0.06)'};
-								border: 1.5px solid {kartuActive ? '#60A5FA' : 'rgba(255,255,255,0.1)'};
-							"
-						>
-							<svg
-								width="18"
-								height="18"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="#fff"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								aria-hidden="true"
-							>
-								<rect x="2" y="5" width="20" height="14" rx="2" />
-								<line x1="2" y1="10" x2="22" y2="10" />
-							</svg>
-							<span
-								style="font-size: 9.5; font-weight: 700; color: #fff; letter-spacing: 0.04em"
-								>KARTU</span
-							>
-						</button>
-					</div>
-				</div>
-			</div>
-
 			<!-- Summary breakdown (compact inline) -->
-			<div class="px-3 py-2 space-y-1" style="border-top: 1px solid rgba(255,255,255,0.08)">
+			<div
+				class="px-3 py-2 space-y-1"
+				style="border-top: 1px solid rgba(255,255,255,0.08)"
+			>
 				<button
 					onclick={onDiscountClick}
 					class="w-full flex justify-between items-center group"
@@ -738,11 +600,11 @@
 				</div>
 			</div>
 
-			<!-- BAYAR HERO BUTTON -->
+			<!-- BAYAR HERO BUTTON (method selection happens in PaymentForm) -->
 			<div class="px-3 pb-3 pt-2" style="border-top: 1px solid rgba(255,255,255,0.08)">
 				<button
 					onclick={onPaymentClick}
-					aria-label={`Bayar sekarang total ${fmt(total)} (tekan F4)`}
+					aria-label={`Bayar sekarang total ${fmt(total)} (tekan F4) — buka form pembayaran`}
 					class="bayar-hero w-full flex items-center justify-between gap-2 px-4 py-3.5 rounded-lg transition-all"
 					style="
 						background: linear-gradient(135deg, #10B981 0%, #059669 100%);

@@ -48,8 +48,6 @@
 	let member = $state<Member | null>(null);
 	let memberSearch = $state('');
 	let modal = $state<ModalState>('none');
-	let payMethod = $state<PaymentMethod>('tunai');
-	let cashInput = $state('');
 	let globalDisc = $state(0);
 	let discInput = $state('');
 	let numpadTarget = $state<number | null>(null);
@@ -57,6 +55,7 @@
 	let paymentFormOpen = $state(false);
 	let numpadValue = $state('');
 	let now = $state(new Date());
+	let lastChange = $state(0); // total kembalian dari PaymentForm (untuk receipt)
 
 	// ─── Modal focus management ─────────────────────────────────────────────
 	$effect(() => {
@@ -141,7 +140,6 @@
 		tier: 'Silver' | 'Gold' | 'Platinum';
 	}
 
-	type PaymentMethod = 'tunai' | 'qris' | 'debit';
 	type ModalState = 'none' | 'payment' | 'hold' | 'receipt' | 'member' | 'discount' | 'numpad';
 
 	// ─── Data (loaded from $lib/api) ────────────────────────────────────────────
@@ -349,7 +347,7 @@
 		cart = [];
 		member = null;
 		globalDisc = 0;
-		cashInput = '';
+		lastChange = 0;
 	}
 
 	// ─── Barcode ───────────────────────────────────────────────────────────────
@@ -395,7 +393,6 @@
 	const afterDisc = $derived(subtotal - discAmt);
 	const tax = $derived(Math.round(afterDisc * (ppnRate / 100)));
 	const total = $derived(afterDisc + tax);
-	const change = $derived(Number(cashInput.replace(/\D/g, '')) - total);
 	const totalQty = $derived(cart.reduce((s, i) => s + i.qty, 0));
 
 	// ─── Member search ─────────────────────────────────────────────────────────
@@ -435,59 +432,16 @@
 	}
 
 	// ─── Transactions: checkout, hold, recall ────────────────────────────────
-	async function processCheckout() {
-		if (cart.length === 0 || processing) return;
-		processing = true;
-		try {
-			const paid =
-				payMethod === 'tunai' ? Number(cashInput.replace(/\D/g, '')) || total : total;
-			const result = await api.orders.checkout({
-				user_id: currentUser?.id ?? 1,
-				outlet_id: currentUser?.outlet_id ?? undefined,
-				member_id: member?.id ?? null,
-				items: cart.map((c) => ({
-					product_id: c.id,
-					qty: c.qty,
-					disc_pct: c.disc
-				})),
-				discount_pct: globalDisc,
-				paid,
-				payment_method: payMethod
-			});
-			lastReceipt = result;
-			// Fetch full transaction with items for receipt printing
-			lastReceiptTx = await api.orders.getTransaction(result.id);
-			// Refresh state — stock decreased, possibly member points updated
-			await Promise.all([refreshProducts(), refreshMembers(), refreshHeld()]);
-			clearCart();
-			showToast('success', `Transaksi ${result.invoice_no} berhasil`);
-			modal = 'receipt';
-			lastTriggerEl?.focus();
+	// Phase 8: Single checkout path via PaymentForm (handles single + split).
+	// processCheckout (single-method legacy) dihapus — PaymentForm always available.
 
-			// Auto-print if enabled
-			const settings = loadSettings();
-			if (settings.auto_print && lastReceiptTx) {
-				// Small delay to let receipt modal render first
-				setTimeout(async () => {
-					const r = await printReceipt(lastReceiptTx!);
-					if (!r.ok && r.method !== 'cancelled') {
-						showToast('error', `Auto-print gagal: ${r.message ?? 'unknown'}`);
-					}
-				}, 300);
-			}
-		} catch (e: any) {
-			showToast('error', e.message ?? 'Checkout gagal');
-		} finally {
-			processing = false;
-		}
-	}
-
-	// Fase 5: handler utk PaymentForm (multi-payment split)
+	// Fase 5: handler utk PaymentForm (multi-payment split + single)
 	async function handlePaymentSplit(methods: PaymentMethodFull[]) {
 		if (cart.length === 0 || processing) return;
 		processing = true;
 		try {
 			const totalPaid = methods.reduce((s, m) => s + m.amount, 0);
+			const totalChange = methods.reduce((s, m) => s + (m.change ?? 0), 0);
 			const result = await api.orders.checkout({
 				user_id: currentUser?.id ?? 1,
 				outlet_id: currentUser?.outlet_id ?? undefined,
@@ -506,6 +460,7 @@
 			await Promise.all([refreshProducts(), refreshMembers(), refreshHeld()]);
 			clearCart();
 			paymentFormOpen = false;
+			lastChange = totalChange; // simpan untuk receipt modal
 			modal = 'receipt';
 
 			// Toast spesifik untuk split
@@ -874,7 +829,6 @@
 				bind:member
 				bind:memberSearch
 				{memberResults}
-				{payMethod}
 				{globalDisc}
 				{subtotal}
 				{discAmt}
@@ -889,14 +843,13 @@
 				onSetQty={setQty}
 				onOpenNumpad={openNumpad}
 				onRemoveItem={removeItem}
-				onPayMethodChange={(m) => (payMethod = m)}
 				onDiscountClick={(e) => {
 					lastTriggerEl = e.currentTarget as HTMLElement;
 					modal = 'discount';
 				}}
 				onPaymentClick={(e) => {
 					lastTriggerEl = e.currentTarget as HTMLElement;
-					modal = 'payment';
+					paymentFormOpen = true;
 				}}
 				onHoldClick={(e) => {
 					lastTriggerEl = e.currentTarget as HTMLElement;
@@ -920,321 +873,6 @@
 
 	<!-- ─────────────────────────── MODALS ─────────────────────────────────── -->
 
-	<!-- Payment Modal -->
-	{#if modal === 'payment'}
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div
-			class="fixed inset-0 flex items-center justify-center z-50 p-4"
-			style="background: rgba(15,23,41,0.55); backdrop-filter: blur(2px)"
-			onclick={(e) => {
-				if (e.target === e.currentTarget) {
-					modal = 'none';
-					lastTriggerEl?.focus();
-				}
-			}}
-			onkeydown={(e) => {
-				if (e.key === 'Escape') {
-					modal = 'none';
-					lastTriggerEl?.focus();
-				}
-			}}
-			transition:fade={{ duration: 150 }}
-			role="dialog"
-			aria-modal="true"
-			tabindex="-1"
-			aria-labelledby="payment-title"
-		>
-			<div
-				class="rounded-3xl shadow-2xl overflow-hidden"
-				style="background: #fff; width: 420; max-width: 100%"
-				transition:scale={{ duration: 200, start: 0.96, easing: cubicOut }}
-			>
-				<div
-					class="flex items-center justify-between px-5 py-4"
-					style="background: #1E3A5F"
-				>
-					<span id="payment-title" style="color: #fff; font-size: 15; font-weight: 700"
-						>Pembayaran</span
-					>
-					<button onclick={() => (modal = 'none')}>
-						<svg
-							width="18"
-							height="18"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="rgba(255,255,255,0.6)"
-							stroke-width="2"
-						>
-							<line x1="18" y1="6" x2="6" y2="18" />
-							<line x1="6" y1="6" x2="18" y2="18" />
-						</svg>
-					</button>
-				</div>
-				<div class="p-5">
-					<!-- Total -->
-					<div
-						class="text-center py-4 mb-4"
-						style="background: #F0F7FF; border-radius: 12"
-					>
-						<div style="font-size: 12; color: #64748B; margin-bottom: 4">
-							Total Tagihan
-						</div>
-						<div
-							style="font-size: 32; font-weight: 900; color: #2563EB; letter-spacing: -0.02em"
-						>
-							{fmt(total)}
-						</div>
-						{#if member}
-							<div style="font-size: 11; color: #059669; margin-top: 4">
-								Member: {member.name} • {member.points.toLocaleString('id-ID')} poin
-							</div>
-						{/if}
-					</div>
-
-					<!-- Method -->
-					<div class="flex gap-2 mb-4">
-						{#each [{ id: 'tunai' as PaymentMethod, label: 'Tunai' }, { id: 'qris' as PaymentMethod, label: 'QRIS' }, { id: 'debit' as PaymentMethod, label: 'Kartu' }] as m}
-							<button
-								onclick={() => (payMethod = m.id)}
-								class="flex-1 py-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all"
-								style="
-									border-color: {payMethod === m.id ? '#2563EB' : '#E2EBF4'};
-									background: {payMethod === m.id ? '#EFF6FF' : '#FAFAFA'};
-									color: {payMethod === m.id ? '#2563EB' : '#64748B'};
-								"
-							>
-								{#if m.id === 'tunai'}
-									<svg
-										width="20"
-										height="20"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-									>
-										<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-										<line x1="1" y1="10" x2="23" y2="10" />
-									</svg>
-								{:else if m.id === 'qris'}
-									<svg
-										width="20"
-										height="20"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-									>
-										<rect x="3" y="3" width="7" height="7" />
-										<rect x="14" y="3" width="7" height="7" />
-										<rect x="14" y="14" width="7" height="7" />
-										<rect x="3" y="14" width="7" height="7" />
-									</svg>
-								{:else}
-									<svg
-										width="20"
-										height="20"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-									>
-										<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-										<line x1="1" y1="10" x2="23" y2="10" />
-									</svg>
-								{/if}
-								<span style="font-size: 12; font-weight: 600">{m.label}</span>
-							</button>
-						{/each}
-					</div>
-
-					<!-- Tunai: quick amounts + input -->
-					{#if payMethod === 'tunai'}
-						<div class="mb-4">
-							<div
-								class="mb-2"
-								style="font-size: 12; font-weight: 600; color: #64748B"
-							>
-								Uang Diterima
-							</div>
-							<input
-								value={cashInput ? fmt(Number(cashInput.replace(/\D/g, ''))) : ''}
-								oninput={(e) =>
-									(cashInput = (e.target as HTMLInputElement).value.replace(
-										/\D/g,
-										''
-									))}
-								placeholder={fmt(total)}
-								class="w-full px-4 py-3 rounded-xl border text-center outline-none mb-2"
-								style="font-size: 22; font-weight: 800; border-color: #E2EBF4; background: #F8FAFC"
-							/>
-							<!-- Quick amounts -->
-							<div class="flex gap-1.5">
-								{#each [total, total + (5000 - (total % 5000) || 5000), Math.ceil(total / 50000) * 50000, Math.ceil(total / 100000) * 100000]
-									.filter((v, i, a) => a.indexOf(v) === i)
-									.slice(0, 4) as amt}
-									<button
-										onclick={() => (cashInput = String(amt))}
-										class="flex-1 py-2 rounded-xl border text-center transition-all"
-										style="
-											background: {Number(cashInput) === amt ? '#DBEAFE' : '#F8FAFC'};
-											border-color: {Number(cashInput) === amt ? '#2563EB' : '#E2EBF4'};
-											color: {Number(cashInput) === amt ? '#2563EB' : '#0F172A'};
-											font-size: 12;
-											font-weight: 600;
-										"
-									>
-										{fmt(amt)}
-									</button>
-								{/each}
-							</div>
-							{#if Number(cashInput) >= total}
-								<div
-									class="mt-3 flex justify-between px-4 py-2.5 rounded-xl"
-									style="background: #D1FAE5"
-								>
-									<span style="font-size: 13; font-weight: 600; color: #065F46"
-										>Kembalian</span
-									>
-									<span style="font-size: 16; font-weight: 800; color: #059669"
-										>{fmt(change)}</span
-									>
-								</div>
-							{/if}
-						</div>
-					{/if}
-
-					<!-- QRIS -->
-					{#if payMethod === 'qris'}
-						<div class="flex flex-col items-center py-4 mb-4 gap-3">
-							<div
-								class="w-36 h-36 rounded-2xl flex items-center justify-center"
-								style="background: #F1F5F9; border: 2px dashed #E2EBF4"
-							>
-								<div class="text-center">
-									<svg
-										width="36"
-										height="36"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="#94A3B8"
-										stroke-width="1.5"
-										style="opacity: 0.4; margin: 0 auto 6px"
-									>
-										<rect x="5" y="2" width="6" height="6" rx="1" />
-										<rect x="13" y="2" width="6" height="6" rx="1" />
-										<rect x="5" y="16" width="6" height="6" rx="1" />
-									</svg>
-									<div style="font-size: 11; color: #64748B">QR Code</div>
-								</div>
-							</div>
-							<p style="font-size: 12; color: #64748B; text-align: center">
-								Minta pelanggan scan QR dengan aplikasi dompet digital
-							</p>
-						</div>
-					{/if}
-
-					<!-- Debit -->
-					{#if payMethod === 'debit'}
-						<div
-							class="flex items-center gap-3 p-4 rounded-xl mb-4"
-							style="background: #F8FAFC; border: 1.5px solid #E2EBF4"
-						>
-							<svg
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="#64748B"
-								stroke-width="2"
-							>
-								<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-								<line x1="1" y1="10" x2="23" y2="10" />
-							</svg>
-							<div>
-								<div style="font-size: 13; font-weight: 600">
-									Tempelkan / Gesek Kartu
-								</div>
-								<div style="font-size: 11; color: #64748B">
-									EDC BRI · BCA · Mandiri · BNI
-								</div>
-							</div>
-						</div>
-					{/if}
-
-					<button
-						type="button"
-						onclick={() => {
-							modal = 'none';
-							paymentFormOpen = true;
-						}}
-						class="w-full py-3 rounded-2xl flex items-center justify-center gap-2 transition-all mb-2"
-						style="
-							background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-							color: #fff;
-							font-size: 13;
-							font-weight: 700;
-							box-shadow: 0 4px 12px rgba(245,158,11,0.3);
-						"
-					>
-						<svg
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2.5"
-						>
-							<line x1="12" y1="5" x2="12" y2="19" />
-							<line x1="5" y1="12" x2="19" y2="12" />
-						</svg>
-						Split Bayar (Multi-Payment)
-					</button>
-					<button
-						onclick={processCheckout}
-						disabled={processing}
-						class="w-full py-4 rounded-2xl flex items-center justify-center gap-2 transition-all"
-						style="
-							background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-							color: #fff;
-							font-size: 16;
-							font-weight: 800;
-							box-shadow: 0 6px 20px rgba(37,99,235,0.35);
-							opacity: {processing ? 0.6 : 1};
-						"
-					>
-						{#if processing}
-							<svg
-								width="20"
-								height="20"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								style="animation: spin 0.8s linear infinite"
-							>
-								<path d="M21 12a9 9 0 11-6.219-8.56" />
-							</svg>
-							Memproses…
-						{:else}
-							<svg
-								width="20"
-								height="20"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-							>
-								<path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-								<polyline points="22 4 12 14.01 9 11.01" />
-							</svg>
-							Proses Pembayaran
-						{/if}
-					</button>
-				</div>
-			</div>
-		</div>
-	{/if}
 
 	<!-- Receipt Success -->
 	{#if modal === 'receipt'}
@@ -1293,11 +931,11 @@
 						{lastReceipt.invoice_no}
 					</div>
 				{/if}
-				{#if payMethod === 'tunai' && change > 0}
+				{#if lastChange > 0}
 					<div class="px-4 py-2 rounded-xl mb-4 mt-2" style="background: #D1FAE5">
 						<div style="font-size: 11; color: #065F46">Kembalian</div>
 						<div style="font-size: 22; font-weight: 900; color: #059669">
-							{fmt(change)}
+							{fmt(lastChange)}
 						</div>
 					</div>
 				{/if}
