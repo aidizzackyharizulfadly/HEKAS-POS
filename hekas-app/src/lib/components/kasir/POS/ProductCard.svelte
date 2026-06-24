@@ -4,7 +4,7 @@
 	 * Matches FRONTEND_ARCHITECTURE §3 `lib/components/kasir/POS/ProductCard.svelte`.
 	 *
 	 * Used by: kasir POS product grid, kasir/produk (catalog view), gudang/inventaris grid.
-	 * Shows: image/emoji, name, price, stock badge.
+	 * Shows: name, price, stock badge.
 	 * Click adds to cart (kasir) or opens detail (gudang).
 	 *
 	 * v2.0 — refactored ke shadcn-svelte (Card wrapper, Badge untuk stock, lucide icons)
@@ -12,7 +12,6 @@
 
 	import type { Product } from '$lib/types/domain';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
-	import { Package } from '@lucide/svelte';
 	import { cn } from '$lib/utils';
 
 	interface Props {
@@ -53,7 +52,6 @@
 	);
 
 	// Image fallback to emoji
-	const imageEmoji = $derived((product as any).image_emoji ?? (product as any).emoji ?? null);
 </script>
 
 <button
@@ -66,46 +64,24 @@
 	aria-label="{product.name}, {priceText}{showStock ? ', stok ' + product.stock : ''}"
 	{disabled}
 >
-	<!-- Image / emoji -->
-	<div
-		class={cn(
-			'bg-muted flex items-center justify-center overflow-hidden',
-			compact ? 'aspect-square' : 'aspect-[4/3]'
-		)}
-		aria-hidden="true"
-	>
-		{#if (product as any).image_url || (product as any).image}
-			<img
-				src={(product as any).image_url ?? (product as any).image}
-				alt=""
-				loading="lazy"
-				decoding="async"
-				class="h-full w-full object-cover"
-			/>
-		{:else if imageEmoji}
-			<span class="text-4xl">{imageEmoji}</span>
-		{:else}
-			<Package class="text-muted-foreground size-10" />
-		{/if}
-	</div>
 
 	<!-- Body -->
-	<div class="flex flex-col gap-0.5 p-2.5 pb-3">
-		<div class="text-[13px] font-semibold leading-tight text-foreground line-clamp-2" title={product.name}>
+	<div class="flex flex-col gap-2 p-4 pb-5">
+		<div class="text-[17px] font-bold leading-tight text-foreground line-clamp-2" title={product.name}>
 			{product.name}
 		</div>
 		{#if !compact}
-			<div class="text-muted-foreground text-[10px] tracking-wide tabular-nums">
+			<div class="text-muted-foreground text-[12px] tracking-wide tabular-nums">
 				{product.sku}
 			</div>
 		{/if}
-		<div class="mt-1 text-sm font-bold text-blue-700 tabular-nums dark:text-blue-400">
+		<div class="mt-2 text-[22px] font-extrabold text-blue-700 tabular-nums dark:text-blue-400">
 			{priceText}
 		</div>
 	</div>
 
 	{#if showStock}
-		<Badge variant={stockStatus.variant} class="absolute top-1.5 right-1.5 backdrop-blur-sm">
+		<Badge variant={stockStatus.variant} class="absolute top-2.5 right-2.5 backdrop-blur-sm text-xs px-2.5 py-1">
 			{product.stock} {product.unit || 'pcs'}
 		</Badge>
 	{/if}

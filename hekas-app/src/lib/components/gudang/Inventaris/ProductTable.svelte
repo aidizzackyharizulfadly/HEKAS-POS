@@ -47,7 +47,6 @@
         <tr class="border-t" style="border-color: #F1F5F9">
           <td class="px-4 py-2.5">
             <div class="flex items-center gap-2.5">
-              <span style="font-size: 22px">{p.image || '📦'}</span>
               <div>
                 <div style="font-size: 13px; font-weight: 600; color: #0F172A">{p.name}</div>
                 <div style="font-size: 11px; color: #94A3B8">{p.category || 'Tanpa kategori'}</div>

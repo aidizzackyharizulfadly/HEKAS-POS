@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { detectRole, authenticate, ROLE_LIST, ROLES, type RoleId } from '$lib/auth/roles';
+	import { storage, seedIfEmpty } from '$lib/utils/storage';
+	import { writeSession } from '$lib/auth/session';
 
 	let username = $state('');
 	let password = $state('');
@@ -38,6 +40,21 @@
 			error = 'Username atau password salah';
 			return;
 		}
+
+		// Simpan session ke localStorage SEBELUM navigasi,
+		// karena route guard di +layout.ts membaca 'hekas:auth'
+		seedIfEmpty();
+		const users = storage.get<any[]>('users', []);
+		const user = users.find(
+			(u: any) => u.username === username.toLowerCase().trim()
+		);
+		writeSession({
+			id: String(user?.id ?? '1'),
+			username: user?.username ?? username,
+			role: authedRole,
+			fullName: user?.full_name ?? username,
+			outletId: String(user?.outlet_id ?? '1')
+		});
 
 		const roleConfig = ROLES[authedRole as RoleId];
 		goto(roleConfig.gotoPath);

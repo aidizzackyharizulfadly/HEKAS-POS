@@ -33,7 +33,6 @@
 
 	function handleProductClick(p: Product) {
 		// Kasir can only VIEW — not edit/add. Could open detail modal in future.
-		console.log('[kasir/produk] viewed product', p.id, p.name);
 	}
 </script>
 

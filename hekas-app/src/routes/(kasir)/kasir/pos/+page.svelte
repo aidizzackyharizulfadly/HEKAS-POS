@@ -587,7 +587,17 @@
 	onkeydown={onKeydown}
 	role="application"
 >
-	<Sidebar menu={kasirMenu} activePath={page.url.pathname} />
+	<Sidebar
+		menu={kasirMenu}
+		activePath={page.url.pathname}
+		user={{
+			name: currentUser?.full_name ?? 'Kasir',
+			role: 'kasir',
+			shift: '#12345',
+			outlet: 'Duamart Panjen'
+		}}
+		onlogout={handleLogout}
+	/>
 
 	<!-- Skip-to-content link for keyboard accessibility -->
 	<a href="#main-content" class="skip-to-content"> Loncat ke konten utama </a>
@@ -600,14 +610,6 @@
 		<!-- ── Main workspace (id="main-content" di root div bawah) ──────────────── -->
 		<!-- ── Command Bar (extracted to <KasirCommandBar>) ──────────────────────── -->
 		<KasirCommandBar
-			cashierName={currentUser?.full_name ?? 'Kasir'}
-			outletName="Duamart Panjen"
-			shiftNo="#12345"
-			role="CASHIER"
-			salesTodayFmt={fmt(847500)}
-			txCount={23}
-			txTarget={35}
-			{timeStr}
 			cartItemCount={totalQty}
 			{cartDrawerOpen}
 			onToggleCart={() => (cartDrawerOpen = !cartDrawerOpen)}
@@ -714,7 +716,7 @@
 					{#if productsLoading}
 						<div
 							class="grid"
-							style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px"
+							style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px"
 						>
 							{#each Array(12) as _, i}
 								<div
@@ -781,7 +783,7 @@
 					{:else}
 						<div
 							class="grid"
-							style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; column-gap: 8px; row-gap: 8px"
+							style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; column-gap: 10px; row-gap: 10px"
 						>
 							{#each filtered as product (product.id)}
 								{@const inCartQty = cart.find((c) => c.id === product.id)?.qty ?? 0}

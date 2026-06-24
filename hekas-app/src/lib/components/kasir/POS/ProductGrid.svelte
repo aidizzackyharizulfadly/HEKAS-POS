@@ -63,7 +63,7 @@
 	});
 </script>
 
-<div class="flex w-full flex-col gap-3">
+<div class="flex w-full flex-col gap-5">
 	{#if showCategoryTabs && categories.length > 0}
 		<div
 			class="scrollbar-thin flex gap-1.5 overflow-x-auto pb-1"
@@ -129,7 +129,7 @@
 	{/if}
 
 	{#if loading}
-		<div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr))">
+		<div class="grid gap-5" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))">
 			{#each Array(8) as _, i (i)}
 				<div class="bg-muted aspect-[3/4] animate-pulse rounded-lg"></div>
 			{/each}
@@ -141,7 +141,7 @@
 			<p class="text-xs">{emptyDescription}</p>
 		</div>
 	{:else}
-		<div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr))">
+		<div class="grid gap-5" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))">
 			{#each visible as p (p.id)}
 				<ProductCard
 					product={p}

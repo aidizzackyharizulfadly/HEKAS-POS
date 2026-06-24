@@ -434,13 +434,6 @@
 						? '1px solid #E2EBF4'
 						: 'transparent'}"
 				>
-					<!-- Emoji icon -->
-					<div
-						class="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"
-						style="background: #F0F4F8"
-					>
-						{item.image}
-					</div>
 
 					<div class="flex-1 min-w-0">
 						<div class="truncate" style="font-size: 12; font-weight: 500">
