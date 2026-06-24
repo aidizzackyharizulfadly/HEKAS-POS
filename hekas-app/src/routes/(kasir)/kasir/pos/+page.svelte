@@ -34,7 +34,6 @@
 		stopListening
 	} from '$lib/utils/shortcuts';
 	import { toggleTheme } from '$lib/utils/theme';
-	import { playScan, playSuccess, playError } from '$lib/utils/sound';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { cn } from '$lib/utils';
@@ -54,7 +53,6 @@
 	// Fase 5: Multi-payment split
 	let paymentFormOpen = $state(false);
 	let numpadValue = $state('');
-	let now = $state(new Date());
 	let lastChange = $state(0); // total kembalian dari PaymentForm (untuk receipt)
 
 	// ─── Modal focus management ─────────────────────────────────────────────
@@ -169,7 +167,6 @@
 	let showPrintPreview = $state(false);
 	let showClosingShift = $state(false);
 	let showSettings = $state(false);
-	let lightboxImage = $state<string | null>(null);
 	let showShortcuts = $state(false);
 	let toast = $state<{ kind: 'success' | 'error' | 'info'; text: string } | null>(null);
 
@@ -277,18 +274,6 @@
 		lainnya: { from: '#F1F5F9', to: '#E2E8F0' },
 		default: { from: '#F1F5F9', to: '#E2E8F0' }
 	};
-
-	// ─── Clock ─────────────────────────────────────────────────────────────────
-	$effect(() => {
-		const t = setInterval(() => {
-			now = new Date();
-		}, 1000);
-		return () => clearInterval(t);
-	});
-
-	const timeStr = $derived(
-		now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-	);
 
 	// ─── Filtering ───────────────────────────────────────────────────────────────
 	const filtered = $derived(
@@ -795,7 +780,6 @@
 										lastTriggerEl = document.activeElement as HTMLElement;
 										if (product.stock > 0) addProduct(product);
 									}}
-									onzoom={(img) => (lightboxImage = img)}
 								/>
 							{/each}
 						</div>
@@ -1541,25 +1525,7 @@
 		}}
 	/>
 
-	<!-- Fase F: Lightbox modal (zoom product image) -->
-	{#if lightboxImage}
-		<div
-			class="fixed inset-0 z-[9999] flex items-center justify-center"
-			style="background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); cursor: zoom-out"
-			onclick={() => (lightboxImage = null)}
-			onkeydown={(e) => {
-				if (e.key === 'Escape') lightboxImage = null;
-			}}
-			role="button"
-			tabindex="-1"
-		>
-			<img
-				src={lightboxImage}
-				alt="Product zoom"
-				style="max-width: 90vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); cursor: default"
-			/>
-		</div>
-	{/if}
+	<!-- Fase F: Lightbox modal removed (PosProductCard no longer shows images) -->
 </div>
 
 <style>

@@ -6,7 +6,6 @@
   v2.0 — enhanced: KPI strip, LineChart for daily revenue, BarChart for category.
 -->
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { api } from '$lib/api';
 	import LabaRugiCard from '$lib/components/manager/Keuangan/LabaRugiCard.svelte';
 	import LineChart from '$lib/components/shared/charts/LineChart.svelte';
@@ -98,9 +97,8 @@
 		loading = false;
 	}
 
-	onMount(fetchData);
-
-	// Reload when period changes
+	// Load on mount + reload when period changes.
+	// $effect runs once on init (period has default value), so no separate onMount needed.
 	$effect(() => {
 		if (period) fetchData();
 	});
