@@ -5,9 +5,6 @@
 	import { cubicOut } from 'svelte/easing';
 	import { api } from '$lib/api';
 	import type { Product } from '$lib/types/domain';
-	import type { ProductImageMeta } from '$lib/types/api';
-	import ImageUploader from '$lib/components/gudang/Inventaris/ImageUploader.svelte';
-	import { getStorageQuota, formatBytes } from '$lib/utils/image';
 	import RoleShell from '$lib/components/shared/RoleShell.svelte';
 
 	// ─── Current user (untuk RoleShell TopBar) ────────────────────────────────
@@ -49,11 +46,6 @@
 
 	let toast = $state<{ kind: 'success' | 'error' | 'info'; text: string } | null>(null);
 
-	// ─── Fase F: Image upload state ─────────────────────────────────────────────
-	let imageUploadingFor = $state<number | null>(null);
-	let lightboxImage = $state<string | null>(null);
-	const storageQuota = $derived(getStorageQuota());
-	const quotaPercent = $derived(Math.round(storageQuota.percentUsed * 100));
 
 	// ─── Helpers ────────────────────────────────────────────────────────────────
 	const fmt = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
@@ -93,39 +85,6 @@
 		}
 	}
 
-	// ─── Fase F: Image upload handlers ──────────────────────────────────────────
-	async function handleSaveImage(productId: number, meta: ProductImageMeta) {
-		try {
-			const updated = await api.products.setProductImage(productId, meta);
-			// Update local list
-			const idx = products.findIndex((p) => p.id === productId);
-			if (idx >= 0) products[idx] = updated;
-			imageUploadingFor = null;
-			showToast('success', `Image produk #${productId} berhasil disimpan (${formatBytes(meta.image_size)})`);
-		} catch (e: any) {
-			showToast('error', e.message ?? 'Gagal menyimpan image');
-		}
-	}
-
-	async function handleRemoveImage(productId: number) {
-		try {
-			const updated = await api.products.removeProductImage(productId);
-			const idx = products.findIndex((p) => p.id === productId);
-			if (idx >= 0) products[idx] = updated;
-			imageUploadingFor = null;
-			showToast('success', 'Image dihapus, kembali ke emoji');
-		} catch (e: any) {
-			showToast('error', e.message ?? 'Gagal menghapus image');
-		}
-	}
-
-	function openImageUploader(productId: number) {
-		imageUploadingFor = productId;
-	}
-
-	function showLightbox(imageData: string) {
-		lightboxImage = imageData;
-	}
 
 	onMount(loadAll);
 
@@ -188,7 +147,7 @@
 				barcode: editForm.barcode,
 				stock: Number(editForm.stock),
 				unit: editForm.unit,
-				image: editForm.image,
+				
 			});
 			await loadAll();
 			closeEdit();
@@ -232,7 +191,6 @@
 			price: 0,
 			stock: 0,
 			unit: 'pcs',
-			image: '📦',
 			is_active: true,
 		};
 		createError = null;
@@ -268,7 +226,7 @@
 				barcode: createForm.barcode!,
 				stock: Number(createForm.stock),
 				unit: createForm.unit ?? 'pcs',
-				image: createForm.image ?? '📦',
+				
 				is_active: true,
 			});
 			await loadAll();
@@ -303,7 +261,7 @@
 <RoleShell
 	role="gudang"
 	title="Manajemen Gudang"
-	subtitle="Gudang Utama · {stats.total} produk aktif · {stats.outOfStock} habis · {stats.lowStock} hampir habis · 🖼️ {storageQuota.productsImageCount} dengan foto"
+	subtitle="Gudang Utama · {stats.total} produk aktif · {stats.outOfStock} habis · {stats.lowStock} hampir habis"
 	user={currentUser}
 	onlogout={handleLogout}
 >
@@ -343,7 +301,7 @@
 
 	<!-- ── Tabs + Filter ────────────────────────────────────────────────── -->
 	<nav class="shrink-0 flex items-center gap-1 px-6" style="background: #fff; border-bottom: 1px solid #E2E8F0">
-		{#each [['inventaris', '📦 Inventaris'], ['mutasi', '🔄 Mutasi Stok']] as [id, label]}
+		{#each [['inventaris', 'Inventaris'], ['mutasi', '🔄 Mutasi Stok']] as [id, label]}
 			{@const isActive = activeTab === id}
 			<button
 				onclick={() => activeTab = id as TabId}
@@ -413,26 +371,12 @@
 								{#each filtered as p (p.id)}
 									{@const st = statusOf(p)}
 									<tr style="border-top: 1px solid #F1F5F9; opacity: {p.is_active ? 1 : 0.45}">
-										<td class="py-2 px-3">
-											<div class="flex items-center gap-2">
-												{#if p.image_data}
-													<button
-														onclick={() => showLightbox(p.image_data!)}
-														class="shrink-0 rounded-md overflow-hidden"
-														style="width: 36px; height: 36px; background: #F1F5F9; border: 1px solid #E2E8F0; padding: 0; cursor: zoom-in"
-														title="Klik untuk zoom"
-													>
-														<img src={p.image_data} alt={p.name} style="width: 100%; height: 100%; object-fit: cover; display: block" />
-													</button>
-												{:else}
-													<span style="font-size: 18px">{p.image}</span>
-												{/if}
-												<div>
-													<div style="font-weight: 600; color: #0F172A">{p.name}</div>
-													<div style="font-size: 10px; color: #94A3B8; font-family: 'SF Mono', Monaco, monospace">{p.barcode}</div>
-												</div>
-											</div>
-										</td>
+									<td class="py-2 px-3">
+										<div>
+											<div style="font-weight: 600; color: #0F172A">{p.name}</div>
+											<div style="font-size: 10px; color: #94A3B8; font-family: 'SF Mono', Monaco, monospace">{p.barcode}</div>
+										</div>
+									</td>
 										<td class="py-2 px-3" style="font-family: 'SF Mono', Monaco, monospace; color: #475569">{p.sku}</td>
 										<td class="py-2 px-3" style="color: #64748B">{p.category}</td>
 										<td class="py-2 px-3 text-right" style="font-weight: 600; color: #0F172A">{fmt(p.price)}</td>
@@ -446,20 +390,12 @@
 										<td class="py-2 px-3">
 											<span style="font-size: 10px; padding: 2px 8px; border-radius: 999px; background: {STATUS_CFG[st].bg}; color: {STATUS_CFG[st].fg}; font-weight: 700">{STATUS_CFG[st].label}</span>
 										</td>
-										<td class="py-2 px-3 text-right">
-											<button
-												onclick={() => openImageUploader(p.id)}
-												class="px-2 py-1 rounded"
-												style="font-size: 11px; background: {p.image_data ? '#D1FAE5' : '#FEF3C7'}; color: {p.image_data ? '#065F46' : '#92400E'}; font-weight: 600"
-												title={p.image_data ? 'Ganti image' : 'Upload image'}
-											>
-												{p.image_data ? '🖼️ Ganti' : '🖼️ Upload'}
-											</button>
-											<button onclick={() => openEdit(p)} class="px-2 py-1 rounded ml-1" style="font-size: 11px; background: #EFF6FF; color: #2563EB; font-weight: 600">Edit</button>
-											{#if p.is_active}
-												<button onclick={() => deactivateProduct(p)} class="px-2 py-1 rounded ml-1" style="font-size: 11px; background: #FEE2E2; color: #DC2626; font-weight: 600">Nonaktif</button>
-											{/if}
-										</td>
+							<td class="py-2 px-3 text-right">
+								<button onclick={() => openEdit(p)} class="px-2 py-1 rounded" style="font-size: 11px; background: #EFF6FF; color: #2563EB; font-weight: 600">Edit</button>
+								{#if p.is_active}
+									<button onclick={() => deactivateProduct(p)} class="px-2 py-1 rounded ml-1" style="font-size: 11px; background: #FEE2E2; color: #DC2626; font-weight: 600">Nonaktif</button>
+								{/if}
+							</td>
 									</tr>
 								{/each}
 							</tbody>
@@ -487,7 +423,7 @@
 							<select bind:value={mutasiProductId} class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; background: #fff">
 								<option value="">— Pilih produk —</option>
 								{#each products.filter((p) => p.is_active) as p}
-									<option value={p.id}>{p.image} {p.name} (stok: {p.stock})</option>
+									<option value={p.id}>{p.name} (stok: {p.stock})</option>
 								{/each}
 							</select>
 						</label>
@@ -603,10 +539,6 @@
 								<option value="pcs">pcs</option><option value="btl">btl</option><option value="kg">kg</option><option value="ltr">ltr</option><option value="bks">bks</option>
 							</select>
 						</label>
-						<label class="block">
-							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Icon</span>
-							<input bind:value={editForm.image} maxlength="4" class="w-full mt-1 px-3 py-2 rounded-lg text-center" style="font-size: 18px; border: 1px solid #E2E8F0" />
-						</label>
 					</div>
 					{#if editError}
 						<div class="px-3 py-2 rounded-lg flex items-start gap-2" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; font-size: 12px">
@@ -669,13 +601,9 @@
 							<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Unit</span>
 							<select bind:value={createForm.unit} class="w-full mt-1 px-3 py-2 rounded-lg" style="font-size: 13px; border: 1px solid #E2E8F0; background: #fff">
 								<option value="pcs">pcs</option><option value="btl">btl</option><option value="kg">kg</option><option value="ltr">ltr</option><option value="bks">bks</option>
-							</select>
-						</label>
-					</div>
-					<label class="block">
-						<span style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase">Icon (emoji)</span>
-						<input bind:value={createForm.image} maxlength="4" class="w-full mt-1 px-3 py-2 rounded-lg text-center" style="font-size: 18px; border: 1px solid #E2E8F0" placeholder="📦" />
+						</select>
 					</label>
+					</div>
 					{#if createError}
 						<div class="px-3 py-2 rounded-lg flex items-start gap-2" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; font-size: 12px">
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 2px; flex-shrink: 0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -708,41 +636,11 @@
 			</div>
 			{/if}
 
-			<!-- ── Fase F: Image Uploader modal ─────────────────────────────────────────── -->
-			{#if imageUploadingFor !== null}
-			{@const uploadProduct = products.find((p) => p.id === imageUploadingFor)}
-			{#if uploadProduct}
-				<ImageUploader
-					productId={imageUploadingFor}
-					currentImage={uploadProduct.image_data ?? null}
-					onsave={(meta) => handleSaveImage(imageUploadingFor!, meta)}
-					onremove={() => handleRemoveImage(imageUploadingFor!)}
-					onclose={() => (imageUploadingFor = null)}
-					showToast={(kind, msg) => showToast(kind, msg)}
-				/>
-			{/if}
-			{/if}
 
-			<!-- ── Fase F: Lightbox modal ───────────────────────────────────────────────── -->
-			{#if lightboxImage}
-				<div
-					class="fixed inset-0 z-[2000] flex items-center justify-center"
-					style="background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); cursor: zoom-out"
-					onclick={() => (lightboxImage = null)}
-					onkeydown={(e) => { if (e.key === 'Escape') lightboxImage = null; }}
-					role="button"
-					tabindex="-1"
-				>
-					<img
-						src={lightboxImage}
-						alt="Product"
-						style="max-width: 90vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); cursor: default"
-					/>
-			</div>
-		{/if}
+
 	</RoleShell>
 
-	<style>
+<style>
 @keyframes spin {
 	from { transform: rotate(0deg); }
 	to { transform: rotate(360deg); }

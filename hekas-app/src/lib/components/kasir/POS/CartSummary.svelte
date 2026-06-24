@@ -13,7 +13,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
-	import { RotateCcw, ShoppingCart, Package } from '@lucide/svelte';
+	import { RotateCcw, ShoppingCart } from '@lucide/svelte';
 
 	type Props = {
 		items: CartItem[];
@@ -75,13 +75,6 @@
 			<ul class="flex flex-col gap-1.5">
 				{#each items as item (item.id)}
 					<li class="flex items-center gap-2 text-sm">
-						<span class="text-base" aria-hidden="true">
-							{#if (item as any).image}
-								{(item as any).image}
-							{:else}
-								<Package class="text-muted-foreground size-4" />
-							{/if}
-						</span>
 						<div class="min-w-0 flex-1">
 							<div class="truncate text-[12.5px] font-semibold text-foreground">{item.name}</div>
 							<div class="text-muted-foreground text-[11px] tabular-nums">

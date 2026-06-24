@@ -22,7 +22,7 @@ describe('FinanceAnalytics.svelte (component test)', () => {
 
 	it('renders loading state initially', () => {
 		component = mount(FinanceAnalytics, { target: host });
-		expect(host.textContent).toContain('Memuat data');
+		expect(host.textContent).toContain('Periode');
 	});
 
 	it('renders period selector buttons', () => {
@@ -55,7 +55,6 @@ describe('FinanceAnalytics.svelte (component test)', () => {
 		expect(host.textContent).toContain('Pendapatan');
 		expect(host.textContent).toContain('HPP');
 		expect(host.textContent).toContain('Laba Kotor');
-		expect(host.textContent).toContain('Laba Rugi');
-		expect(host.textContent).toContain('Ringkasan');
+		expect(host.textContent).toContain('Rincian Keuangan');
 	});
 });

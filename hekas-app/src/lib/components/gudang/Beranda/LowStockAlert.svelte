@@ -11,7 +11,7 @@
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Card from '$lib/components/ui/card';
-	import { AlertTriangle, CheckCircle2, Package, Plus, ArrowRight } from '@lucide/svelte';
+	import { AlertTriangle, CheckCircle2, Plus, ArrowRight } from '@lucide/svelte';
 
 	interface Props {
 		products?: Product[];
@@ -82,17 +82,6 @@
 		<Card.Content class="divide-y divide-red-100 p-0">
 			{#each lowStock.slice(0, 5) as p (p.id)}
 				<div class="flex items-center gap-3 px-4 py-2.5">
-					<div
-						class="flex size-9 items-center justify-center rounded-lg text-lg"
-						class:bg-red-100={p.stock === 0}
-						class:bg-amber-100={p.stock > 0}
-					>
-						{#if p.image}
-							<span>{p.image}</span>
-						{:else}
-							<Package class="size-5 text-slate-500" aria-hidden="true" />
-						{/if}
-					</div>
 					<div class="min-w-0 flex-1">
 						<div class="truncate text-sm font-semibold text-foreground">{p.name}</div>
 						<div class="text-xs text-muted-foreground">

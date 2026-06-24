@@ -1,7 +1,14 @@
 /**
  * Domain entity types — comprehensive shape used by UI + API mock.
- * Field names match existing usage (lowercase + underscore untuk some, camelCase untuk others).
- * TODO R5: Align fully to DATABASE_DESIGN.md snake_case ketika BE ready.
+ *
+ * Konvensi (final per FE_HANDOFF v2.0.0):
+ *   - FE types pakai camelCase (JS convention)
+ *   - BE mapper di api/*.ts handle konversi BE snake_case → FE camelCase
+ *   - BE kirim: snake_case, UUID, money as string
+ *   - FE simpan: camelCase, hashed number id, money as number
+ *   - Mapper functions (beToFe*, feToBe*) jembatani kedua konvensi
+ *
+ * Lihat FE_HANDOFF.md §4 untuk daftar lengkap mapper per modul.
  */
 
 // ─── User & Auth ────────────────────────────────────────────────────────────

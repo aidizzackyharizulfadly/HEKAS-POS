@@ -1,11 +1,16 @@
 /**
- * Kasir route group — no-op load placeholder.
+ * Kasir route group — client-side RBAC guard.
  *
- * Akan berisi RBAC guard:
- * - Cek locals.user
- * - Redirect ke /login jika belum auth
- * - Redirect ke role home jika role tidak sesuai
- *
- * Untuk sekarang kosong sampai backend integration siap.
+ * Guard: hanya user dengan role 'kasir' yang bisa akses.
+ * Kalau belum login → redirect ke /login.
+ * Kalau role salah → redirect ke role home masing-masing.
  */
+import { clientGuard } from '$lib/auth/guard';
+import type { LayoutLoad } from './$types';
+
+export const load: LayoutLoad = async () => {
+	clientGuard(['kasir']);
+	return {};
+};
+
 export const prerender = false;

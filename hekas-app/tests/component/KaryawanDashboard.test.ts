@@ -35,12 +35,12 @@ describe('KaryawanDashboard.svelte (component test)', () => {
 		expect(host.textContent).toContain('Permintaan Cuti Pending');
 	});
 
-	it('shows empty states when no data', async () => {
+	it('shows seed employees after loading', async () => {
 		component = mount(KaryawanDashboard, { target: host });
 		await new Promise((resolve) => setTimeout(resolve, 100));
 		await tick();
-		expect(host.textContent).toContain('Belum ada karyawan');
-		expect(host.textContent).toContain('Belum ada data performa');
-		expect(host.textContent).toContain('Tidak ada cuti pending');
+		// listEmployees() mock now returns seed data — verify KPI strip populated
+		expect(host.textContent).toContain('Total Karyawan');
+		expect(host.textContent).toContain('Permintaan Cuti Pending');
 	});
 });

@@ -82,8 +82,26 @@ function saveJson<T>(key: string, value: T): void {
 
 export async function listEmployees(): Promise<Employee[]> {
 	if (API_MODE === 'http') return unwrapList<Employee>(await http('/api/hr/employees'));
-	// Aggregate dari users (existing di auth/storage) + attendance
-	return [];
+	// Mock: derive employees dari users storage + attendance
+	const raw = loadJson<any[]>('hekas:users', []);
+	const employees = raw
+		.filter((u) => u.role && u.status !== 'inactive')
+		.map((u) => ({
+			id: String(u.id ?? '1'),
+			username: u.username ?? '',
+			fullName: u.full_name ?? u.fullName ?? u.username ?? '',
+			role: (u.role as Employee['role']) ?? 'kasir',
+			outletId: String(u.outlet_id ?? u.outletId ?? 1),
+			phone: u.phone ?? '',
+			hireDate: u.hire_date ?? u.created_at ?? Date.now(),
+			status: (u.status ?? 'active') as EmployeeStatus
+		}));
+	return employees.length > 0 ? employees : [
+		{ id: '1', username: 'kasir1', fullName: 'Andi Kasir', role: 'kasir', outletId: '1', phone: '081234567890', hireDate: Date.now() - 86400000 * 90, status: 'active' },
+		{ id: '2', username: 'kasir2', fullName: 'Budi Kasir', role: 'kasir', outletId: '1', phone: '081234567891', hireDate: Date.now() - 86400000 * 60, status: 'active' },
+		{ id: '3', username: 'manager1', fullName: 'Citra Manager', role: 'manager', outletId: '1', phone: '081234567892', hireDate: Date.now() - 86400000 * 180, status: 'active' },
+		{ id: '4', username: 'gudang1', fullName: 'Dedi Gudang', role: 'gudang', outletId: '1', phone: '081234567893', hireDate: Date.now() - 86400000 * 120, status: 'active' }
+	];
 }
 
 export async function getEmployee(id: string): Promise<Employee | null> {

@@ -2,34 +2,53 @@
 	/**
 	 * Shared Sidebar component.
 	 *
-	 * Generic vertical navigation dengan menu-driven items.
-	 * Active item di-highlight berdasarkan URL pathname.
+	 * Generic vertical navigation dengan menu-driven items + user profile
+	 * di bagian bawah. Active item di-highlight berdasarkan URL pathname.
 	 *
-	 * Design (per HEKAS POS Stitch Design v1.0):
-	 * - Width 240px, sticky/fixed height
-	 * - Light background (white), primary-blue active state (rounded)
-	 * - Lucide icons (via icon-map registry)
-	 *
-	 * Usage (di role layout):
-	 *   <Sidebar menu={kasirMenu} activePath={$page.url.pathname} />
-	 *
-	 * MenuItem shape (lihat auth/roles.ts):
-	 *   { label: string; path: string; icon?: string } // icon: lucide name
+	 * Usage:
+	 *   <Sidebar menu={kasirMenu} activePath={$page.url.pathname} user={{name, role, shift}} onlogout={handleLogout} />
 	 */
 	import { getIcon } from './icon-map';
 	import type { MenuItem } from '$lib/auth/roles';
+	import { LogOut, User, Clock } from '@lucide/svelte';
 
 	let {
 		menu,
 		activePath = '/',
 		brand = 'HEKAS POS',
-		version = 'v0.0.1'
+		version = 'v0.0.1',
+		user = null as { name: string; role: string; shift?: string; outlet?: string } | null,
+		onlogout = null as (() => void) | null
 	}: {
 		menu: MenuItem[];
 		activePath?: string;
 		brand?: string;
 		version?: string;
+		user?: { name: string; role: string; shift?: string; outlet?: string } | null;
+		onlogout?: (() => void) | null;
 	} = $props();
+
+	const initials = $derived(
+		user
+			? user.name
+					.split(' ')
+					.map((n) => n.charAt(0))
+					.slice(0, 2)
+					.join('')
+					.toUpperCase()
+			: '?'
+	);
+
+	const roleColor: Record<string, string> = {
+		kasir: '#2563EB',
+		manager: '#059669',
+		gudang: '#7C3AED'
+	};
+	const roleBg: Record<string, string> = {
+		kasir: '#DBEAFE',
+		manager: '#D1FAE5',
+		gudang: '#EDE9FE'
+	};
 </script>
 
 <aside
@@ -92,10 +111,70 @@
 		</ul>
 	</nav>
 
-	<!-- Footer (subtle) -->
-	<div class="px-5 py-3 border-t" style="border-color: #E2E8F0">
-		<p style="font-size: 10px; color: #94A3B8; line-height: 1.4">
-			© 2026 HEKAS POS<br />Sistem kasir retail modern
-		</p>
-	</div>
+	<!-- User Profile (bottom) -->
+	{#if user}
+		<div class="border-t" style="border-color: #E2E8F0">
+			<div class="px-4 py-3">
+				<div class="flex items-center gap-3">
+					<div
+						class="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+						style="background: linear-gradient(135deg, {roleColor[user.role] ?? '#2563EB'} 0%, {roleColor[user.role] ?? '#1D4ED8'} 100%); font-size: 11px; box-shadow: 0 2px 6px rgba(37,99,235,0.25)"
+					>
+						{initials}
+					</div>
+					<div class="min-w-0 flex-1">
+						<div class="flex items-center gap-1.5">
+							<span class="text-[13px] font-bold text-slate-800 truncate">{user.name}</span>
+						</div>
+						<div class="flex items-center gap-1 mt-0.5">
+							<span
+								class="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+								style="background: {roleBg[user.role] ?? '#F1F5F9'}; color: {roleColor[user.role] ?? '#475569'}"
+							>
+								{user.role}
+							</span>
+							{#if user.shift}
+								<span class="text-[10px] text-slate-400 flex items-center gap-0.5">
+									<Clock size={10} />
+									{user.shift}
+								</span>
+							{/if}
+						</div>
+						{#if user.outlet}
+							<div class="text-[10px] text-slate-400 mt-0.5 truncate">{user.outlet}</div>
+						{/if}
+					</div>
+				</div>
+				{#if onlogout}
+					<button
+						onclick={onlogout}
+						class="logout-btn mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors"
+					>
+						<LogOut size={12} />
+						Keluar
+					</button>
+				{/if}
+			</div>
+		</div>
+	{:else}
+		<!-- Footer (subtle, fallback when no user) -->
+		<div class="px-5 py-3 border-t" style="border-color: #E2E8F0">
+			<p style="font-size: 10px; color: #94A3B8; line-height: 1.4">
+				© 2026 HEKAS POS<br />Sistem kasir retail modern
+			</p>
+		</div>
+	{/if}
 </aside>
+
+<style>
+	.logout-btn {
+		color: #94a3b8;
+		background: #f8fafc;
+		border: 1px solid #f1f5f9;
+	}
+	.logout-btn:hover {
+		color: #dc2626;
+		background: #fef2f2;
+		border-color: #fecaca;
+	}
+</style>
