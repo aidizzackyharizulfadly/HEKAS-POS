@@ -5,6 +5,8 @@
   Setiap task: icon + title + sub-info + status badge (Proses/Menunggu/Terjadwal).
 -->
 <script lang="ts">
+	import StatusIcon from '$lib/components/shared/StatusIcon.svelte';
+
 	export type TaskStatus = 'proses' | 'menunggu' | 'terjadwal' | 'selesai';
 	export type TaskType = 'unloading' | 'pickup' | 'stockopname' | 'restock' | 'verify';
 
@@ -28,11 +30,11 @@
 	let { tasks, onViewAll, onTaskClick }: Props = $props();
 
 	const ICON_MAP: Record<TaskType, string> = {
-		unloading: '📦',
-		pickup: '🚚',
-		stockopname: '🔄',
-		restock: '🛒',
-		verify: '✓'
+		unloading: 'package',
+		pickup: 'truck',
+		stockopname: 'rotate-ccw',
+		restock: 'shopping-cart',
+		verify: 'check'
 	};
 
 	const STATUS_MAP: Record<TaskStatus, { label: string; bg: string; fg: string }> = {
@@ -75,9 +77,9 @@
 					class="w-full flex items-start gap-4 px-6 py-4 hover:bg-slate-50 transition-colors text-left"
 					onclick={() => onTaskClick?.(task)}
 				>
-					<div class="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-600 text-lg flex-shrink-0">
-						{ICON_MAP[task.type]}
-					</div>
+					<div class="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-600 flex-shrink-0">
+										<StatusIcon icon={ICON_MAP[task.type]} size={18} />
+									</div>
 					<div class="flex-1 min-w-0">
 						<div class="text-sm font-semibold text-slate-900">{task.title}</div>
 						<div class="text-xs text-slate-500 mt-1 flex items-center gap-1">

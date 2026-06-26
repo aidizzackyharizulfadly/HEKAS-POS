@@ -1157,7 +1157,7 @@
 				max-width: 400px;
 			"
 		>
-			{memberToast.kind === 'success' ? '✓' : memberToast.kind === 'error' ? '✕' : 'ⓘ'} {memberToast.msg}
+			{memberToast.kind === 'success' ? 'check' : memberToast.kind === 'error' ? 'x' : 'ⓘ'} {memberToast.msg}
 		</div>
 	{/if}
 </RoleShell>

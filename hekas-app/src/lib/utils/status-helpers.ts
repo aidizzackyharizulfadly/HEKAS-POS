@@ -24,15 +24,15 @@ export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock' | 'overstock
 
 export function stockStatus(stock: number, minStock = 10, maxStock = 1000): StatusMeta {
 	if (stock <= 0) {
-		return { label: 'Habis', color: 'red', icon: '🚫', severity: 'error' };
+		return { label: 'Habis', color: 'red', icon: 'ban', severity: 'error' };
 	}
 	if (stock < minStock) {
-		return { label: 'Hampir habis', color: 'yellow', icon: '⚠️', severity: 'warning' };
+		return { label: 'Hampir habis', color: 'yellow', icon: 'alert-triangle', severity: 'warning' };
 	}
 	if (stock > maxStock) {
-		return { label: 'Overstock', color: 'purple', icon: '📦', severity: 'info' };
+		return { label: 'Overstock', color: 'purple', icon: 'package', severity: 'info' };
 	}
-	return { label: 'Tersedia', color: 'green', icon: '✅', severity: 'success' };
+	return { label: 'Tersedia', color: 'green', icon: 'check-circle', severity: 'success' };
 }
 
 // ─── Payment status (transaksi, shift) ─────────────────────────────────────
@@ -44,25 +44,25 @@ export function paymentStatus(status: string): StatusMeta {
 	switch (s) {
 		case 'paid':
 		case 'lunas':
-			return { label: 'Lunas', color: 'green', icon: '✓', severity: 'success' };
+			return { label: 'Lunas', color: 'green', icon: 'check', severity: 'success' };
 		case 'partial':
 		case 'sebagian':
-			return { label: 'Sebagian', color: 'yellow', icon: '◐', severity: 'warning' };
+			return { label: 'Sebagian', color: 'yellow', icon: 'circle-slash', severity: 'warning' };
 		case 'pending':
 		case 'menunggu':
-			return { label: 'Menunggu', color: 'blue', icon: '⏳', severity: 'info' };
+			return { label: 'Menunggu', color: 'blue', icon: 'hourglass', severity: 'info' };
 		case 'failed':
 		case 'gagal':
-			return { label: 'Gagal', color: 'red', icon: '✗', severity: 'error' };
+			return { label: 'Gagal', color: 'red', icon: 'x', severity: 'error' };
 		case 'refunded':
 		case 'dikembalikan':
-			return { label: 'Dikembalikan', color: 'purple', icon: '↩', severity: 'info' };
+			return { label: 'Dikembalikan', color: 'purple', icon: 'repeat', severity: 'info' };
 		case 'cancelled':
 		case 'dibatalkan':
 		case 'void':
-			return { label: 'Dibatalkan', color: 'gray', icon: '⊘', severity: 'neutral' };
+			return { label: 'Dibatalkan', color: 'gray', icon: 'ban', severity: 'neutral' };
 		default:
-			return { label: status, color: 'gray', icon: '•', severity: 'neutral' };
+			return { label: status, color: 'gray', icon: 'circle', severity: 'neutral' };
 	}
 }
 
@@ -75,29 +75,29 @@ export function orderStatus(status: string): StatusMeta {
 	switch (s) {
 		case 'draft':
 		case 'draf':
-			return { label: 'Draft', color: 'gray', icon: '📝', severity: 'neutral' };
+			return { label: 'Draft', color: 'gray', icon: 'file-text', severity: 'neutral' };
 		case 'open':
 		case 'aktif':
-			return { label: 'Aktif', color: 'blue', icon: '◉', severity: 'info' };
+			return { label: 'Aktif', color: 'blue', icon: 'circle', severity: 'info' };
 		case 'pending':
 		case 'menunggu':
-			return { label: 'Menunggu', color: 'yellow', icon: '⏳', severity: 'warning' };
+			return { label: 'Menunggu', color: 'yellow', icon: 'hourglass', severity: 'warning' };
 		case 'in_progress':
 		case 'diproses':
 		case 'processing':
-			return { label: 'Diproses', color: 'blue', icon: '🔄', severity: 'info' };
+			return { label: 'Diproses', color: 'blue', icon: 'repeat', severity: 'info' };
 		case 'completed':
 		case 'selesai':
-			return { label: 'Selesai', color: 'green', icon: '✓', severity: 'success' };
+			return { label: 'Selesai', color: 'green', icon: 'check', severity: 'success' };
 		case 'voided':
 		case 'void':
 		case 'dibatalkan':
-			return { label: 'Void', color: 'red', icon: '⊘', severity: 'error' };
+			return { label: 'Void', color: 'red', icon: 'ban', severity: 'error' };
 		case 'refunded':
 		case 'dikembalikan':
-			return { label: 'Refund', color: 'purple', icon: '↩', severity: 'info' };
+			return { label: 'Refund', color: 'purple', icon: 'repeat', severity: 'info' };
 		default:
-			return { label: status, color: 'gray', icon: '•', severity: 'neutral' };
+			return { label: status, color: 'gray', icon: 'circle', severity: 'neutral' };
 	}
 }
 
@@ -110,19 +110,19 @@ export function shiftStatus(status: string): StatusMeta {
 	switch (s) {
 		case 'open':
 		case 'aktif':
-			return { label: 'Aktif', color: 'green', icon: '🟢', severity: 'success' };
+			return { label: 'Aktif', color: 'green', icon: 'circle', severity: 'success' };
 		case 'closed':
 		case 'selesai':
 		case 'ditutup':
-			return { label: 'Ditutup', color: 'gray', icon: '⚫', severity: 'neutral' };
+			return { label: 'Ditutup', color: 'gray', icon: 'circle', severity: 'neutral' };
 		case 'paused':
 		case 'dijeda':
-			return { label: 'Dijeda', color: 'yellow', icon: '⏸', severity: 'warning' };
+			return { label: 'Dijeda', color: 'yellow', icon: 'pause', severity: 'warning' };
 		case 'late':
 		case 'terlambat':
-			return { label: 'Terlambat', color: 'red', icon: '⏰', severity: 'error' };
+			return { label: 'Terlambat', color: 'red', icon: 'clock', severity: 'error' };
 		default:
-			return { label: status, color: 'gray', icon: '•', severity: 'neutral' };
+			return { label: status, color: 'gray', icon: 'circle', severity: 'neutral' };
 	}
 }
 
@@ -136,25 +136,25 @@ export function attendanceStatus(status: string): StatusMeta {
 		case 'present':
 		case 'hadir':
 		case 'masuk':
-			return { label: 'Hadir', color: 'green', icon: '✓', severity: 'success' };
+			return { label: 'Hadir', color: 'green', icon: 'check', severity: 'success' };
 		case 'late':
 		case 'terlambat':
-			return { label: 'Terlambat', color: 'yellow', icon: '⏰', severity: 'warning' };
+			return { label: 'Terlambat', color: 'yellow', icon: 'clock', severity: 'warning' };
 		case 'absent':
 		case 'alpha':
 		case 'tidak_hadir':
-			return { label: 'Tidak Hadir', color: 'red', icon: '✗', severity: 'error' };
+			return { label: 'Tidak Hadir', color: 'red', icon: 'x', severity: 'error' };
 		case 'leave':
 		case 'cuti':
-			return { label: 'Cuti', color: 'blue', icon: '🏖', severity: 'info' };
+			return { label: 'Cuti', color: 'blue', icon: 'umbrella-beach', severity: 'info' };
 		case 'sick':
 		case 'sakit':
-			return { label: 'Sakit', color: 'orange', icon: '🤒', severity: 'warning' };
+			return { label: 'Sakit', color: 'orange', icon: 'frown', severity: 'warning' };
 		case 'permit':
 		case 'izin':
-			return { label: 'Izin', color: 'purple', icon: '📄', severity: 'info' };
+			return { label: 'Izin', color: 'purple', icon: 'file-text', severity: 'info' };
 		default:
-			return { label: status, color: 'gray', icon: '•', severity: 'neutral' };
+			return { label: status, color: 'gray', icon: 'circle', severity: 'neutral' };
 	}
 }
 
@@ -166,34 +166,34 @@ export function suratJalanStatus(status: string): StatusMeta {
 	const s = status.toLowerCase();
 	switch (s) {
 		case 'draft':
-			return { label: 'Draft', color: 'gray', icon: '📝', severity: 'neutral' };
+			return { label: 'Draft', color: 'gray', icon: 'file-text', severity: 'neutral' };
 		case 'pending_review':
 		case 'review':
 		case 'menunggu_review':
-			return { label: 'Pending Review', color: 'yellow', icon: '⏳', severity: 'warning' };
+			return { label: 'Pending Review', color: 'yellow', icon: 'hourglass', severity: 'warning' };
 		case 'approved':
 		case 'disetujui':
-			return { label: 'Approved', color: 'green', icon: '✓', severity: 'success' };
+			return { label: 'Approved', color: 'green', icon: 'check', severity: 'success' };
 		case 'sent':
 		case 'dikirim':
-			return { label: 'Dikirim', color: 'blue', icon: '📤', severity: 'info' };
+			return { label: 'Dikirim', color: 'blue', icon: 'upload', severity: 'info' };
 		case 'in_transit':
 		case 'dalam_perjalanan':
-			return { label: 'Dalam Perjalanan', color: 'yellow', icon: '🚚', severity: 'warning' };
+			return { label: 'Dalam Perjalanan', color: 'yellow', icon: 'truck', severity: 'warning' };
 		case 'received':
 		case 'diterima':
-			return { label: 'Diterima', color: 'green', icon: '✓', severity: 'success' };
+			return { label: 'Diterima', color: 'green', icon: 'check', severity: 'success' };
 		case 'delivered':
 		case 'terkirim':
-			return { label: 'Terkirim', color: 'green', icon: '✅', severity: 'success' };
+			return { label: 'Terkirim', color: 'green', icon: 'check-circle', severity: 'success' };
 		case 'rejected':
 		case 'ditolak':
-			return { label: 'Ditolak', color: 'red', icon: '✗', severity: 'error' };
+			return { label: 'Ditolak', color: 'red', icon: 'x', severity: 'error' };
 		case 'completed':
 		case 'selesai':
-			return { label: 'Selesai', color: 'green', icon: '✓', severity: 'success' };
+			return { label: 'Selesai', color: 'green', icon: 'check', severity: 'success' };
 		default:
-			return { label: status, color: 'gray', icon: '•', severity: 'neutral' };
+			return { label: status, color: 'gray', icon: 'circle', severity: 'neutral' };
 	}
 }
 
@@ -206,16 +206,16 @@ export function purchaseOrderStatus(status: string): StatusMeta {
 	switch (s) {
 		case 'menunggu_verifikasi':
 		case 'pending':
-			return { label: 'Menunggu', color: 'yellow', icon: '⏳', severity: 'warning' };
+			return { label: 'Menunggu', color: 'yellow', icon: 'hourglass', severity: 'warning' };
 		case 'terverifikasi':
 		case 'verified':
 		case 'disetujui':
-			return { label: 'Terverifikasi', color: 'green', icon: '✓', severity: 'success' };
+			return { label: 'Terverifikasi', color: 'green', icon: 'check', severity: 'success' };
 		case 'ditolak':
 		case 'rejected':
-			return { label: 'Ditolak', color: 'red', icon: '✕', severity: 'error' };
+			return { label: 'Ditolak', color: 'red', icon: 'x', severity: 'error' };
 		default:
-			return { label: status, color: 'gray', icon: '•', severity: 'neutral' };
+			return { label: status, color: 'gray', icon: 'circle', severity: 'neutral' };
 	}
 }
 
@@ -228,18 +228,18 @@ export function leaveStatus(status: string): StatusMeta {
 	switch (s) {
 		case 'pending':
 		case 'menunggu':
-			return { label: 'Menunggu', color: 'yellow', icon: '⏳', severity: 'warning' };
+			return { label: 'Menunggu', color: 'yellow', icon: 'hourglass', severity: 'warning' };
 		case 'approved':
 		case 'disetujui':
-			return { label: 'Disetujui', color: 'green', icon: '✓', severity: 'success' };
+			return { label: 'Disetujui', color: 'green', icon: 'check', severity: 'success' };
 		case 'rejected':
 		case 'ditolak':
-			return { label: 'Ditolak', color: 'red', icon: '✗', severity: 'error' };
+			return { label: 'Ditolak', color: 'red', icon: 'x', severity: 'error' };
 		case 'cancelled':
 		case 'dibatalkan':
-			return { label: 'Dibatalkan', color: 'gray', icon: '⊘', severity: 'neutral' };
+			return { label: 'Dibatalkan', color: 'gray', icon: 'ban', severity: 'neutral' };
 		default:
-			return { label: status, color: 'gray', icon: '•', severity: 'neutral' };
+			return { label: status, color: 'gray', icon: 'circle', severity: 'neutral' };
 	}
 }
 

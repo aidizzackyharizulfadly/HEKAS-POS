@@ -47,12 +47,12 @@ export const PAYMENT_METHOD_LABEL: Record<PaymentMethodKind, string> = {
 
 /** Icon emoji default per metode */
 export const PAYMENT_METHOD_ICON: Record<PaymentMethodKind, string> = {
-  tunai: '💵',
-  qris: '📱',
-  debit: '💳',
-  kredit: '💳',
+  tunai: 'banknote',
+  qris: 'smartphone',
+  debit: 'credit-card',
+  kredit: 'credit-card',
   transfer: '🏦',
-  ewallet: '📲',
+  ewallet: 'smartphone',
 };
 
 /** metode yang butuh reference wajib (untuk audit/rekonsiliasi) */

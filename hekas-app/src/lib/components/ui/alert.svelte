@@ -28,9 +28,9 @@
 	const iconMap: Record<string, string> = {
 		default: 'ℹ️',
 		info: 'ℹ️',
-		success: '✅',
-		warning: '⚠️',
-		destructive: '❌'
+		success: 'check-circle',
+		warning: 'alert-triangle',
+		destructive: 'x'
 	};
 </script>
 

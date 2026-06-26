@@ -6,6 +6,7 @@
    * Used by: Manager Beranda (5 KPI), Gudang Beranda, Kasir CommandBar (live metrics),
    *          Manager Penjualan/Inventaris/Keuangan analytics, Manager Laporan KPI.
    */
+  import StatusIcon from '$lib/components/shared/StatusIcon.svelte';
 
   type Tone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
 
@@ -18,7 +19,7 @@
     unit?: string;
     /** Color tone for icon background + accent. */
     tone?: Tone;
-    /** Optional icon/emoji prefix. */
+    /** Optional icon name (lucide-svelte). Pass lucide name like "package", "check-circle". */
     icon?: string;
     /** Optional trend indicator (+/-X% or arrow). */
     trend?: { direction: 'up' | 'down' | 'flat'; label: string };
@@ -78,7 +79,7 @@
         style="background: {tc.bg}; color: {tc.text}"
         aria-hidden="true"
       >
-        {icon}
+        <StatusIcon {icon} size={20} />
       </div>
     {/if}
     <div class="stat-card__label">{label}</div>

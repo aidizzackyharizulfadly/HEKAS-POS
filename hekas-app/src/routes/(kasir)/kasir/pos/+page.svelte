@@ -529,7 +529,7 @@
 				barcode: '',
 				stock: 0,
 				unit: 'pcs',
-				image: '📦',
+				image: 'package',
 				is_active: true,
 				qty: c.qty,
 				disc: c.disc
