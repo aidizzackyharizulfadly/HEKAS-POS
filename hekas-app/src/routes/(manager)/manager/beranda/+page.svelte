@@ -11,6 +11,7 @@
 	import MemberDetail from '$lib/components/manager/Pelanggan/MemberDetail.svelte';
 	import TierBadge from '$lib/components/kasir/Pelanggan/TierBadge.svelte';
 	import RoleShell from '$lib/components/shared/RoleShell.svelte';
+	import ManagerKpiCard from '$lib/components/manager/Beranda/ManagerKpiCard.svelte';
 	import { exportTransactionsCSV, fmtIDR, printReport } from '$lib/utils/export';
 	import { isBackupStale } from '$lib/utils/backup';
 	import { showSuccess, showError, showInfo } from '$lib/utils/toast';
@@ -506,23 +507,36 @@
 		{:else if summary}
 			{#if activeTab === 'ringkasan'}
 				<div in:fade={{ duration: 150 }}>
-					<!-- KPI Cards -->
+					<!-- KPI Cards (extracted to ManagerKpiCard component) -->
 					<div class="grid grid-cols-4 gap-4 mb-6">
-						{#each [
-							{ label: 'Total Revenue', value: fmtCompact(summary.kpi.revenue), sub: `Rata-rata ${fmtCompact(summary.kpi.avg_transaction)}/tx`, color: '#2563EB', bg: '#EFF6FF', trend: summary.kpi.revenue > 0 ? '+12.4%' : '—' },
-							{ label: 'Transaksi', value: summary.kpi.transactions.toString(), sub: `${totalItemsSold} item terjual`, color: '#059669', bg: '#F0FDF4', trend: '+8.1%' },
-							{ label: 'Rata-rata', value: fmtCompact(summary.kpi.avg_transaction), sub: 'per transaksi', color: '#7C3AED', bg: '#F5F3FF', trend: '—' },
-							{ label: 'Stok Kritis', value: (summary.low_stock.length).toString(), sub: '≤ 10 pcs', color: summary.low_stock.length > 0 ? '#DC2626' : '#64748B', bg: summary.low_stock.length > 0 ? '#FEF2F2' : '#F1F5F9', trend: summary.low_stock.length > 0 ? 'Perhatian!' : 'Aman' },
-						] as kpi}
-							<div class="rounded-2xl p-4" style="background: #fff; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(15,23,42,0.04)">
-								<div class="flex items-center justify-between mb-2">
-									<div style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px">{kpi.label}</div>
-									<div class="px-2 py-0.5 rounded-md" style="font-size: 10px; font-weight: 700; color: {kpi.color}; background: {kpi.bg}">{kpi.trend}</div>
-								</div>
-								<div style="font-size: 24px; font-weight: 800; color: #0F172A; line-height: 1.1">{kpi.value}</div>
-								<div style="font-size: 11px; color: #94A3B8; margin-top: 4px">{kpi.sub}</div>
-							</div>
-						{/each}
+						<ManagerKpiCard
+							label="Total Revenue"
+							value={fmtCompact(summary.kpi.revenue)}
+							sub={`Rata-rata ${fmtCompact(summary.kpi.avg_transaction)}/tx`}
+							trend={summary.kpi.revenue > 0 ? '+12.4%' : '—'}
+							trendTone={summary.kpi.revenue > 0 ? 'success' : 'neutral'}
+						/>
+						<ManagerKpiCard
+							label="Transaksi"
+							value={summary.kpi.transactions.toString()}
+							sub={`${totalItemsSold} item terjual`}
+							trend="+8.1%"
+							trendTone="success"
+						/>
+						<ManagerKpiCard
+							label="Rata-rata"
+							value={fmtCompact(summary.kpi.avg_transaction)}
+							sub="per transaksi"
+							trend="—"
+							trendTone="neutral"
+						/>
+						<ManagerKpiCard
+							label="Stok Kritis"
+							value={(summary.low_stock.length).toString()}
+							sub="≤ 10 pcs"
+							trend={summary.low_stock.length > 0 ? 'Perhatian!' : 'Aman'}
+							trendTone={summary.low_stock.length > 0 ? 'danger' : 'success'}
+						/>
 					</div>
 
 					<div class="grid gap-4" style="grid-template-columns: 2fr 1fr">

@@ -33,11 +33,13 @@
 		<input type="checkbox" checked={control.dailySummary} onchange={(e) => onChange({ dailySummary: (e.target as HTMLInputElement).checked })} class="w-5 h-5 rounded text-blue-600" />
 	</label>
 
-	<div>
-		<label class="block text-sm font-semibold">Language</label><select aria-label="Language" value={control.language} onchange={(e) => onChange({ language: (e.target as HTMLSelectElement).value as 'id' | 'en' })} class="w-full px-3 py-2 border rounded-lg"><option value="id">Bahasa Indonesia</option><option value="en">English</option></select>
-	</div>
+	<label class="block">
+		<span class="block text-sm font-semibold">Language</span>
+		<select value={control.language} onchange={(e) => onChange({ language: (e.target as HTMLSelectElement).value as 'id' | 'en' })} class="w-full mt-1 px-3 py-2 border rounded-lg"><option value="id">Bahasa Indonesia</option><option value="en">English</option></select>
+	</label>
 
-	<div>
-		<label class="block text-sm font-semibold">Tone</label><select aria-label="Tone" value={control.tone} onchange={(e) => onChange({ tone: (e.target as HTMLSelectElement).value as 'formal' | 'casual' | 'friendly' })} class="w-full px-3 py-2 border rounded-lg"><option value="formal">Formal</option><option value="casual">Casual</option><option value="friendly">Friendly</option></select>
-	</div>
+	<label class="block">
+		<span class="block text-sm font-semibold">Tone</span>
+		<select value={control.tone} onchange={(e) => onChange({ tone: (e.target as HTMLSelectElement).value as 'formal' | 'casual' | 'friendly' })} class="w-full mt-1 px-3 py-2 border rounded-lg"><option value="formal">Formal</option><option value="casual">Casual</option><option value="friendly">Friendly</option></select>
+	</label>
 </div>
