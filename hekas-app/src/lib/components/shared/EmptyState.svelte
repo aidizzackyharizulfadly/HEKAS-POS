@@ -5,9 +5,10 @@
    *
    * Used by: every list page (orders empty, products empty, members empty, etc).
    */
+  import StatusIcon from '$lib/components/shared/StatusIcon.svelte';
 
   interface Props {
-    /** Big emoji or icon. */
+    /** Lucide icon name. */
     icon?: string;
     title: string;
     description?: string;
@@ -19,7 +20,7 @@
   }
 
   let {
-    icon = '📭',
+    icon = 'inbox',
     title,
     description,
     actionLabel,
@@ -29,7 +30,9 @@
 </script>
 
 <div class="empty-state" class:compact role="status" aria-live="polite">
-  <div class="empty-state__icon" aria-hidden="true">{icon}</div>
+  <div class="empty-state__icon" aria-hidden="true">
+    <StatusIcon {icon} size={48} />
+  </div>
   <h3 class="empty-state__title">{title}</h3>
   {#if description}
     <p class="empty-state__desc">{description}</p>

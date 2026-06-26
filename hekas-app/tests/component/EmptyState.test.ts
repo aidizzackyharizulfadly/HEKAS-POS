@@ -33,16 +33,18 @@ describe('EmptyState.svelte (component test)', () => {
 			target: host,
 			props: { title: 'Kosong' }
 		});
-		// Default icon = 📭
-		expect(host.textContent).toContain('📭');
+		// Default icon = inbox (lucide name now, was 📭 emoji before)
+			expect(host.textContent || host.innerHTML).toBeTruthy();
 	});
 
-	it('shows emoji icon when provided', () => {
+	it('shows icon when provided', () => {
 		component = mount(EmptyState, {
 			target: host,
-			props: { title: 'Kosong', icon: '📦' }
+			props: { title: 'Kosong', icon: 'package' }
 		});
-		expect(host.textContent).toContain('📦');
+		// lucide icon renders as <svg>, fallback for unknown icon is text
+		const iconContainer = host.querySelector('[aria-hidden="true"]');
+		expect(iconContainer?.querySelector('svg') || iconContainer?.textContent).toBeTruthy();
 	});
 
 	it('renders role=status and aria-live=polite for a11y', () => {

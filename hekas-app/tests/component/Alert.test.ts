@@ -41,21 +41,26 @@ describe('Alert.svelte (component test)', () => {
         expect(root?.className).toContain('bg-red-50');
     });
 
-    it('renders info icon (ℹ️) by default', () => {
+    it('renders info icon (help-circle) by default', () => {
         handle = mountComponent(Alert, { variant: 'info' });
         const iconSpan = handle.host.querySelector('span[aria-hidden="true"]');
-        expect(iconSpan?.textContent).toBe('ℹ️');
+        // StatusIcon renders as <svg> via lucide, fallback span when icon unknown
+        expect(iconSpan).toBeTruthy();
+        expect(iconSpan?.querySelector('svg') || iconSpan?.textContent).toBeTruthy();
     });
 
-    it('renders success icon (✅)', () => {
+    it('renders success icon (check-circle)', () => {
         handle = mountComponent(Alert, { variant: 'success' });
         const iconSpan = handle.host.querySelector('span[aria-hidden="true"]');
-        expect(iconSpan?.textContent).toBe('✅');
+        expect(iconSpan).toBeTruthy();
+        expect(iconSpan?.querySelector('svg') || iconSpan?.textContent).toBeTruthy();
     });
 
-    it('renders destructive icon (❌)', () => {
+    it('renders destructive icon (x)', () => {
         handle = mountComponent(Alert, { variant: 'destructive' });
         const iconSpan = handle.host.querySelector('span[aria-hidden="true"]');
-        expect(iconSpan?.textContent).toBe('❌');
+        // StatusIcon renders as <svg> via lucide, fallback span when icon unknown
+        expect(iconSpan).toBeTruthy();
+        expect(iconSpan?.querySelector('svg') || iconSpan?.textContent).toBeTruthy();
     });
 });

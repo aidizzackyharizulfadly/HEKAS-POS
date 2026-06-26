@@ -21,13 +21,14 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { cn } from '$lib/utils/cn';
+	import StatusIcon from '$lib/components/shared/StatusIcon.svelte';
 
 	type Props = { variant?: AlertVariant; class?: string; children?: Snippet };
 	let { variant = 'default', class: className = '', children }: Props = $props();
 
 	const iconMap: Record<string, string> = {
-		default: 'ℹ️',
-		info: 'ℹ️',
+		default: 'help-circle',
+		info: 'help-circle',
 		success: 'check-circle',
 		warning: 'alert-triangle',
 		destructive: 'x'
@@ -35,7 +36,9 @@
 </script>
 
 <div role="alert" class={cn(alertVariants({ variant }), className)}>
-	<span class="text-lg shrink-0" aria-hidden="true">{iconMap[variant]}</span>
+	<span class="text-lg shrink-0 inline-flex items-center justify-center" aria-hidden="true">
+		<StatusIcon icon={iconMap[variant]} size={18} />
+	</span>
 	<div class="flex-1 min-w-0">
 		{#if children}{@render children()}{/if}
 	</div>
