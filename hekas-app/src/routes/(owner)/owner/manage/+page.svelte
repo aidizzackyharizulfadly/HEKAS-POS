@@ -16,7 +16,7 @@
 	import OutletFilterBar, { type StatusFilter } from '$lib/components/owner/Manage/OutletFilterBar.svelte';
 	import OutletTable, { type Outlet } from '$lib/components/owner/Manage/OutletTable.svelte';
 	import OutletPagination from '$lib/components/owner/Manage/OutletPagination.svelte';
-	import { showInfo } from '$lib/utils/toast';
+	import AddOutletModal from '$lib/components/owner/Manage/AddOutletModal.svelte';
 	import type { User } from '$lib/types/domain';
 
 	// Auth guard
@@ -50,7 +50,7 @@
 	}
 
 	// ─── Mock data (replace with API when BE ready) ────────────────────────
-	const allOutlets: Outlet[] = [
+	let allOutlets = $state<Outlet[]>([
 		{ id: 'o-001', name: 'Duamart Pusat', address: 'Yogyakarta', manager: 'Budi', employeesCount: 12, status: 'aktif' },
 		{ id: 'o-002', name: 'Duamart Malioboro', address: 'Yogyakarta', manager: 'Andi', employeesCount: 9, status: 'aktif' },
 		{ id: 'o-003', name: 'Duamart Sleman', address: 'Sleman', manager: 'Siti', employeesCount: 15, status: 'maintenance' },
@@ -63,7 +63,7 @@
 		{ id: 'o-010', name: 'Duamart Wates', address: 'Wates', manager: 'Maya', employeesCount: 7, status: 'maintenance' },
 		{ id: 'o-011', name: 'Duamart Cilacap', address: 'Cilacap', manager: 'Riko', employeesCount: 9, status: 'aktif' },
 		{ id: 'o-012', name: 'Duamart Purwokerto', address: 'Purwokerto', manager: 'Sari', employeesCount: 13, status: 'aktif' }
-	];
+	]);
 
 	// ─── State ───────────────────────────────────────────────────────────────
 	let search = $state('');
@@ -90,16 +90,22 @@
 		filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 	);
 
-	// Reset page when filter changes
-	$effect(() => {
-		// Re-derive page when search/status changes
-		void search;
-		void statusFilter;
-		currentPage = 1;
-	});
+	// Reset page when search/status changes (handlers defined inline in OutletFilterBar props)
+
+	let addOutletOpen = $state(false);
 
 	function handleAdd() {
-		showInfo('Tambah Outlet (TODO: open form modal)');
+		addOutletOpen = true;
+	}
+
+	function handleSaveNewOutlet(data: Omit<Outlet, 'id'>) {
+		const newOutlet: Outlet = {
+			id: `o-${String(allOutlets.length + 1).padStart(3, '0')}`,
+			...data
+		};
+		allOutlets = [newOutlet, ...allOutlets];
+		// Reset to first page to show new outlet
+		currentPage = 1;
 	}
 </script>
 
@@ -118,8 +124,8 @@
 		<OutletFilterBar
 			{search}
 			{statusFilter}
-			onsearchChange={(v) => (search = v)}
-			onstatusChange={(v) => (statusFilter = v)}
+			onsearchChange={(v) => { search = v; currentPage = 1; }}
+			onstatusChange={(v) => { statusFilter = v; currentPage = 1; }}
 			onadd={handleAdd}
 		/>
 
@@ -133,4 +139,10 @@
 			onpageChange={(p) => (currentPage = p)}
 		/>
 	</div>
+
+	<AddOutletModal
+		open={addOutletOpen}
+		onclose={() => (addOutletOpen = false)}
+		onsave={handleSaveNewOutlet}
+	/>
 </RoleShell>
