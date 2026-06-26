@@ -33,6 +33,11 @@
 	let saving = $state(false);
 	let error = $state<string | null>(null);
 
+	// Real-time counts (KPI gudang dinamis, menggantikan angka hard-code lama)
+	let countBarangMasukMenunggu = $state(0);
+	let countBarangKeluarMenunggu = $state(0);
+	let countSuratJalanPending = $state(0);
+
 	// Search & filter (tab inventaris)
 	let search = $state('');
 	let filterCategory = $state('all');
@@ -78,12 +83,20 @@
 		try {
 			loading = true;
 			error = null;
-			const [prods, cats] = await Promise.all([
+			const [prods, cats, pos, ogs, sjs] = await Promise.all([
 				api.products.listProducts(),
-				api.products.listCategories()
+				api.products.listCategories(),
+				api.incomingGoods.listIncomingGoods().catch(() => [] as any[]),
+				api.outgoingGoods.listOutgoingGoods({ outletId: 'dev' }).catch(() => [] as any[]),
+				api.suratJalan.listSuratJalan().catch(() => [] as any[])
 			]);
 			products = prods;
 			categories = cats.map((cat) => ({ id: cat.id, label: cat.name, name: cat.name, icon: cat.icon }));
+			// KPI dinamis: Barang Masuk menunggu verifikasi, Barang Keluar status pending/picking,
+			// Surat Jalan status pending_review
+			countBarangMasukMenunggu = (pos ?? []).filter((p: any) => p.status === 'MENUNGGU_VERIFIKASI').length;
+			countBarangKeluarMenunggu = (ogs ?? []).filter((o: any) => o.status === 'pending' || o.status === 'picking').length;
+			countSuratJalanPending = (sjs ?? []).filter((s: any) => s.status === 'pending_review').length;
 		} catch (e: any) {
 			error = e.message ?? 'Gagal memuat data';
 		} finally {
@@ -105,11 +118,14 @@
 	}));
 
 	// ─── KPI computation (ringkasan) ────────────────────────────────────
-	const kpiBarangMasukMenunggu = 12;
-	const kpiBarangKeluarMenunggu = 8;
-	const kpiSuratJalanPending = 3;
+	const kpiBarangMasukMenunggu = $derived(countBarangMasukMenunggu);
+	const kpiBarangKeluarMenunggu = $derived(countBarangKeluarMenunggu);
+	const kpiSuratJalanPending = $derived(countSuratJalanPending);
 	const kpiStokMenipis = $derived(products.filter((p) => statusOf(p) !== 'ok').length);
-	const kpiRestockDisetujui = 8;
+	const kpiRestockDisetujui = $derived(
+		// Approksimasi: PO terverifikasi 24 jam terakhir dianggap restock yang perlu disetujui
+		0 // TODO: wire ke API real kalau backend expose
+	);
 	const kpiTotalSkuAktif = $derived(products.filter((p) => p.is_active).length);
 
 	// ─── Mock data for new sections (bisa diganti API real nanti) ──────

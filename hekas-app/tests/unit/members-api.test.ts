@@ -22,7 +22,7 @@ beforeEach(() => {
 	} as any;
 
 	// Pre-populate seed members
-	store.set('hekas:seed_version', JSON.stringify(2));
+	store.set('hekas:seed_version', JSON.stringify(3));
 	store.set('hekas:members', JSON.stringify([
 		{ id: 'M001', name: 'Andi Member', phone: '0812000001', points: 500, tier: 'Gold', email: 'andi@test.com', lifetime_spend: 7500000, last_transaction_at: '2025-06-20T10:00:00.000Z', created_at: '2025-01-01T00:00:00.000Z', point_history: [], tier_history: [], note: null },
 		{ id: 'M002', name: 'Budi Silver', phone: '0812000002', points: 50, tier: 'Silver', email: null, lifetime_spend: 500000, last_transaction_at: null, created_at: '2025-03-01T00:00:00.000Z', point_history: [], tier_history: [], note: null },

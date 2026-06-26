@@ -38,11 +38,11 @@
 			pos = raw.map((p, idx) => ({
 				id: p.id,
 				po_no: p.po_no ?? p.id,
-				sj_no: p.sj_no ?? `SJ-2310-00${42 - idx}`,
-				supplier: p.supplier ?? 'Unknown Supplier',
-				supplier_avatar: p.supplier?.[0]?.toUpperCase() ?? '?',
-				date: p.date ?? new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
-				item_count: p.item_count ?? p.totalItems ?? 0,
+				sj_no: p.sj_no ?? `SJ-IM-${String(Date.now()).slice(0, 10).replace(/-/g, '')}-${String(idx + 1).padStart(4, '0')}`,
+				supplier: p.supplier_name ?? p.supplier ?? 'Unknown Supplier',
+				supplier_avatar: (p.supplier_name ?? p.supplier ?? '?')[0]?.toUpperCase() ?? '?',
+				date: p.received_at ? new Date(p.received_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : (p.date ?? new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })),
+				item_count: p.total_items ?? p.totalItems ?? p.item_count ?? 0,
 				sku_count: p.sku_count ?? p.skuCount ?? 1,
 				status: p.status ?? 'MENUNGGU_VERIFIKASI'
 			}));

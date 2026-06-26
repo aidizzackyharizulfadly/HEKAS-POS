@@ -167,6 +167,13 @@ export function suratJalanStatus(status: string): StatusMeta {
 	switch (s) {
 		case 'draft':
 			return { label: 'Draft', color: 'gray', icon: '📝', severity: 'neutral' };
+		case 'pending_review':
+		case 'review':
+		case 'menunggu_review':
+			return { label: 'Pending Review', color: 'yellow', icon: '⏳', severity: 'warning' };
+		case 'approved':
+		case 'disetujui':
+			return { label: 'Approved', color: 'green', icon: '✓', severity: 'success' };
 		case 'sent':
 		case 'dikirim':
 			return { label: 'Dikirim', color: 'blue', icon: '📤', severity: 'info' };
@@ -176,6 +183,9 @@ export function suratJalanStatus(status: string): StatusMeta {
 		case 'received':
 		case 'diterima':
 			return { label: 'Diterima', color: 'green', icon: '✓', severity: 'success' };
+		case 'delivered':
+		case 'terkirim':
+			return { label: 'Terkirim', color: 'green', icon: '✅', severity: 'success' };
 		case 'rejected':
 		case 'ditolak':
 			return { label: 'Ditolak', color: 'red', icon: '✗', severity: 'error' };

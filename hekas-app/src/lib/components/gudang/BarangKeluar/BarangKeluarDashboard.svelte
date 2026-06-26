@@ -37,14 +37,22 @@
 			const raw = await api.outgoingGoods.listOutgoingGoods({ outletId: 'dev' }).catch(() => [] as any[]);
 			items = raw.map((o, idx) => ({
 				id: o.id,
-				sj_no: o.sj_no ?? o.soNumber ?? `SJ-2310-00${88 - idx}`,
-				order_ref: o.order_ref ?? o.orderRef ?? `ORD-1023-0${88 - idx}`,
+				sj_no: o.sj_no ?? o.soNumber ?? `SJ-${String(Date.now()).slice(0, 10).replace(/-/g, '')}-${String(idx + 1).padStart(4, '0')}`,
+				order_ref: o.orderRef ?? o.order_ref ?? `ORD-${String(Date.now()).slice(0, 10).replace(/-/g, '')}-${String(idx + 1).padStart(3, '0')}`,
 				destination: o.destination ?? o.customerName ?? 'Unknown',
-				destination_avatar: o.destination_avatar ?? o.customerName?.[0]?.toUpperCase() ?? '?',
-				date: o.date ?? new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
-				item_count: o.item_count ?? o.itemCount ?? 0,
-				sku_count: o.sku_count ?? o.skuCount ?? 1,
-				status: o.status ?? 'MENUNGGU_PICKING'
+				destination_avatar: (o.destination ?? o.customerName ?? '?')[0]?.toUpperCase() ?? '?',
+				date: o.createdAt ? new Date(o.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : (o.date ?? new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })),
+				item_count: o.itemCount ?? o.item_count ?? 0,
+				sku_count: o.skuCount ?? o.sku_count ?? 1,
+				// Map status internal ke label dashboard. 'pending' → MENUNGGU_PICKING, 'picking' tetap picking, dst.
+				status: ((): StatusOutgoing => {
+					const raw = (o.status ?? 'pending').toLowerCase();
+					if (raw === 'pending') return 'MENUNGGU_PICKING';
+					if (raw === 'ready')   return 'SIAP_DIKIRIM';
+					if (raw === 'cancelled') return 'TERTUNDA';
+					if (raw === 'shipped') return 'DALAM_PENGIRIMAN';
+					return 'MENUNGGU_PICKING';
+				})()
 			}));
 		} catch (err) {
 			error = (err as Error).message;
