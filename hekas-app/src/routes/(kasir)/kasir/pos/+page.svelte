@@ -20,6 +20,9 @@
 	import PaymentForm from '$lib/components/kasir/POS/PaymentForm.svelte';
 	import PosProductCard from '$lib/components/kasir/POS/PosProductCard.svelte';
 	import PosCartPanel from '$lib/components/kasir/POS/PosCartPanel.svelte';
+	import PosSearchBar from '$lib/components/kasir/POS/PosSearchBar.svelte';
+	import PosCategoryTabs from '$lib/components/kasir/POS/PosCategoryTabs.svelte';
+	import PosProductArea from '$lib/components/kasir/POS/PosProductArea.svelte';
 	import KasirCommandBar from '$lib/components/kasir/KasirCommandBar.svelte';
 	import Sidebar from '$lib/components/shared/Sidebar.svelte';
 	import { getIcon } from '$lib/components/shared/icon-map';
@@ -605,208 +608,38 @@
 		<div class="flex flex-1 overflow-hidden">
 			<!-- ── LEFT: product area ──────────────────────────────────────── -->
 			<div class="flex flex-col flex-1 min-w-0 overflow-hidden">
-				<!-- Search + Barcode row (Enterprise 2026) -->
-				<div class="bg-background flex shrink-0 items-center gap-2 border-b px-3 py-2.5">
-					<!-- Product search -->
-					<div class="group relative flex-1">
-						<Search
-							class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 transition-colors"
-						/>
-						<Input
-							bind:ref={searchInputEl}
-							bind:value={search}
-							placeholder="Cari produk atau SKU...  (tekan / untuk fokus)"
-							aria-label="Cari produk berdasarkan nama atau SKU, tekan / untuk fokus"
-							class="h-9 pl-9 pr-20 text-[13px]"
-						/>
-						<!-- Keyboard hint -->
-						<kbd
-							class="bg-background text-muted-foreground absolute top-1/2 right-3 hidden h-5 -translate-y-1/2 items-center justify-center rounded border px-1.5 font-mono text-[10.5px] font-semibold leading-none md:inline-flex"
-							>/</kbd
-						>
-						{#if search}
-							<button
-								onclick={() => (search = '')}
-								aria-label="Bersihkan pencarian"
-								class="bg-muted-foreground text-background absolute top-1/2 right-9 flex size-5 -translate-y-1/2 items-center justify-center rounded-full transition-all hover:opacity-80"
-							>
-								<X class="size-2.5" strokeWidth={3} />
-							</button>
-						{/if}
-					</div>
+					<!-- Search + Barcode row (extracted to PosSearchBar) -->
+					<PosSearchBar
+						bind:bindValue={search}
+						bind:bindBarcodeValue={barcodeInput}
+						bind:bindSearchInputEl={searchInputEl}
+						bind:bindBarcodeInputEl={barcodeInputEl}
+						onbarcodeKey={handleBarcodeKey}
+					/>
 
-					<!-- Barcode input -->
-					<div class="relative">
-						<Barcode
-							class="text-primary pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2"
-							strokeWidth={2.2}
-						/>
-						<Input
-							bind:ref={barcodeInputEl}
-							bind:value={barcodeInput}
-							onkeydown={handleBarcodeKey}
-							placeholder="Scan barcode..."
-							aria-label="Scan barcode produk"
-							class="caret-primary h-9 w-44 pl-9 text-[13px]"
-						/>
-					</div>
-				</div>
+					<!-- Category tabs (extracted to PosCategoryTabs) -->
+					<PosCategoryTabs
+						categories={CATEGORIES}
+						activeId={activeCategory}
+						counts={Object.fromEntries(CATEGORIES.map((c) => [c.id, c.id === 'all' ? products.length : products.filter((p) => p.category === c.id).length]))}
+						getIcon={getIcon}
+						onchange={(id) => (activeCategory = id)}
+					/>
 
-				<!-- Category tabs -->
-				<div
-					class="bg-background flex shrink-0 items-center gap-1.5 overflow-x-auto px-3 py-2"
-				>
-					{#each CATEGORIES as cat}
-						{@const isActive = activeCategory === cat.id}
-						{@const CatIcon = getIcon(cat.icon)}
-						{@const catCount =
-							cat.id === 'all'
-								? products.length
-								: products.filter((p) => p.category === cat.id).length}
-						<Button
-							onclick={() => (activeCategory = cat.id)}
-							variant={isActive ? 'default' : 'outline'}
-							size="sm"
-							aria-pressed={isActive}
-							class="rounded-full"
-						>
-							{#if CatIcon}
-								<CatIcon
-									size={14}
-									strokeWidth={isActive ? 2.25 : 1.75}
-									aria-hidden="true"
-								/>
-							{/if}
-							<span>{cat.label}</span>
-							{#if catCount > 0}
-								<span
-									class={cn(
-										'rounded-full px-1.5 text-center min-w-[18px] text-[10px] font-bold tabular-nums',
-										isActive
-											? 'bg-white/20 text-primary-foreground'
-											: 'bg-accent text-accent-foreground'
-									)}
-									aria-label="{catCount} produk"
-								>
-									{catCount}
-								</span>
-							{/if}
-						</Button>
-					{/each}
-				</div>
-
-				<!-- Product grid — 4 columns -->
-				<div class="flex-1 overflow-y-auto p-3">
-					<!-- Loading skeleton -->
-					{#if productsLoading}
-						<div
-							class="grid"
-							style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px"
-						>
-							{#each Array(12) as _, i}
-								<div
-									class="rounded-xl p-3"
-									style="background: #fff; border: 1px solid #E2E8F0; height: 130px"
-								>
-									<div
-										class="w-12 h-12 rounded-lg mb-2"
-										style="background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 50%, #F1F5F9 100%); background-size: 200% 100%; animation: shimmer 1.4s infinite"
-									></div>
-									<div
-										class="h-3 w-3/4 rounded mb-1"
-										style="background: #F1F5F9"
-									></div>
-									<div
-										class="h-3 w-1/2 rounded mb-2"
-										style="background: #F1F5F9"
-									></div>
-									<div
-										class="h-4 w-2/3 rounded"
-										style="background: #E2E8F0"
-									></div>
-								</div>
-							{/each}
-						</div>
-					{:else if productsError}
-						<div
-							class="flex flex-col items-center justify-center py-12 px-4 text-center"
-						>
-							<div
-								class="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-								style="background: #FEE2E2"
-							>
-								<svg
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="#DC2626"
-									stroke-width="2"
-									><circle cx="12" cy="12" r="10" /><line
-										x1="12"
-										y1="8"
-										x2="12"
-										y2="12"
-									/><line x1="12" y1="16" x2="12.01" y2="16" /></svg
-								>
-							</div>
-							<div
-								style="font-size: 14; font-weight: 700; color: #0F172A; margin-bottom: 4"
-							>
-								{productsError}
-							</div>
-							<div style="font-size: 12; color: #64748B; margin-bottom: 12">
-								Periksa koneksi atau coba lagi
-							</div>
-							<button
-								onclick={refreshProducts}
-								class="px-4 py-2 rounded-lg"
-								style="background: #2563EB; color: #fff; font-size: 12; font-weight: 600"
-								>Coba lagi</button
-							>
-						</div>
-					{:else}
-						<div
-							class="grid"
-							style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; column-gap: 10px; row-gap: 10px"
-						>
-							{#each filtered as product (product.id)}
-								{@const inCartQty = cart.find((c) => c.id === product.id)?.qty ?? 0}
-								<PosProductCard
-									{product}
-									{inCartQty}
-									isLoading={addingProductId === product.id}
-									onadd={() => {
-										lastTriggerEl = document.activeElement as HTMLElement;
-										if (product.stock > 0) addProduct(product);
-									}}
-								/>
-							{/each}
-						</div>
-
-						{#if filtered.length === 0}
-							<div
-								class="flex flex-col items-center justify-center py-16 gap-2"
-								style="color: #94A3B8"
-							>
-								<svg
-									width="36"
-									height="36"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="1.5"
-									style="opacity: 0.25"
-								>
-									<path
-										d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"
-									/>
-								</svg>
-								<span style="font-size: 13">Produk tidak ditemukan</span>
-							</div>
-						{/if}
-					{/if}
-				</div>
+					<!-- Product grid (extracted to PosProductArea) -->
+					<PosProductArea
+						products={products}
+						filtered={filtered}
+						loading={productsLoading}
+						error={productsError}
+						addingProductId={addingProductId}
+						inCartQtyMap={Object.fromEntries(cart.map((c) => [c.id, c.qty]))}
+						onProductClick={(p) => {
+							lastTriggerEl = document.activeElement as HTMLElement;
+							if (p.stock > 0) addProduct(p);
+						}}
+						onRefresh={refreshProducts}
+					/>
 			</div>
 
 			<!-- ── RIGHT: Cart (Cockpit) ───────────────────────────────────── -->
