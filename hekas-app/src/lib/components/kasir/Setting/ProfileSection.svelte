@@ -14,7 +14,7 @@
 		outletName?: string;
 	}
 	let { username, fullName, role, outletName }: Props = $props();
-	const roleLabel = { kasir: 'Kasir', manager: 'Manager', gudang: 'Admin Gudang' }[role];
+	const roleLabel = { kasir: 'Kasir', manager: 'Manager', gudang: 'Admin Gudang', owner: 'Owner' }[role];
 </script>
 
 <div class="space-y-3">

@@ -23,7 +23,7 @@
 <script lang="ts">
 	import Sidebar from './Sidebar.svelte';
 	import TopBar from './TopBar.svelte';
-	import { kasirMenu, gudangMenu, managerMenu, type MenuItem } from '$lib/auth/roles';
+	import { kasirMenu, gudangMenu, managerMenu, ownerMenu, type MenuItem } from '$lib/auth/roles';
 	import { page } from '$app/state';
 
 	interface User {
@@ -32,7 +32,7 @@
 	}
 
 	interface Props {
-		role: 'kasir' | 'manager' | 'gudang';
+		role: 'kasir' | 'manager' | 'gudang' | 'owner';
 		title?: string;
 		subtitle?: string;
 		user?: User | null;
@@ -47,7 +47,8 @@
 	const menuByRole: Record<string, MenuItem[]> = {
 		kasir: kasirMenu,
 		manager: managerMenu,
-		gudang: gudangMenu
+		gudang: gudangMenu,
+		owner: ownerMenu
 	};
 
 	const menu = $derived(menuByRole[role] ?? []);
@@ -57,7 +58,7 @@
 <div class="flex h-screen overflow-hidden" style="background: #F0F4F8">
 	<Sidebar {menu} {activePath} />
 	<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-		<TopBar {title} {subtitle} {user} {role} {onlogout} {actions} />
+		<TopBar {title} {subtitle} {user} role={role} {onlogout} {actions} />
 		{#if customHeader}
 			{@render customHeader()}
 		{/if}

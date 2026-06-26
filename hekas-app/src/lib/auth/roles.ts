@@ -1,8 +1,8 @@
 // HEKAS POS — Role configuration
-// Single source of truth untuk 3 role (Kasir, Manager, Admin Gudang)
+// Single source of truth untuk 4 role (Kasir, Manager, Admin Gudang, Owner)
 // Dipakai oleh /login dan sidebar role guard
 
-export type RoleId = 'kasir' | 'manager' | 'gudang';
+export type RoleId = 'kasir' | 'manager' | 'gudang' | 'owner';
 
 export interface RoleConfig {
 	id: RoleId;
@@ -41,10 +41,19 @@ export const ROLES: Record<RoleId, RoleConfig> = {
 		colorDeep: '#6D28D9',
 		bgSoft: '#EDE9FE',
 		gotoPath: '/gudang/beranda'   // R0.5: updated dari '/gudang' ke '/gudang/beranda'
+	},
+	owner: {
+		id: 'owner',
+		label: 'Owner',
+		roleDescription: 'Dashboard bisnis lintas outlet',
+		color: '#1E40AF',            // Primary blue per DESIGN.md
+		colorDeep: '#1E3A8A',
+		bgSoft: '#DBEAFE',
+		gotoPath: '/owner/beranda'
 	}
 };
 
-export const ROLE_LIST: RoleConfig[] = [ROLES.kasir, ROLES.manager, ROLES.gudang];
+export const ROLE_LIST: RoleConfig[] = [ROLES.kasir, ROLES.manager, ROLES.gudang, ROLES.owner];
 
 // ─── Menu definitions (untuk Sidebar shared component) ──────────────────────
 // R0.2: Tambah menu arrays per role, sesuai FRONTEND_ARCHITECTURE.md §6.1
@@ -91,6 +100,11 @@ export const managerMenu: MenuItem[] = [
 	{ label: 'Pengaturan',   path: '/manager/pengaturan', icon: 'Settings' }
 ];
 
+export const ownerMenu: MenuItem[] = [
+	{ label: 'Beranda',  path: '/owner/beranda',  icon: 'Home' },
+	{ label: 'Manage',   path: '/owner/manage',   icon: 'Settings' }
+];
+
 // ─── Demo accounts (mock auth) ──────────────────────────────────────────────
 // Per FE_HANDOFF v2.0.0 §3 — default credentials for DEV (matches Wafiq BE).
 // Password disimpan plain text HANYA untuk demo — JANGAN pakai pattern ini di production
@@ -103,7 +117,8 @@ export interface DemoAccount {
 export const DEMO_ACCOUNTS: DemoAccount[] = [
 	{ username: 'kasir1',   password: 'password123', role: 'kasir'   },
 	{ username: 'manager1', password: 'password123', role: 'manager' },
-	{ username: 'gudang1',  password: 'password123', role: 'gudang'  }
+	{ username: 'gudang1',  password: 'password123', role: 'gudang'  },
+	{ username: 'owner1',   password: 'password123', role: 'owner'   }
 ];
 
 export function authenticate(username: string, password: string): RoleId | null {
@@ -119,9 +134,10 @@ export function detectRole(username: string): RoleId | null {
 	if (u.startsWith('kasi')) return 'kasir';
 	if (u.startsWith('manager') || u.startsWith('mgr')) return 'manager';
 	if (u.startsWith('gudang') || u.startsWith('admin')) return 'gudang';
+	if (u.startsWith('owner')) return 'owner';
 	return null;
 }
 
 export function isValidRole(id: string | undefined): id is RoleId {
-	return id === 'kasir' || id === 'manager' || id === 'gudang';
+	return id === 'kasir' || id === 'manager' || id === 'gudang' || id === 'owner';
 }

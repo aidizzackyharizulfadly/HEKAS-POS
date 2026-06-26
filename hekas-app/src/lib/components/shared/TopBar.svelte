@@ -29,7 +29,7 @@
 		title?: string;
 		subtitle?: string;
 		user?: User | null;
-		role?: 'kasir' | 'manager' | 'gudang';
+		role?: 'kasir' | 'manager' | 'gudang' | 'owner';
 		onlogout?: () => void;
 		children?: import('svelte').Snippet;
 		actions?: import('svelte').Snippet;
